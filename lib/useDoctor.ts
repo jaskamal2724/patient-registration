@@ -135,13 +135,14 @@ export function useDoctor(initialDoctor: Doctor) {
       const currentInProgress = patients.find(p => p.status === "in-progress");
 
       if (currentInProgress) {
-        await api.updatePatientStatus(currentInProgress.id, "done");
+        showToast("Please mark the current patient as done first", "error");
+        setLoading(false);
+        return;
       }
 
       await api.updatePatientStatus(nextWaiting.id, "in-progress");
 
       setPatients(prev => prev.map(p => {
-        if (p.id === currentInProgress?.id) return { ...p, status: "done" as const };
         if (p.id === nextWaiting.id) return { ...p, status: "in-progress" as const };
         return p;
       }));

@@ -13,9 +13,12 @@ import InstallPWA from "./InstallPWA";
 
 type Tab = "queue" | "settings";
 
-function StatCard({ label, value, icon: Icon, color, bgLight }: { label: string; value: number | string; icon: any; color: string; bgLight: string }) {
+function StatCard({ label, value, icon: Icon, color, bgLight, onClick }: { label: string; value: number | string; icon: any; color: string; bgLight: string; onClick?: () => void }) {
   return (
-    <div className="bg-white rounded-2xl p-5 card-lift shadow-sm border border-surface-200 stagger-item">
+    <div 
+      className={`bg-white rounded-2xl p-5 card-lift shadow-sm border border-surface-200 stagger-item ${onClick ? "cursor-pointer hover:border-brand-200 hover:shadow-md transition-all ring-2 ring-transparent hover:ring-brand-100" : ""}`}
+      onClick={onClick}
+    >
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${bgLight}`}>
         <Icon size={20} className={color} />
       </div>
@@ -37,6 +40,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
   const [tab, setTab] = useState<Tab>("queue");
   const [editName, setEditName] = useState(false);
   const [tempName, setTempName] = useState(doctorName);
+  const [showCompletedModal, setShowCompletedModal] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -205,7 +209,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
               <StatCard label="Total Patients" value={patients.length} icon={Users} color="text-brand-600" bgLight="bg-brand-50" />
               <StatCard label="Waiting" value={waiting.length} icon={Clock} color="text-amber-600" bgLight="bg-amber-50" />
-              <StatCard label="Completed" value={done.length} icon={CheckCircle2} color="text-emerald-600" bgLight="bg-emerald-50" />
+              <StatCard label="Completed" value={done.length} icon={CheckCircle2} color="text-emerald-600" bgLight="bg-emerald-50" onClick={() => setShowCompletedModal(true)} />
               <StatCard label="Current Token" value={currentToken || "—"} icon={TrendingUp} color="text-accent-600" bgLight="bg-accent-50" />
             </div>
 
@@ -258,14 +262,21 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                   <h2 className="font-display text-xl font-bold text-surface-900">
                     Patient Queue <span className="font-body text-sm text-surface-500 font-medium ml-2 bg-surface-100 px-2.5 py-1 rounded-full">{waiting.length} waiting</span>
                   </h2>
-                  <button
-                    onClick={callNext}
-                    disabled={waiting.length === 0}
-                    className="flex items-center justify-center gap-2 bg-surface-900 hover:bg-surface-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-body font-semibold px-5 py-2.5 rounded-xl transition-all shadow-md"
-                  >
-                    <span>Call Next Patient</span>
-                    <ChevronRight size={16} />
-                  </button>
+                  <div className="flex flex-col items-end gap-1">
+                    <button
+                      onClick={callNext}
+                      disabled={waiting.length === 0 || !!inProgress || loading}
+                      className="flex items-center justify-center gap-2 bg-surface-900 hover:bg-surface-800 disabled:bg-surface-200 disabled:text-surface-400 disabled:cursor-not-allowed text-white text-sm font-body font-semibold px-5 py-2.5 rounded-xl transition-all shadow-md disabled:shadow-none"
+                    >
+                      <span>Call Next Patient</span>
+                      <ChevronRight size={16} />
+                    </button>
+                    {inProgress && (
+                      <p className="text-xs font-body text-amber-600 font-medium">
+                        Mark current patient as done first
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Patient List */}
@@ -427,6 +438,54 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
           </div>
         </main>
       </div>
+
+      {/* Completed Patients Modal */}
+      {showCompletedModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-900/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-surface-200 flex flex-col max-h-[85vh] animate-slide-up">
+            <div className="p-6 border-b border-surface-100 flex items-center justify-between">
+              <div>
+                <h2 className="font-display text-xl font-bold text-surface-900">Completed Patients</h2>
+                <p className="font-body text-sm text-surface-500 mt-0.5">{done.length} patients seen today</p>
+              </div>
+              <button onClick={() => setShowCompletedModal(false)} className="p-2 hover:bg-surface-100 rounded-xl transition-colors">
+                <X size={20} className="text-surface-500" />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto">
+              {done.length === 0 ? (
+                <div className="text-center py-10">
+                  <div className="w-12 h-12 bg-surface-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <CheckCircle2 size={24} className="text-surface-400" />
+                  </div>
+                  <p className="font-body text-sm text-surface-500">No completed patients yet.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-surface-100">
+                  {done.map(p => (
+                    <div key={p.id} className="py-3 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-4">
+                        <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-mono-custom font-bold text-base shrink-0">
+                          #{p.token_number}
+                        </div>
+                        <div>
+                          <p className="font-body font-bold text-surface-900 text-base">{p.name}</p>
+                          <p className="font-body text-xs text-surface-500 font-medium">{p.age}y · {p.gender} · {p.phone}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                         <span className="text-[10px] px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200 font-body font-bold uppercase tracking-wider">
+                           Done
+                         </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <Toast toast={toast} />
     </div>

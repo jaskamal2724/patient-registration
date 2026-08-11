@@ -90,13 +90,15 @@ export async function updateSession(id: string, patch: Record<string, unknown>):
 export async function fetchAllPatients(doctorId: string): Promise<Patient[]> {
   const res = await fetch(`/api/patients?doctor_id=${doctorId}`);
   const json = await res.json();
-  return json.patients ?? [];
+  const patients = (json.patients as Patient[]) ?? [];
+  return patients.sort((a, b) => a.token_number - b.token_number);
 }
 
 export async function fetchSessionPatients(sessionId: string): Promise<Patient[]> {
   const res = await fetch(`/api/patients?session_id=${sessionId}`);
   const json = await res.json();
-  return json.patients ?? [];
+  const patients = (json.patients as Patient[]) ?? [];
+  return patients.sort((a, b) => a.token_number - b.token_number);
 }
 
 export type PatientForm = {

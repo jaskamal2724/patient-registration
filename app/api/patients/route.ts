@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     const { data, error } = await supabase
       .from("patients")
       .select("*")
-      .order("registered_at", { ascending: true });
+      .order("token_number", { ascending: true });
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
