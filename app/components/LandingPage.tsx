@@ -45,13 +45,13 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-surface-50">
-      <div className="blob-bg w-[500px] h-[500px] bg-brand-200 top-0 -left-40 mix-blend-multiply animate-float" />
+      <div className="blob-bg w-125 h-125 bg-brand-200 top-0 -left-40 mix-blend-multiply animate-float" />
       <div
-        className="blob-bg w-[400px] h-[400px] bg-accent-200 bottom-0 right-0 mix-blend-multiply animate-float"
+        className="blob-bg w-100 h-100 bg-accent-200 bottom-0 right-0 mix-blend-multiply animate-float"
         style={{ animationDelay: "2s" }}
       />
       <div
-        className="blob-bg w-[600px] h-[600px] bg-brand-100 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mix-blend-multiply animate-float"
+        className="blob-bg w-150 h-150 bg-brand-100 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mix-blend-multiply animate-float"
         style={{ animationDelay: "4s" }}
       />
 
@@ -85,7 +85,7 @@ export default function LandingPage() {
           <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-extrabold text-surface-900 leading-tight mb-6 tracking-tight">
             Seamless Care,
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-accent-500">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-brand-600 to-accent-500">
               Zero Wait
             </span>{" "}
             Confusion.
@@ -101,7 +101,7 @@ export default function LandingPage() {
             onClick={() => setShowPinModal(true)}
             className="group glass-card card-lift rounded-3xl p-8 text-left cursor-pointer border border-surface-200/50"
           >
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center mb-5 shadow-lg shadow-brand-500/30 group-hover:scale-105 transition-transform duration-300">
+            <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-brand-500 to-brand-700 flex items-center justify-center mb-5 shadow-lg shadow-brand-500/30 group-hover:scale-105 transition-transform duration-300">
               <Stethoscope size={26} className="text-white" />
             </div>
             <h2 className="font-display text-2xl font-bold text-surface-900 mb-2">
@@ -125,7 +125,7 @@ export default function LandingPage() {
             onClick={() => router.push("/patient")}
             className="group glass-card card-lift rounded-3xl p-8 text-left cursor-pointer border border-surface-200/50"
           >
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center mb-5 shadow-lg shadow-accent-500/30 group-hover:scale-105 transition-transform duration-300">
+            <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-accent-500 to-accent-700 flex items-center justify-center mb-5 shadow-lg shadow-accent-500/30 group-hover:scale-105 transition-transform duration-300">
               <User size={26} className="text-white" />
             </div>
             <h2 className="font-display text-2xl font-bold text-surface-900 mb-2">
@@ -164,7 +164,7 @@ export default function LandingPage() {
       {showPinModal && (
         <div className="fixed inset-0 z-50 bg-surface-900/20 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl border border-surface-100 animate-slide-up relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-400 to-accent-400"></div>
+            <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-brand-400 to-accent-400"></div>
 
             <div className="w-12 h-12 rounded-2xl bg-brand-50 flex items-center justify-center mb-5">
               <Lock size={22} className="text-brand-600" />

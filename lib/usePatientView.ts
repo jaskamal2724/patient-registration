@@ -10,6 +10,7 @@ export function usePatientView() {
   const [isOpen, setIsOpen] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const currentToken =
     patients.find((p) => p.status === "in-progress")?.token_number || 0;
@@ -36,9 +37,10 @@ export function usePatientView() {
       } else {
         setPatients([]);
       }
+      if (!cancelled) setInitialLoading(false);
     };
     load();
-    const interval = setInterval(load, 10000);
+    const interval = setInterval(load, 45000);
     return () => {
       cancelled = true;
       clearInterval(interval);
@@ -68,6 +70,7 @@ export function usePatientView() {
     currentToken,
     addPatient,
     loading,
+    initialLoading,
     toast,
     showToast,
   };

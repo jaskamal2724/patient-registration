@@ -46,9 +46,7 @@ function Field({
   );
 }
 
-function QueueStatusBar() {
-  // Fetch queue data directly from the global patient view hook
-  const { patients, currentToken } = usePatientView();
+function QueueStatusBar({ patients, currentToken }: { patients: Patient[], currentToken: number }) {
   const waiting = patients.filter((p) => p.status === "waiting").length;
   const inProgress = patients.find((p) => p.status === "in-progress");
   const total = patients.length;
@@ -417,7 +415,7 @@ function SuccessScreen({
             <span className="font-body text-sm font-semibold text-surface-500">
               Reason noted
             </span>
-            <span className="font-body text-sm font-medium text-surface-900 max-w-[140px] text-right truncate">
+            <span className="font-body text-sm font-medium text-surface-900 max-w-35 text-right truncate">
               {patient.reason}
             </span>
           </div>
@@ -440,7 +438,7 @@ function SuccessScreen({
 }
 
 export default function PatientPortal() {
-  const { regWindow, patients, currentToken, doctorName, addPatient, toast } =
+  const { regWindow, patients, currentToken, doctorName, addPatient, toast, initialLoading } =
     usePatientView();
   const router = useRouter();
   const [step, setStep] = useState<Step>("home");
@@ -451,9 +449,9 @@ export default function PatientPortal() {
   return (
     <div className="min-h-screen relative overflow-hidden bg-surface-50">
       {/* Decorative background blurs */}
-      <div className="blob-bg w-[500px] h-[500px] bg-brand-200 top-0 right-0 mix-blend-multiply animate-float" />
+      <div className="blob-bg w-125 h-125 bg-brand-200 top-0 right-0 mix-blend-multiply animate-float" />
       <div
-        className="blob-bg w-[400px] h-[400px] bg-accent-200 bottom-0 left-0 mix-blend-multiply animate-float"
+        className="blob-bg w-100 h-100 bg-accent-200 bottom-0 left-0 mix-blend-multiply animate-float"
         style={{ animationDelay: "2s" }}
       />
 
@@ -496,7 +494,12 @@ export default function PatientPortal() {
 
       {/* Content */}
       <main className="relative z-10 max-w-2xl mx-auto px-5 pb-12">
-        {step === "home" && (
+        {initialLoading ? (
+          <div className="flex flex-col items-center justify-center py-32 animate-fade-in">
+            <div className="w-12 h-12 border-4 border-surface-200 border-t-brand-600 rounded-full animate-spin mb-4" />
+            <p className="font-body text-surface-500 font-medium text-sm animate-pulse">Loading live queue data...</p>
+          </div>
+        ) : step === "home" && (
           <div className="animate-slide-up">
             <div className="mb-8 mt-4">
               <h1 className="font-display text-4xl font-extrabold text-surface-900 leading-tight mb-2 tracking-tight">
@@ -513,7 +516,7 @@ export default function PatientPortal() {
               </p>
             </div>
 
-            <QueueStatusBar />
+            <QueueStatusBar patients={patients} currentToken={currentToken} />
 
             {/* Queue list preview */}
             {patients.filter((p) => p.status === "waiting").length > 0 && (

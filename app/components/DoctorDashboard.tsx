@@ -229,7 +229,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
               <div className={tab !== "queue" ? "hidden lg:block" : ""}>
                 {/* Currently Seeing */}
                 {inProgress && (
-                  <div className="bg-gradient-to-br from-brand-600 to-accent-600 rounded-3xl p-6 lg:p-8 mb-8 text-white shadow-xl shadow-brand-500/20 relative overflow-hidden">
+                  <div className="bg-linear-to-br from-brand-600 to-accent-600 rounded-3xl p-6 lg:p-8 mb-8 text-white shadow-xl shadow-brand-500/20 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between relative z-10 gap-6">
                       <div>
