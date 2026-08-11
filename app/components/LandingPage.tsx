@@ -44,7 +44,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-surface-50">
+    <div className="min-h-screen relative overflow-x-hidden max-w-full bg-surface-50">
       <div className="blob-bg w-125 h-125 bg-brand-200 top-0 -left-40 mix-blend-multiply animate-float" />
       <div
         className="blob-bg w-100 h-100 bg-accent-200 bottom-0 right-0 mix-blend-multiply animate-float"
@@ -55,7 +55,7 @@ export default function LandingPage() {
         style={{ animationDelay: "4s" }}
       />
 
-      <header className="relative z-10 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
+      <header className="relative z-10 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6 max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center shadow-lg shadow-brand-500/20">
             <Stethoscope size={20} className="text-white" />
@@ -76,13 +76,13 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="relative z-10 max-w-7xl mx-auto px-6 pt-12 pb-20">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-20">
         <div className="text-center mb-16 animate-fade-in">
           <span className="inline-flex items-center gap-1.5 text-xs font-mono-custom tracking-widest text-brand-600 bg-brand-50 border border-brand-100/50 rounded-full px-4 py-1.5 mb-6 uppercase shadow-sm">
             <span className="w-1 h-1 rounded-full bg-brand-500"></span>
             Patient Management
           </span>
-          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-extrabold text-surface-900 leading-tight mb-6 tracking-tight">
+          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-surface-900 leading-tight mb-6 tracking-tight">
             Seamless Care,
             <br />
             <span className="text-transparent bg-clip-text bg-linear-to-r from-brand-600 to-accent-500">

@@ -52,19 +52,19 @@ function QueueStatusBar({ patients, currentToken }: { patients: Patient[], curre
   const total = patients.length;
 
   return (
-    <div className="glass-card rounded-3xl border border-surface-200 p-6 mb-8 shadow-sm">
+    <div className="glass-card rounded-3xl border border-surface-200 p-4 sm:p-6 mb-8 shadow-sm">
       <h2 className="font-display text-lg font-bold text-surface-900 mb-5">
         Live Queue Status
       </h2>
 
       {/* Currently Being Seen */}
-      <div className="number-display rounded-2xl p-6 text-white mb-6 queue-number-active shadow-lg shadow-brand-500/20 relative overflow-hidden">
+      <div className="number-display rounded-2xl p-4 sm:p-6 text-white mb-6 queue-number-active shadow-lg shadow-brand-500/20 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/4"></div>
         <p className="font-body text-brand-100 text-xs uppercase tracking-widest font-semibold mb-2 relative z-10">
           Doctor is seeing
         </p>
         <div className="flex items-end gap-4 relative z-10">
-          <span className="font-mono-custom text-6xl font-extrabold leading-none tracking-tight">
+          <span className="font-mono-custom text-5xl sm:text-6xl font-extrabold leading-none tracking-tight">
             {inProgress ? `#${inProgress.token_number}` : "—"}
           </span>
           {inProgress && (
@@ -89,7 +89,7 @@ function QueueStatusBar({ patients, currentToken }: { patients: Patient[], curre
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {[
           {
             label: "Waiting",
@@ -112,12 +112,12 @@ function QueueStatusBar({ patients, currentToken }: { patients: Patient[], curre
         ].map(({ label, value, color, bg }) => (
           <div
             key={label}
-            className={`rounded-xl border p-3.5 text-center transition-all hover:scale-[1.02] ${bg}`}
+            className={`rounded-xl border p-2.5 sm:p-3.5 text-center transition-all hover:scale-[1.02] ${bg}`}
           >
-            <p className={`font-mono-custom text-3xl font-extrabold ${color}`}>
+            <p className={`font-mono-custom text-2xl sm:text-3xl font-extrabold ${color}`}>
               {value}
             </p>
-            <p className="font-body text-xs font-semibold text-surface-500 mt-1 uppercase tracking-wide">
+            <p className="font-body text-[10px] sm:text-xs font-semibold text-surface-500 mt-1 uppercase tracking-wide leading-tight">
               {label}
             </p>
           </div>
@@ -373,7 +373,7 @@ function SuccessScreen({
       </p>
 
       {/* Token card */}
-      <div className="number-display rounded-3xl p-10 text-white max-w-sm mx-auto mb-8 shadow-xl shadow-brand-500/20 relative overflow-hidden">
+      <div className="number-display rounded-3xl p-8 sm:p-10 text-white max-w-sm mx-auto mb-8 shadow-xl shadow-brand-500/20 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/4"></div>
         <div className="flex items-center justify-center gap-2 mb-4 relative z-10">
           <Hash size={18} className="text-brand-200" />
@@ -381,7 +381,7 @@ function SuccessScreen({
             Your Token Number
           </span>
         </div>
-        <p className="font-mono-custom text-8xl font-extrabold leading-none queue-number-active relative z-10">
+        <p className="font-mono-custom text-6xl sm:text-8xl font-extrabold leading-none queue-number-active relative z-10">
           {patient.token_number}
         </p>
         <p className="font-body text-white font-bold text-lg mt-6 relative z-10">
@@ -447,7 +447,7 @@ export default function PatientPortal() {
   );
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-surface-50">
+    <div className="min-h-screen relative overflow-x-hidden max-w-full bg-surface-50">
       {/* Decorative background blurs */}
       <div className="blob-bg w-125 h-125 bg-brand-200 top-0 right-0 mix-blend-multiply animate-float" />
       <div
@@ -456,7 +456,7 @@ export default function PatientPortal() {
       />
 
       {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-5 max-w-2xl mx-auto">
+      <header className="relative z-10 flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 max-w-2xl mx-auto">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center shadow-md shadow-brand-500/20">
             <Stethoscope size={20} className="text-white" />
@@ -493,7 +493,7 @@ export default function PatientPortal() {
       </header>
 
       {/* Content */}
-      <main className="relative z-10 max-w-2xl mx-auto px-5 pb-12">
+      <main className="relative z-10 max-w-2xl mx-auto px-4 sm:px-5 pb-12">
         {initialLoading ? (
           <div className="flex flex-col items-center justify-center py-32 animate-fade-in">
             <div className="w-12 h-12 border-4 border-surface-200 border-t-brand-600 rounded-full animate-spin mb-4" />
@@ -502,7 +502,7 @@ export default function PatientPortal() {
         ) : step === "home" && (
           <div className="animate-slide-up">
             <div className="mb-8 mt-4">
-              <h1 className="font-display text-4xl font-extrabold text-surface-900 leading-tight mb-2 tracking-tight">
+              <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-surface-900 leading-tight mb-2 tracking-tight">
                 Good{" "}
                 {new Date().getHours() < 12
                   ? "Morning"
@@ -511,7 +511,7 @@ export default function PatientPortal() {
                     : "Evening"}{" "}
                 👋
               </h1>
-              <p className="font-body text-surface-500 font-medium text-base">
+              <p className="font-body text-surface-500 font-medium text-sm sm:text-base">
                 Check the live queue or register for today's OPD
               </p>
             </div>
@@ -531,19 +531,19 @@ export default function PatientPortal() {
                     .map((p) => (
                       <div
                         key={p.id}
-                        className="flex items-center gap-3 py-3 border-b border-surface-100 last:border-0 stagger-item"
+                        className="flex items-center gap-2 sm:gap-3 py-3 border-b border-surface-100 last:border-0 stagger-item"
                       >
-                        <span className="font-mono-custom text-base font-bold text-brand-700 w-10">
+                        <span className="font-mono-custom text-sm sm:text-base font-bold text-brand-700 w-8 sm:w-10 shrink-0">
                           #{p.token_number}
                         </span>
-                        <span className="font-body text-sm font-semibold text-surface-900 flex-1">
+                        <span className="font-body text-sm font-semibold text-surface-900 flex-1 min-w-0 truncate">
                           {p.name}
                         </span>
-                        <span className="text-xs font-medium text-surface-500 font-body bg-surface-50 px-2 py-1 rounded-md">
+                        <span className="hidden sm:inline text-xs font-medium text-surface-500 font-body bg-surface-50 px-2 py-1 rounded-md shrink-0">
                           {p.age}y · {p.gender}
                         </span>
-                        <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md">
-                          <Clock size={12} />
+                        <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded-md shrink-0">
+                          <Clock size={11} />
                           <span>Waiting</span>
                         </div>
                       </div>
