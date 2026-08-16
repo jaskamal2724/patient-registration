@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import * as api from "@/lib/api";
 import {
   Stethoscope,
@@ -10,17 +10,31 @@ import {
   Heart,
   Shield,
   Clock,
+  UserCheck,
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
+import LogiquelFooter from "./LogiquelFooter";
 
 export default function LandingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPinModal, setShowPinModal] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const doc = await api.fetchDoctorProfile();
+      if (doc) setIsLoggedIn(true);
+    })();
+    if (searchParams.get("login") === "true") {
+      setShowPinModal(true);
+    }
+  }, [searchParams]);
 
   const handleDoctorLogin = async () => {
     if (!email.trim() || !password) return;
@@ -98,7 +112,13 @@ export default function LandingPage() {
 
         <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto mb-16">
           <button
-            onClick={() => setShowPinModal(true)}
+            onClick={() => {
+              if (isLoggedIn) {
+                router.push("/doctor");
+              } else {
+                setShowPinModal(true);
+              }
+            }}
             className="group glass-card card-lift rounded-3xl p-8 text-left cursor-pointer border border-surface-200/50"
           >
             <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-brand-500 to-brand-700 flex items-center justify-center mb-5 shadow-lg shadow-brand-500/30 group-hover:scale-105 transition-transform duration-300">
@@ -112,8 +132,17 @@ export default function LandingPage() {
               session with advanced tools.
             </p>
             <div className="flex items-center gap-2 text-brand-600 font-body text-sm font-semibold">
-              <Lock size={14} className="text-brand-500" />
-              <span>Secure Login</span>
+              {isLoggedIn ? (
+                <>
+                  <UserCheck size={16} className="text-emerald-500" />
+                  <span>Go to Dashboard</span>
+                </>
+              ) : (
+                <>
+                  <Lock size={14} className="text-brand-500" />
+                  <span>Secure Login</span>
+                </>
+              )}
               <ArrowRight
                 size={14}
                 className="ml-auto group-hover:translate-x-1.5 transition-transform duration-300"
@@ -160,6 +189,8 @@ export default function LandingPage() {
           ))}
         </div>
       </main>
+
+      <LogiquelFooter />
 
       {showPinModal && (
         <div className="fixed inset-0 z-50 bg-surface-900/20 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">

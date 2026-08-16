@@ -18,11 +18,10 @@ export function useDoctor(initialDoctor: Doctor) {
 
   const regWindow: RegistrationWindow = {
     isOpen: Boolean(doctor.registration),
-    startTime: session?.start_time ?? null,
-    endTime: session?.end_time ?? null,
-    date: session?.date ?? null,
-    maxPatients: session?.max_patients ?? 30,
-    message: session?.message ?? "",
+    startTime: doctor.start_time || session?.start_time || "09:00",
+    endTime: doctor.end_time || session?.end_time || "21:00",
+    date: doctor.session_date || session?.date || new Date().toISOString().split("T")[0],
+    message: doctor.opd_message || session?.message || "",
   };
 
   useEffect(() => {
@@ -31,7 +30,7 @@ export function useDoctor(initialDoctor: Doctor) {
       setLoading(true);
       setError(null);
       try {
-        const today = new Date().toISOString().split("T")[0];
+        const today = doctor.session_date || new Date().toISOString().split("T")[0];
         let s = await api.fetchSession(doctor.id, today);
         if (!s) s = await api.createSession(doctor.id, today);
         if (!cancelled) setSession(s);
@@ -42,7 +41,7 @@ export function useDoctor(initialDoctor: Doctor) {
       }
     })();
     return () => { cancelled = true; };
-  }, [doctor.id]);
+  }, [doctor.id, doctor.session_date]);
 
   useEffect(() => {
     let cancelled = false;
@@ -68,38 +67,29 @@ export function useDoctor(initialDoctor: Doctor) {
   }, [doctor.id, showToast]);
 
   const setRegWindow = useCallback(async (w: Partial<RegistrationWindow>) => {
-    if (!session) return;
     setLoading(true);
     try {
-      if (w.date && w.date !== session.date) {
-        const existing = await api.fetchSession(doctor.id, w.date);
+      const docPatch: Record<string, unknown> = {};
+      if (w.date !== undefined) docPatch.session_date = w.date;
+      if (w.startTime !== undefined) docPatch.start_time = w.startTime;
+      if (w.endTime !== undefined) docPatch.end_time = w.endTime;
+      if (w.message !== undefined) docPatch.opd_message = w.message;
 
-        if (existing) {
-          setSession(existing);
-          const ps = await api.fetchAllPatients(doctor.id);
-          setPatients(ps);
-          showToast(`Loaded session for ${w.date}`, "info");
-          setLoading(false);
-          return;
-        }
+      const updatedDoc = await api.updateDoctorProfile(doctor.id, docPatch);
+      setDoctor(updatedDoc);
 
-        const created = await api.createSession(doctor.id, w.date);
-        setSession(created);
-        const ps = await api.fetchAllPatients(doctor.id);
-        setPatients(ps);
-        showToast(`Created session for ${w.date}`, "info");
-        setLoading(false);
-        return;
+      if (session) {
+        const sessPatch: Record<string, unknown> = {};
+        if (w.date !== undefined) sessPatch.date = w.date;
+        if (w.startTime !== undefined) sessPatch.start_time = w.startTime;
+        if (w.endTime !== undefined) sessPatch.end_time = w.endTime;
+        if (w.message !== undefined) sessPatch.message = w.message;
+
+        const updatedSess = await api.updateSession(session.id, sessPatch);
+        setSession(updatedSess);
       }
 
-      const body: Record<string, unknown> = {};
-      if (w.startTime !== undefined) body.start_time = w.startTime;
-      if (w.endTime !== undefined) body.end_time = w.endTime;
-      if (w.maxPatients !== undefined) body.max_patients = w.maxPatients;
-      if (w.message !== undefined) body.message = w.message;
-
-      const updated = await api.updateSession(session.id, body);
-      setSession(updated);
+      showToast("Session settings saved to database", "success");
     } catch {
       showToast("Failed to update settings", "error");
     } finally {

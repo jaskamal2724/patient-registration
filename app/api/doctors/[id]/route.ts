@@ -9,7 +9,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const { data, error } = await supabase
       .from("doctors")
-      .select("id, name, email, registration, created_at")
+      .select("*")
       .eq("id", id)
       .single();
 

@@ -23,14 +23,18 @@ export async function GET(req: NextRequest) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { doctor_id, session_id, name, age, gender, phone, reason } = body;
+    const { doctor_id, session_id, name, age, gender, phone, time_slot, reason } = body;
 
-    if (!name || !age || !gender || !phone || !reason) {
-      return NextResponse.json({ error: "All fields are required" }, { status: 400 });
+    if (!name || !age || !gender || !phone || !time_slot) {
+      return NextResponse.json({ error: "Name, age, gender, phone, and time slot are required" }, { status: 400 });
     }
 
-    if (!name.trim() || !reason.trim()) {
-      return NextResponse.json({ error: "Name and reason cannot be empty" }, { status: 400 });
+    if (!name.trim()) {
+      return NextResponse.json({ error: "Name cannot be empty" }, { status: 400 });
+    }
+
+    if (!time_slot.trim()) {
+      return NextResponse.json({ error: "Please select a valid time slot" }, { status: 400 });
     }
 
     if (isNaN(+age) || +age < 1 || +age > 120) {
@@ -66,7 +70,7 @@ export async function POST(req: Request) {
     // Check doctor's registration status in doctors table
     const { data: doctor, error: docErr } = await supabase
       .from("doctors")
-      .select("id, registration")
+      .select("id, registration, session_date")
       .eq("id", targetDoctorId)
       .single();
 
@@ -75,7 +79,27 @@ export async function POST(req: Request) {
     }
 
     if (!doctor.registration) {
-      return NextResponse.json({ error: "Registration is currently closed" }, { status: 403 });
+      return NextResponse.json({ error: "Registration is currently closed by the doctor" }, { status: 403 });
+    }
+
+    // Check 10:00 AM cutoff rule on doctor.session_date
+    if (doctor.session_date) {
+      const now = new Date();
+      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      if (todayStr === doctor.session_date) {
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        if (currentMinutes >= 600) { // 10:00 AM cutoff
+          return NextResponse.json(
+            { error: `Registration closed at 10:00 AM for today's session (${doctor.session_date}).` },
+            { status: 403 }
+          );
+        }
+      } else if (todayStr > doctor.session_date) {
+        return NextResponse.json(
+          { error: `Registration for ${doctor.session_date} session is closed.` },
+          { status: 403 }
+        );
+      }
     }
 
     // Find or create session for doctor to satisfy foreign key constraint on patients.session_id
@@ -109,23 +133,42 @@ export async function POST(req: Request) {
       }
     }
 
-    // Calculate token number for doctor
-    const { count } = await supabase
+    // Calculate global token number for session
+    const { count: globalCount } = await supabase
       .from("patients")
-      .select("*", { count: "exact", head: true });
+      .select("*", { count: "exact", head: true })
+      .eq("session_id", targetSessionId);
 
-    const nextToken = (count || 0) + 1;
+    const nextToken = (globalCount || 0) + 1;
+
+    // Check slot capacity and calculate slot-specific token number
+    const { count: slotCount } = await supabase
+      .from("patients")
+      .select("*", { count: "exact", head: true })
+      .eq("session_id", targetSessionId)
+      .eq("time_slot", time_slot.trim());
+
+    if ((slotCount || 0) >= 10) {
+      return NextResponse.json(
+        { error: "This time slot is full (maximum 10 patients allowed per slot). Please select another time slot." },
+        { status: 400 }
+      );
+    }
+
+    const slotTokenNumber = (slotCount || 0) + 1;
 
     const { data: patient, error: insertErr } = await supabase
       .from("patients")
       .insert({
         session_id: targetSessionId,
         token_number: nextToken,
+        slot_token_number: slotTokenNumber,
+        time_slot: time_slot.trim(),
         name: name.trim(),
         age: String(age),
         gender,
         phone: phone.replace(/\D/g, ""),
-        reason: reason.trim(),
+        reason: (reason || "").trim(),
       })
       .select()
       .single();

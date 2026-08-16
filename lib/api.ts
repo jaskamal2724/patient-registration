@@ -61,6 +61,16 @@ export async function updateDoctorRegistration(id: string, registration: boolean
   return json.doctor as Doctor;
 }
 
+export async function updateDoctorProfile(id: string, patch: Record<string, unknown>): Promise<Doctor> {
+  const res = await fetch(`/api/doctors/${id}`, {
+    method: "PATCH",
+    headers: await authHeaders(),
+    body: JSON.stringify(patch),
+  });
+  const json = await jsonOrThrow(res);
+  return json.doctor as Doctor;
+}
+
 export async function fetchSession(doctorId: string, date: string): Promise<Session | null> {
   const res = await fetch(`/api/sessions?doctor_id=${doctorId}&date=${date}`);
   const json = await res.json();
@@ -106,7 +116,8 @@ export type PatientForm = {
   age: string;
   gender: "Male" | "Female" | "Other";
   phone: string;
-  reason: string;
+  time_slot: string;
+  reason?: string;
 };
 
 export async function addPatient(doctorId: string, form: PatientForm): Promise<Patient> {

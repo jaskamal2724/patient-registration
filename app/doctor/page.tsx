@@ -15,7 +15,7 @@ export default function DoctorPage() {
     (async () => {
       const doc = await fetchDoctorProfile();
       if (!doc) {
-        router.replace("/");
+        router.replace("/?login=true");
         return;
       }
       setDoctor(doc);
