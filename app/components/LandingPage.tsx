@@ -7,9 +7,6 @@ import {
   User,
   Lock,
   ArrowRight,
-  Heart,
-  Shield,
-  Clock,
   UserCheck,
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
@@ -69,48 +66,26 @@ export default function LandingPage() {
         style={{ animationDelay: "4s" }}
       />
 
-      <header className="relative z-10 flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6 max-w-7xl mx-auto">
+      <header className="relative z-10 flex items-center justify-between px-4 sm:px-8 py-2.5 sm:py-4 max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center shadow-lg shadow-brand-500/20">
-            <Stethoscope size={20} className="text-white" />
+          <div className="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center shadow-md shadow-brand-500/20">
+            <Stethoscope size={18} className="text-white" />
           </div>
           <div>
-            <p className="font-display text-lg font-bold text-surface-900 leading-tight">
+            <p className="font-display text-base sm:text-lg font-bold text-surface-900 leading-tight">
               MediQueue
             </p>
-            <p className="text-xs text-surface-500 font-body mb-1.5">
+            <p className="text-[11px] text-surface-500 font-body mb-0.5">
               Smart Patient Registration
             </p>
             <InstallPWA />
           </div>
         </div>
-        <div className="hidden sm:flex items-center gap-2 text-xs text-brand-700 bg-brand-50 border border-brand-100 rounded-full px-4 py-2 shadow-sm">
-          <div className="w-2 h-2 rounded-full bg-brand-500 status-live" />
-          <span className="font-body font-medium">System Online</span>
-        </div>
-      </header>
-
-      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-20">
-        <div className="text-center mb-16 animate-fade-in">
-          <span className="inline-flex items-center gap-1.5 text-xs font-mono-custom tracking-widest text-brand-600 bg-brand-50 border border-brand-100/50 rounded-full px-4 py-1.5 mb-6 uppercase shadow-sm">
-            <span className="w-1 h-1 rounded-full bg-brand-500"></span>
-            Patient Management
-          </span>
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-surface-900 leading-tight mb-6 tracking-tight">
-            Seamless Care,
-            <br />
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-brand-600 to-accent-500">
-              Zero Wait
-            </span>{" "}
-            Confusion.
-          </h1>
-          <p className="font-body text-lg text-surface-500 max-w-xl mx-auto leading-relaxed">
-            Patients register in seconds. Doctors manage the queue with ease.
-            Everyone knows their exact token number.
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto mb-16">
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 text-xs text-brand-700 bg-brand-50 border border-brand-100 rounded-full px-3.5 py-1.5 shadow-xs">
+            <div className="w-2 h-2 rounded-full bg-brand-500 status-live" />
+            <span className="font-body font-medium">System Online</span>
+          </div>
           <button
             onClick={() => {
               if (isLoggedIn) {
@@ -119,74 +94,42 @@ export default function LandingPage() {
                 setShowPinModal(true);
               }
             }}
-            className="group glass-card card-lift rounded-3xl p-8 text-left cursor-pointer border border-surface-200/50"
+            className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white rounded-full px-4 py-2 font-body text-xs sm:text-sm font-bold transition-all shadow-md shadow-slate-900/25 hover:shadow-slate-900/40 hover:scale-105 active:scale-95 border border-slate-700 cursor-pointer"
           >
-            <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-brand-500 to-brand-700 flex items-center justify-center mb-5 shadow-lg shadow-brand-500/30 group-hover:scale-105 transition-transform duration-300">
-              <Stethoscope size={26} className="text-white" />
-            </div>
-            <h2 className="font-display text-2xl font-bold text-surface-900 mb-2">
-              Doctor Portal
-            </h2>
-            <p className="font-body text-sm text-surface-500 leading-relaxed mb-6">
-              Open or close registration, manage patient queue, control today's
-              session with advanced tools.
-            </p>
-            <div className="flex items-center gap-2 text-brand-600 font-body text-sm font-semibold">
-              {isLoggedIn ? (
-                <>
-                  <UserCheck size={16} className="text-emerald-500" />
-                  <span>Go to Dashboard</span>
-                </>
-              ) : (
-                <>
-                  <Lock size={14} className="text-brand-500" />
-                  <span>Secure Login</span>
-                </>
-              )}
-              <ArrowRight
-                size={14}
-                className="ml-auto group-hover:translate-x-1.5 transition-transform duration-300"
-              />
-            </div>
-          </button>
-
-          <button
-            onClick={() => router.push("/patient")}
-            className="group glass-card card-lift rounded-3xl p-8 text-left cursor-pointer border border-surface-200/50"
-          >
-            <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-accent-500 to-accent-700 flex items-center justify-center mb-5 shadow-lg shadow-accent-500/30 group-hover:scale-105 transition-transform duration-300">
-              <User size={26} className="text-white" />
-            </div>
-            <h2 className="font-display text-2xl font-bold text-surface-900 mb-2">
-              Patient Portal
-            </h2>
-            <p className="font-body text-sm text-surface-500 leading-relaxed mb-6">
-              Register yourself for today's OPD, get your digital token number,
-              and track the queue live.
-            </p>
-            <div className="flex items-center gap-2 text-accent-600 font-body text-sm font-semibold">
-              <span>No login required</span>
-              <ArrowRight
-                size={14}
-                className="ml-auto group-hover:translate-x-1.5 transition-transform duration-300"
-              />
-            </div>
+            {isLoggedIn ? (
+              <UserCheck size={15} className="text-emerald-400" />
+            ) : (
+              <Stethoscope size={15} className="text-brand-400" />
+            )}
+            <span>Dr. Login</span>
           </button>
         </div>
+      </header>
 
-        <div className="flex flex-wrap justify-center gap-8 text-sm text-surface-500 font-body font-medium">
-          {[
-            { icon: Heart, text: "Trusted by clinics" },
-            { icon: Shield, text: "Private & secure" },
-            { icon: Clock, text: "Real-time queue" },
-          ].map(({ icon: Icon, text }) => (
-            <div key={text} className="flex items-center gap-2.5">
-              <div className="w-6 h-6 rounded-full bg-surface-100 flex items-center justify-center">
-                <Icon size={12} className="text-brand-500" />
-              </div>
-              <span>{text}</span>
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-2 sm:pt-4 pb-2">
+        <div className="flex justify-center mb-4 sm:mb-6">
+          <button
+            onClick={() => router.push("/patient")}
+            className="group bg-white/90 backdrop-blur-md rounded-2xl md:rounded-3xl p-5 sm:p-6 md:p-8 lg:p-10 text-left cursor-pointer border border-surface-200/80 shadow-sm hover:shadow-md transition-all duration-300 w-full max-w-md md:max-w-2xl lg:max-w-3xl"
+          >
+            <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-brand-50 border border-brand-100 flex items-center justify-center mb-3 md:mb-5 group-hover:bg-brand-100 transition-colors duration-300">
+              <User size={22} className="text-brand-600 md:w-7 md:h-7" />
             </div>
-          ))}
+            <h2 className="font-display text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-surface-900 mb-1.5 md:mb-3">
+              Patient Portal
+            </h2>
+            <p className="font-body text-xs sm:text-sm md:text-base text-surface-500 leading-relaxed mb-4 md:mb-6">
+              Register yourself for today&apos;s OPD, get your digital token number,
+              and track the queue live.
+            </p>
+            <div className="flex items-center gap-2 text-brand-600 font-body text-xs sm:text-sm md:text-base font-semibold">
+              <span>No login required</span>
+              <ArrowRight
+                size={16}
+                className="ml-auto group-hover:translate-x-1.5 transition-transform duration-300"
+              />
+            </div>
+          </button>
         </div>
       </main>
 

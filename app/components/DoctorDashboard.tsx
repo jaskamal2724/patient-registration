@@ -108,7 +108,10 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
         {/* Sidebar — desktop only */}
         <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-surface-200 p-6 fixed h-full z-10 shadow-sm">
           <div className="flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center shadow-md shadow-brand-500/20">
+            <div
+              className="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center shadow-md shadow-brand-500/20 cursor-pointer"
+              onClick={() => router.push("/")}
+            >
               <Stethoscope size={20} className="text-white" />
             </div>
             <div>
@@ -145,8 +148,8 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
           <nav className="space-y-1.5 flex-1">
             {(
               [
-                ["queue", "Patient Queue", Users],
-                ["settings", "Session Settings", Settings],
+                ["queue", "Dashboard", Users],
+                ["settings", "Settings", Settings],
               ] as [Tab, string, any][]
             ).map(([id, label, Icon]) => (
               <button
@@ -416,14 +419,17 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-surface-200 shadow-xs">
                   <div>
                     <h2 className="font-display text-lg font-bold text-surface-900 flex items-center gap-2">
-                      Patient Queue
+                      Dasbhoard
                       <span className="font-body text-xs font-bold text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full border border-brand-100">
                         {waiting.length} waiting
                       </span>
                     </h2>
                     {inProgress && (
                       <p className="text-xs font-body text-amber-600 font-medium mt-0.5">
-                        Mark Token #{inProgress.slot_token_number || inProgress.token_number} as done to call next
+                        Mark Token #
+                        {inProgress.slot_token_number ||
+                          inProgress.token_number}{" "}
+                        as done to call next
                       </p>
                     )}
                   </div>
@@ -493,7 +499,10 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                                 </div>
                                 <p className="font-body text-xs text-surface-600 font-semibold mb-1">
                                   {p.age}y · {p.gender} ·{" "}
-                                  <a href={`tel:${p.phone}`} className="text-brand-600 underline underline-offset-2 hover:text-brand-800">
+                                  <a
+                                    href={`tel:${p.phone}`}
+                                    className="text-brand-600 underline underline-offset-2 hover:text-brand-800"
+                                  >
                                     {p.phone}
                                   </a>
                                 </p>
@@ -541,7 +550,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                     </div>
                     <div>
                       <h2 className="font-display text-xl sm:text-2xl font-bold text-surface-900">
-                        Session Settings
+                        Settings
                       </h2>
                       <p className="font-body text-xs sm:text-sm text-surface-500 mt-0.5">
                         Configure today's OPD registration window and rules

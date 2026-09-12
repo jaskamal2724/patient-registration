@@ -1,8 +1,11 @@
 "use client";
 import { useState, useCallback, useEffect } from "react";
 import * as api from "@/lib/api";
+import { createBrowserClient } from "@/lib/supabase";
 import { useToast } from "@/lib/useToast";
 import type { Doctor, Patient, RegistrationWindow } from "@/lib/types";
+
+const supabase = createBrowserClient();
 
 export function usePatientView() {
   const { toast, showToast } = useToast();
@@ -51,21 +54,49 @@ export function usePatientView() {
       if (cancelled) return;
       setDoctor(doc);
       setDoctorRegistrationOpen(open);
-      if (doc) {
-        const ps = await api.fetchAllPatients(doc.id);
-        if (!cancelled) setPatients(ps);
-      } else {
+      if (!doc && !cancelled) {
         setPatients([]);
+        setInitialLoading(false);
       }
-      if (!cancelled) setInitialLoading(false);
     };
     load();
-    const interval = setInterval(load, 45000);
     return () => {
       cancelled = true;
-      clearInterval(interval);
     };
   }, []);
+
+  useEffect(() => {
+    if (!doctor) return;
+
+    let cancelled = false;
+    const loadPatients = async () => {
+      const ps = await api.fetchAllPatients(doctor.id);
+      if (!cancelled) {
+        setPatients(ps);
+        setInitialLoading(false);
+      }
+    };
+
+    loadPatients();
+
+    const channel = supabase
+      .channel(`live-queue-${doctor.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "patients",
+        },
+        loadPatients,
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      void supabase.removeChannel(channel);
+    };
+  }, [doctor]);
 
   const addPatient = useCallback(
     async (form: api.PatientForm): Promise<Patient> => {
