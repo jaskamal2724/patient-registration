@@ -112,12 +112,14 @@ export default function LandingPage() {
             onClick={() => router.push("/patient")}
             className="group bg-white/90 backdrop-blur-md rounded-2xl md:rounded-3xl p-5 sm:p-6 md:p-8 lg:p-10 text-left cursor-pointer border border-surface-200/80 shadow-sm hover:shadow-md transition-all duration-300 w-full max-w-md md:max-w-2xl lg:max-w-3xl"
           >
-            <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-brand-50 border border-brand-100 flex items-center justify-center mb-3 md:mb-5 group-hover:bg-brand-100 transition-colors duration-300">
-              <User size={22} className="text-brand-600 md:w-7 md:h-7" />
+            <div className="flex items-center gap-3 mb-3 md:mb-5">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-brand-50 border border-brand-100 flex items-center justify-center shrink-0 group-hover:bg-brand-100 transition-colors duration-300">
+                <User size={22} className="text-brand-600 md:w-7 md:h-7" />
+              </div>
+              <h2 className="font-display text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-surface-900">
+                Patient Portal
+              </h2>
             </div>
-            <h2 className="font-display text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-surface-900 mb-1.5 md:mb-3">
-              Patient Portal
-            </h2>
             <p className="font-body text-xs sm:text-sm md:text-base text-surface-500 leading-relaxed mb-4 md:mb-6">
               Register yourself for today&apos;s OPD, get your digital token number,
               and track the queue live.

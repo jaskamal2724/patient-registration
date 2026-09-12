@@ -5,9 +5,9 @@ import LogiquelLogo from "./LogiquelLogo";
 
 export default function LogiquelFooter() {
   return (
-    <footer className="w-full relative pt-1 pb-8 px-4 sm:px-8">
+    <footer className="w-full relative pb-8 px-4 sm:px-8 -mt-2">
       <div className="max-w-md md:max-w-lg mx-auto">
-        <div className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-800/80 group">
+        <div className="relative overflow-hidden bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 text-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-800/80 group">
           {/* Subtle Ambient Background Glows */}
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-brand-500/20 rounded-full blur-3xl group-hover:bg-brand-500/30 transition-all duration-700 pointer-events-none" />
           <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-accent-500/20 rounded-full blur-3xl group-hover:bg-accent-500/30 transition-all duration-700 pointer-events-none" />
