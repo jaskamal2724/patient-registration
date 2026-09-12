@@ -13,7 +13,7 @@ export default function LogiquelFooter() {
           <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-accent-500/20 rounded-full blur-3xl group-hover:bg-accent-500/30 transition-all duration-700 pointer-events-none" />
 
           {/* Top Badge */}
-          <div className="flex justify-center mb-5">
+          <div className="flex justify-center mb-5 -mt-4">
             <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-slate-800/90 border border-slate-700/80 text-[11px] font-semibold text-brand-300 tracking-wide uppercase shadow-inner">
               <Sparkles size={12} className="text-accent-400 animate-pulse" />
               Built & Engineered by Logiquel
@@ -21,11 +21,11 @@ export default function LogiquelFooter() {
           </div>
 
           {/* Logo & Headline */}
-          <div className="text-center mb-4">
+          <div className="text-center mb-4 -mt-3">
             <div className="inline-flex items-center justify-center px-4 py-2 bg-white/95 backdrop-blur-md rounded-2xl mb-4 shadow-lg shadow-black/40">
               <LogiquelLogo className="h-6 w-auto" />
             </div>
-            <h3 className="font-display text-xl sm:text-2xl font-extrabold text-white tracking-tight leading-snug">
+            <h3 className="font-display text-xl sm:text-2xl font-extrabold text-white tracking-tight leading-snug -mt-2">
               Need a Custom Web App or Software for Your Business?
             </h3>
           </div>
@@ -48,7 +48,7 @@ export default function LogiquelFooter() {
           </div>
 
           {/* Call to Action Button */}
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-6 -mt-2">
             <a
               href="https://wa.me/917048995281?text=hey%20i%20am%20intrested%20in%20avaling%20logiquel%20services"
               target="_blank"
