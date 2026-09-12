@@ -125,7 +125,7 @@ export default function LandingPage() {
               and track the queue live.
             </p>
             <div className="flex items-center gap-2 text-brand-600 font-body text-xs sm:text-sm md:text-base font-semibold">
-              <span>No login required</span>
+              <span>Book your appointment</span>
               <ArrowRight
                 size={16}
                 className="ml-auto group-hover:translate-x-1.5 transition-transform duration-300"
