@@ -22,7 +22,7 @@ import {
   Edit3,
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
-import LogiquelFooter from "./LogiquelFooter";
+import LogiquelAdCard from "./LogiquelAdCard";
 
 type Tab = "queue" | "settings";
 
@@ -642,6 +642,9 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                 </button>
               </div>
             )}
+            <div className="pt-6 border-t border-slate-100 mt-8">
+              <LogiquelAdCard variant="landing" />
+            </div>
           </div>
         </main>
       </div>
@@ -709,8 +712,6 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
           </div>
         </div>
       )}
-
-      <LogiquelFooter />
 
       <Toast toast={toast} />
     </div>
