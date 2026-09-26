@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     // Check doctor's registration status in doctors table
     const { data: doctor, error: docErr } = await supabase
       .from("doctors")
-      .select("id, registration, session_date")
+      .select("id, registration, session_date, patients_per_hour, auto_close_10am")
       .eq("id", targetDoctorId)
       .single();
 
@@ -82,8 +82,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Registration is currently closed by the doctor" }, { status: 403 });
     }
 
-    // Check 10:00 AM cutoff rule on doctor.session_date
-    if (doctor.session_date) {
+    // Check 10:00 AM cutoff rule ONLY if doctor.auto_close_10am is true
+    if (doctor.auto_close_10am && doctor.session_date) {
       const now = new Date();
       const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
       if (todayStr === doctor.session_date) {
@@ -133,6 +133,23 @@ export async function POST(req: Request) {
       }
     }
 
+    // Requirement 4: Prevent duplicate registration with the same phone number for the same session
+    const cleanPhone = phone.replace(/\D/g, "");
+    const { data: existingPatient } = await supabase
+      .from("patients")
+      .select("id, token_number, slot_token_number")
+      .eq("session_id", targetSessionId)
+      .eq("phone", cleanPhone)
+      .maybeSingle();
+
+    if (existingPatient) {
+      const tokenDisplay = existingPatient.slot_token_number || existingPatient.token_number;
+      return NextResponse.json(
+        { error: `This phone number (${cleanPhone}) is already registered for this session with Token #${tokenDisplay}. Duplicate registrations with the same phone number are not allowed.` },
+        { status: 400 }
+      );
+    }
+
     // Calculate global token number for session
     const { count: globalCount } = await supabase
       .from("patients")
@@ -141,16 +158,17 @@ export async function POST(req: Request) {
 
     const nextToken = (globalCount || 0) + 1;
 
-    // Check slot capacity and calculate slot-specific token number
+    // Requirement 1: Check slot capacity based on doctor's patients_per_hour
+    const capacity = doctor.patients_per_hour ?? 10;
     const { count: slotCount } = await supabase
       .from("patients")
       .select("*", { count: "exact", head: true })
       .eq("session_id", targetSessionId)
       .eq("time_slot", time_slot.trim());
 
-    if ((slotCount || 0) >= 10) {
+    if ((slotCount || 0) >= capacity) {
       return NextResponse.json(
-        { error: "This time slot is full (maximum 10 patients allowed per slot). Please select another time slot." },
+        { error: `This time slot is full (maximum ${capacity} patients allowed per slot). Please select another time slot.` },
         { status: 400 }
       );
     }

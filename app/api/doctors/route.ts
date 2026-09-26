@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
     const doctor = data && data.length > 0 ? data[0] : null;
 
-    if (doctor) {
+    if (doctor && doctor.auto_close_10am) {
       const now = new Date();
       const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
       const sessionDateStr = doctor.session_date ? String(doctor.session_date).split("T")[0] : todayStr;

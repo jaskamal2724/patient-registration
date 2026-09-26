@@ -610,6 +610,57 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                         className="input-field w-full border border-surface-200 rounded-xl px-4 py-3 font-body text-sm bg-surface-50 focus:bg-white transition-all shadow-sm font-medium"
                       />
                     </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="font-body text-xs font-semibold text-surface-700 uppercase tracking-wide mb-2 block">
+                        Patients Per Hour (Slot Capacity)
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="number"
+                          min={1}
+                          max={50}
+                          value={regWindow.patientsPerHour ?? 10}
+                          onChange={(e) =>
+                            setRegWindow({
+                              patientsPerHour: parseInt(e.target.value, 10) || 10,
+                            })
+                          }
+                          className="input-field w-32 border border-surface-200 rounded-xl px-4 py-3 font-body text-sm bg-surface-50 focus:bg-white transition-all shadow-sm font-bold"
+                        />
+                        <span className="font-body text-xs text-surface-500 font-medium">
+                          patients maximum allowed per 1-hour time slot
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="sm:col-span-2 bg-surface-50 border border-surface-200 rounded-2xl p-4 flex items-center justify-between gap-4">
+                      <div>
+                        <p className="font-body text-sm font-bold text-surface-900">
+                          Auto-close Registration at 10:00 AM
+                        </p>
+                        <p className="font-body text-xs text-surface-500 mt-0.5 font-medium">
+                          Automatically closes registration at 10:00 AM on visit day. Disable this to control registration manually anytime.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setRegWindow({ autoClose10AM: !regWindow.autoClose10AM })
+                        }
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                          regWindow.autoClose10AM ? "bg-brand-600" : "bg-surface-300"
+                        }`}
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                            regWindow.autoClose10AM
+                              ? "translate-x-5"
+                              : "translate-x-0"
+                          }`}
+                        />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -642,9 +693,6 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                 </button>
               </div>
             )}
-            <div className="pt-6 border-t border-slate-100 mt-8">
-              <LogiquelAdCard variant="landing" />
-            </div>
           </div>
         </main>
       </div>

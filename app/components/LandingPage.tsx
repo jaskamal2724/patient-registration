@@ -63,23 +63,23 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen relative overflow-x-hidden max-w-full bg-[#FAFAFA] flex flex-col justify-between">
       {/* Top Header */}
-      <header className="relative z-10 flex items-center justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/25 shrink-0 text-white">
+      <header className="relative z-10 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto">
+        <div className="flex items-start gap-3">
+          <div className="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/25 shrink-0 text-white mt-0.5">
             <Stethoscope size={22} />
           </div>
           <div>
             <h1 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight leading-none mb-0.5">
               MediQueue
             </h1>
-            <p className="text-xs text-slate-500 font-body font-medium leading-none">
+            <p className="text-xs text-slate-500 font-body font-medium leading-none mb-2">
               Smart Patient Registration
             </p>
+            <InstallPWA />
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <InstallPWA />
           <button
             onClick={() => {
               if (isLoggedIn) {
@@ -105,95 +105,100 @@ export default function LandingPage() {
         {/* Top OPD Booking Card (Image 2 Top Card) */}
         <div className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-7 border border-slate-100 shadow-xl shadow-blue-900/5 relative overflow-hidden mb-6 text-left">
           {/* Top Pill Tag */}
-          <div className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-100/80 text-blue-600 rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wider mb-4">
-            <Calendar size={13} className="text-blue-600" />
-            <span>TODAY&apos;S OPD</span>
+          <div className="inline-flex items-center gap-1.5 bg-[#EBF3FF] border border-[#D0E2FF] text-[#1D68F3] rounded-full px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-wider mb-4">
+            <Calendar size={14} className="text-[#1D68F3]" />
+            <span>Doctor Sarvesh OPD</span>
           </div>
 
-          <div className="flex items-start justify-between gap-3 mb-6">
-            <div className="flex-1 min-w-0 pr-2">
-              <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug mb-2">
-                Book your appointment
+          <div className="flex items-center justify-between gap-2 sm:gap-4 mb-5">
+            <div className="flex-1 min-w-0 pr-1">
+              <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-[#0B1527] tracking-tight leading-snug mb-2">
+                Book your<br />appointment
               </h2>
-              <p className="font-body text-xs sm:text-sm text-slate-500 font-medium leading-relaxed mb-5">
+              <p className="font-body text-xs sm:text-sm text-slate-500 font-medium leading-relaxed mb-4 sm:mb-5 max-w-[240px]">
                 Get your digital token and track your queue live.
               </p>
 
               {/* Book Appointment Pill Button */}
               <button
                 onClick={() => router.push("/patient")}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm sm:text-base px-6 py-3.5 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer mb-4"
+                className="bg-[#1D68F3] hover:bg-[#1554C6] text-white font-bold text-xs sm:text-sm px-4 sm:px-6 py-3 sm:py-3.5 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer whitespace-nowrap w-fit"
               >
-                <Calendar size={18} />
-                <span>Book Appointment</span>
-                <ArrowRight size={16} className="ml-0.5" />
-              </button>
-
-              {/* Secondary link */}
-              <button
-                onClick={() => router.push("/patient")}
-                className="text-blue-600 hover:text-blue-700 font-bold text-xs sm:text-sm flex items-center gap-1 transition-colors cursor-pointer"
-              >
-                <span>How it works</span>
-                <ArrowRight size={14} />
+                <Calendar size={16} className="shrink-0" />
+                <span>Book your slot</span>
+                <ArrowRight size={14} className="shrink-0" />
               </button>
             </div>
 
-            {/* Right OPD Clipboard Graphic Illustration */}
-            <div className="relative w-32 h-32 sm:w-40 sm:h-40 shrink-0 flex items-center justify-center">
-              {/* Soft blue glowing circular backdrop */}
-              <div className="absolute inset-0 bg-blue-50/90 rounded-full blur-2xs" />
-              
-              {/* Floating accent dots */}
-              <div className="absolute top-1 left-2 w-3 h-3 bg-blue-200/80 rounded-full" />
-              <div className="absolute bottom-2 right-1 w-2.5 h-2.5 bg-blue-300/60 rounded-full" />
+            {/* Right OPD Clipboard Graphic Illustration (Compact & Scaled) */}
+            <div className="relative w-28 h-28 sm:w-36 sm:h-36 shrink-0 flex items-center justify-center">
+              {/* Soft light blue circular backdrop */}
+              <div className="absolute inset-0 bg-[#F0F6FF] rounded-full -z-0" />
 
-              {/* Clipboard Document */}
-              <div className="relative z-10 bg-white rounded-2xl shadow-md border border-blue-100/90 p-3 w-26 sm:w-30 flex flex-col items-center">
-                {/* Header Blue Medical Cross */}
-                <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 mb-2 shadow-2xs">
-                  <span className="font-bold text-base leading-none text-blue-600">+</span>
+              {/* Clipboard Document Box */}
+              <div className="relative z-10 bg-white rounded-xl sm:rounded-2xl shadow-md border border-blue-100/90 p-2.5 sm:p-3 w-24 sm:w-30 h-28 sm:h-36 flex flex-col justify-between">
+                {/* Header Blue Medical Cross Badge */}
+                <div className="flex flex-col items-center">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#1D68F3] text-white flex items-center justify-center shadow-xs mx-auto mb-1">
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" viewBox="0 0 24 24">
+                      <path d="M19 10.5h-5.5V5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v5.5H5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5h5.5V19c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5H19c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z" />
+                    </svg>
+                  </div>
+                  {/* Skeleton lines */}
+                  <div className="w-12 sm:w-16 h-1 bg-[#D0E2FF] rounded-full mb-1" />
+                  <div className="w-8 sm:w-10 h-1 bg-[#E2EEFF] rounded-full" />
                 </div>
 
-                {/* Token Badge */}
-                <div className="bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-1 text-center w-full shadow-2xs">
-                  <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">Token</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-blue-600 font-mono-custom">A024</p>
+                {/* Token A024 Badge */}
+                <div className="bg-white rounded-lg border border-slate-200/90 p-1 sm:p-1.5 shadow-xs text-left w-20 sm:w-24 -ml-1">
+                  <p className="text-[9px] text-slate-400 font-semibold font-body leading-none">Token</p>
+                  <p className="text-xs sm:text-sm font-extrabold text-[#1D68F3] font-mono-custom tracking-wider leading-none mt-0.5">A024</p>
                 </div>
               </div>
 
-              {/* Floating Clock with Live Pill */}
-              <div className="absolute -bottom-1 -right-1 z-20 flex flex-col items-end gap-1">
-                <div className="w-8 h-8 rounded-full bg-white shadow-md border border-blue-100 flex items-center justify-center text-blue-600">
-                  <Clock size={16} />
-                </div>
-                <div className="bg-emerald-50 border border-emerald-200 text-emerald-600 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>Live</span>
-                </div>
+              {/* Floating Blue Outline Clock Icon */}
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border-2 border-[#1D68F3] text-[#1D68F3] flex items-center justify-center shadow-md z-20 absolute bottom-6 right-1 sm:right-2">
+                <Clock size={13} strokeWidth={2.5} />
+              </div>
+
+              {/* Floating Green Live Badge */}
+              <div className="bg-[#00B887] text-white text-[9px] sm:text-[10px] font-extrabold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-md z-30 absolute bottom-0 right-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                <span>Live</span>
               </div>
             </div>
           </div>
 
-          {/* Bottom 3-Feature Row */}
-          <div className="border-t border-slate-100 pt-4 grid grid-cols-3 divide-x divide-slate-100 text-center">
-            <div className="px-2 flex flex-col items-center">
-              <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-1">
+          {/* Bottom 3-Feature Bar (Exact Screenshot Soft Blue Container) */}
+          <div className="bg-[#F4F8FF] rounded-2xl p-2.5 sm:p-3.5 grid grid-cols-3 divide-x divide-blue-100/90 text-center items-center mt-2">
+            <div className="px-1 flex items-center justify-center gap-1.5 min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white border border-blue-100/80 text-[#1D68F3] flex items-center justify-center shrink-0 shadow-2xs">
                 <Ticket size={14} />
               </div>
-              <span className="text-[11px] sm:text-xs font-bold text-slate-700">Digital Token</span>
+              <div className="flex flex-col text-left text-[10px] sm:text-xs font-bold text-slate-700 leading-tight min-w-0">
+                <span className="truncate">Digital</span>
+                <span className="truncate">Token</span>
+              </div>
             </div>
-            <div className="px-2 flex flex-col items-center">
-              <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-1">
+
+            <div className="px-1 flex items-center justify-center gap-1.5 min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white border border-blue-100/80 text-[#1D68F3] flex items-center justify-center shrink-0 shadow-2xs">
                 <Radio size={14} />
               </div>
-              <span className="text-[11px] sm:text-xs font-bold text-slate-700">Live Queue</span>
+              <div className="flex flex-col text-left text-[10px] sm:text-xs font-bold text-slate-700 leading-tight min-w-0">
+                <span className="truncate">Live</span>
+                <span className="truncate">Queue</span>
+              </div>
             </div>
-            <div className="px-2 flex flex-col items-center">
-              <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-1">
+
+            <div className="px-1 flex items-center justify-center gap-1.5 min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white border border-blue-100/80 text-[#1D68F3] flex items-center justify-center shrink-0 shadow-2xs">
                 <User size={14} />
               </div>
-              <span className="text-[11px] sm:text-xs font-bold text-slate-700">Simple Registration</span>
+              <div className="flex flex-col text-left text-[10px] sm:text-xs font-bold text-slate-700 leading-tight min-w-0">
+                <span className="truncate">Easy</span>
+                <span className="truncate">Register</span>
+              </div>
             </div>
           </div>
         </div>

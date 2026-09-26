@@ -36,6 +36,8 @@ export type Doctor = {
   start_time?: string | null;
   end_time?: string | null;
   opd_message?: string | null;
+  patients_per_hour?: number | null;
+  auto_close_10am?: boolean | null;
   created_at: string;
 };
 
@@ -52,4 +54,7 @@ export type RegistrationWindow = {
   endTime: string | null;
   date: string | null;
   message: string;
+  patientsPerHour: number;
+  autoClose10AM: boolean;
 };
+

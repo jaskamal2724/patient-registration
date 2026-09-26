@@ -24,6 +24,7 @@ import {
   Download,
   Ticket,
 } from "lucide-react";
+import InstallPWA from "./InstallPWA";
 import { getTimeSlots } from "../util/timeSlot";
 
 type Step = "home" | "form" | "success";
@@ -323,7 +324,7 @@ function QueueStatusBar({
                   <div
                     key={patient.id}
                     onClick={() => onSelectPatient(patient)}
-                    className="bg-white rounded-xl p-3.5 border border-slate-200 shadow-xs flex flex-col gap-2 hover:border-blue-300 transition-all cursor-pointer"
+                    className="bg-white rounded-xl p-3.5 border border-slate-200 shadow-xs flex flex-col gap-2 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
@@ -331,7 +332,7 @@ function QueueStatusBar({
                           #{patient.slot_token_number || patient.token_number}
                         </div>
                         <div>
-                          <p className="font-body text-sm font-bold text-slate-900 leading-tight">
+                          <p className="font-body text-sm font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">
                             {patient.name}
                           </p>
                           <p className="font-mono-custom text-xs text-slate-500">
@@ -346,8 +347,11 @@ function QueueStatusBar({
                       </div>
                       <div>{statusBadge}</div>
                     </div>
-                    <div className="text-xs font-body font-medium text-slate-600 bg-slate-50 rounded-lg px-3 py-2 border border-slate-100">
-                      {statusMessage}
+                    <div className="text-xs font-body font-medium text-slate-600 bg-slate-50 rounded-lg px-3 py-2 border border-slate-100 flex items-center justify-between gap-2">
+                      <span>{statusMessage}</span>
+                      <span className="text-[11px] font-bold text-blue-600 hover:underline shrink-0">
+                        View Ticket &rarr;
+                      </span>
                     </div>
                     {patient.status === "waiting" && (
                       <div className="mt-1">
@@ -401,13 +405,25 @@ function RegistrationForm({
   const [submitting, setSubmitting] = useState(false);
   const [TIME_SLOTS, setTIME_SLOTS] = useState<string[]>([]);
 
+  const capacity = regWindow.patientsPerHour || 10;
+  const areAllSlotsBooked =
+    TIME_SLOTS.length > 0 &&
+    TIME_SLOTS.every(
+      (slot) => patients.filter((p) => p.time_slot === slot).length >= capacity,
+    );
+
   const validate = () => {
     const e: Record<string, string> = {};
     if (!form.name.trim()) e.name = "Name is required";
     if (!form.age || +form.age < 1 || +form.age > 120)
       e.age = "Enter a valid age";
-    if (!form.phone || form.phone.length < 10)
-      e.phone = "Enter valid 10-digit phone";
+    const cleanPhone = form.phone.replace(/\D/g, "");
+    if (!cleanPhone || cleanPhone.length < 10) {
+      e.phone = "Enter valid 10-digit phone number";
+    } else if (patients.some((p) => p.phone.replace(/\D/g, "") === cleanPhone)) {
+      e.phone =
+        "This phone number is already registered for this session. Duplicate registrations are not allowed.";
+    }
     if (!form.time_slot) e.time_slot = "Please select a time slot";
     return e;
   };
@@ -469,7 +485,7 @@ function RegistrationForm({
         </h3>
         <p className="font-body text-sm font-medium text-slate-600 max-w-sm mx-auto leading-relaxed">
           {regWindow.message ||
-            "Registration for doctor's OPD session closes automatically at 10:00 AM on visit day."}
+            "Registration for doctor's OPD session is closed."}
         </p>
         <button
           onClick={onBack}
@@ -491,6 +507,21 @@ function RegistrationForm({
         <ArrowLeft size={14} />
         <span>Back</span>
       </button>
+
+      {/* Requirement 2: Notice if all slots are full */}
+      {areAllSlotsBooked && (
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 sm:p-5 mb-5 text-left flex items-start gap-3 shadow-sm animate-fade-in">
+          <AlertCircle size={22} className="text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-display font-extrabold text-amber-900 text-sm sm:text-base mb-0.5">
+              All slots are booked
+            </h3>
+            <p className="font-body text-xs sm:text-sm font-bold text-amber-800 leading-relaxed">
+              you can visit the clinic but priority will be given to registered patients
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="mb-6">
         <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1 tracking-tight">
@@ -583,7 +614,7 @@ function RegistrationForm({
 
         {/* Time Slot Picker */}
         <Field
-          label="Select OPD Time Slot (Max 10 per slot)"
+          label={`Select OPD Time Slot (Max ${capacity} per slot)`}
           error={errors.time_slot}
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1">
@@ -591,7 +622,7 @@ function RegistrationForm({
               const bookedCount = patients.filter(
                 (p) => p.time_slot === slot,
               ).length;
-              const isFull = bookedCount >= 10;
+              const isFull = bookedCount >= capacity;
               const isSelected = form.time_slot === slot;
 
               return (
@@ -632,7 +663,7 @@ function RegistrationForm({
                           : "bg-slate-200/80 text-slate-600"
                     }`}
                   >
-                    {isFull ? "FULL (10/10)" : `${bookedCount}/10`}
+                    {isFull ? `FULL (${capacity}/${capacity})` : `${bookedCount}/${capacity}`}
                   </span>
                 </button>
               );
@@ -803,13 +834,14 @@ export default function PatientPortal() {
         </div>
 
         <div className="flex items-center gap-2">
+          <InstallPWA />
           <div className="bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-full px-3 py-1 font-extrabold text-xs flex items-center gap-1.5 shadow-2xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>Open</span>
           </div>
           <button
             onClick={() => router.push("/")}
-            className="text-slate-600 hover:text-slate-900 font-bold text-sm transition-colors ml-2 cursor-pointer"
+            className="text-slate-600 hover:text-slate-900 font-bold text-sm transition-colors ml-1 cursor-pointer"
           >
             Exit
           </button>
@@ -834,8 +866,38 @@ export default function PatientPortal() {
               : todayStr;
             const isTodaySession = sessionDateStr === todayStr;
 
+            const capacity = regWindow.patientsPerHour || 10;
+            const slots = getTimeSlots(
+              regWindow.startTime || "09:00",
+              regWindow.endTime || "21:00",
+              "13:00",
+              "14:00"
+            );
+            const allSlotsFull =
+              slots.length > 0 &&
+              slots.every(
+                (slot) =>
+                  patients.filter((p) => p.time_slot === slot.label).length >=
+                  capacity
+              );
+
             return (
               <div className="animate-slide-up">
+                {/* Requirement 2 Notice Banner */}
+                {allSlotsFull && (
+                  <div className="bg-amber-50 border-2 border-amber-300/90 rounded-2xl p-4 sm:p-5 mb-5 text-left flex items-start gap-3 shadow-md animate-fade-in">
+                    <AlertCircle size={24} className="text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      <h3 className="font-display font-extrabold text-amber-900 text-sm sm:text-base mb-0.5">
+                        All slots are booked
+                      </h3>
+                      <p className="font-body text-xs sm:text-sm font-bold text-amber-800 leading-relaxed">
+                        you can visit the clinic but priority will be given to registered patients
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {isTodaySession ? (
                   <QueueStatusBar
                     patients={patients}
@@ -846,29 +908,40 @@ export default function PatientPortal() {
                     }}
                   />
                 ) : (
-                  <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-6 sm:p-8 mb-6 shadow-xl shadow-blue-900/5 text-center">
-                    <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center mx-auto mb-4 text-blue-600">
-                      <Calendar size={24} />
+                  <>
+                    <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-6 sm:p-8 mb-6 shadow-xl shadow-blue-900/5 text-center">
+                      <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center mx-auto mb-4 text-blue-600">
+                        <Calendar size={24} />
+                      </div>
+                      <h2 className="font-display text-xl sm:text-2xl font-extrabold text-slate-900 mb-2">
+                        Doctor will visit on {formatDateNice(sessionDateStr)}
+                      </h2>
+                      <p className="font-body text-xs sm:text-sm text-slate-600 mb-4 max-w-md mx-auto leading-relaxed font-medium">
+                        OPD registration is currently active for the visit scheduled on{" "}
+                        <span className="font-bold text-blue-700">
+                          {formatDateNice(sessionDateStr)}
+                        </span>.
+                        {regWindow.startTime && (
+                          <span className="block mt-1 font-semibold text-slate-500">
+                            Timings: {formatTime12Hour(regWindow.startTime)} – {formatTime12Hour(regWindow.endTime)}
+                          </span>
+                        )}
+                      </p>
+                      <div className="inline-flex items-center gap-2 text-xs font-bold font-body text-blue-700 bg-blue-50 px-4 py-2 rounded-full border border-blue-200">
+                        <Clock size={14} className="text-blue-600" />
+                        <span>Registration Open for {formatDateNice(sessionDateStr)}</span>
+                      </div>
                     </div>
-                    <h2 className="font-display text-xl sm:text-2xl font-extrabold text-slate-900 mb-2">
-                      Doctor will visit on {formatDateNice(sessionDateStr)}
-                    </h2>
-                    <p className="font-body text-xs sm:text-sm text-slate-600 mb-4 max-w-md mx-auto leading-relaxed font-medium">
-                      OPD registration is currently active for the visit scheduled on{" "}
-                      <span className="font-bold text-blue-700">
-                        {formatDateNice(sessionDateStr)}
-                      </span>.
-                      {regWindow.startTime && (
-                        <span className="block mt-1 font-semibold text-slate-500">
-                          Timings: {formatTime12Hour(regWindow.startTime)} – {formatTime12Hour(regWindow.endTime)}
-                        </span>
-                      )}
-                    </p>
-                    <div className="inline-flex items-center gap-2 text-xs font-bold font-body text-blue-700 bg-blue-50 px-4 py-2 rounded-full border border-blue-200">
-                      <Clock size={14} className="text-blue-600" />
-                      <span>Registration Open for {formatDateNice(sessionDateStr)}</span>
-                    </div>
-                  </div>
+                    {/* Requirement 3: Phone Search Bar for registered patients */}
+                    <QueueStatusBar
+                      patients={patients}
+                      currentToken={currentToken}
+                      onSelectPatient={(p) => {
+                        setRegisteredPatient(p);
+                        setStep("success");
+                      }}
+                    />
+                  </>
                 )}
 
                 {/* Register CTA */}

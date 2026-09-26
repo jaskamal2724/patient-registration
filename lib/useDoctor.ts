@@ -22,6 +22,8 @@ export function useDoctor(initialDoctor: Doctor) {
     endTime: doctor.end_time || session?.end_time || "21:00",
     date: doctor.session_date || session?.date || new Date().toISOString().split("T")[0],
     message: doctor.opd_message || session?.message || "",
+    patientsPerHour: doctor.patients_per_hour ?? 10,
+    autoClose10AM: Boolean(doctor.auto_close_10am),
   };
 
   useEffect(() => {
@@ -74,6 +76,8 @@ export function useDoctor(initialDoctor: Doctor) {
       if (w.startTime !== undefined) docPatch.start_time = w.startTime;
       if (w.endTime !== undefined) docPatch.end_time = w.endTime;
       if (w.message !== undefined) docPatch.opd_message = w.message;
+      if (w.patientsPerHour !== undefined) docPatch.patients_per_hour = w.patientsPerHour;
+      if (w.autoClose10AM !== undefined) docPatch.auto_close_10am = w.autoClose10AM;
 
       const updatedDoc = await api.updateDoctorProfile(doctor.id, docPatch);
       setDoctor(updatedDoc);
@@ -89,7 +93,7 @@ export function useDoctor(initialDoctor: Doctor) {
         setSession(updatedSess);
       }
 
-      showToast("Session settings saved to database", "success");
+      showToast("Session settings saved", "success");
     } catch {
       showToast("Failed to update settings", "error");
     } finally {

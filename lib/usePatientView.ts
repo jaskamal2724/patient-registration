@@ -18,23 +18,25 @@ export function usePatientView() {
   const currentToken =
     patients.find((p) => p.status === "in-progress")?.token_number || 0;
 
-  // Check 10:00 AM cutoff rule on doctor.session_date or today's date
-  const now = new Date();
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-  const sessionDateStr = doctor?.session_date ? String(doctor.session_date).split("T")[0] : todayStr;
-
+  // Check 10:00 AM cutoff rule ONLY if doctor has enabled auto_close_10am
+  const autoClose10AM = Boolean(doctor?.auto_close_10am);
   let isCutoffClosed = false;
   let cutoffNotice: string | null = null;
 
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const isPast10AM = currentMinutes >= 600; // 10:00 AM cutoff (10 * 60)
+  if (autoClose10AM) {
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const sessionDateStr = doctor?.session_date ? String(doctor.session_date).split("T")[0] : todayStr;
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const isPast10AM = currentMinutes >= 600; // 10:00 AM cutoff (10 * 60)
 
-  if (sessionDateStr === todayStr && isPast10AM) {
-    isCutoffClosed = true;
-    cutoffNotice = `Registration closed at 10:00 AM for today's OPD session (${sessionDateStr}).`;
-  } else if (todayStr > sessionDateStr) {
-    isCutoffClosed = true;
-    cutoffNotice = `Registration for ${sessionDateStr} session is closed.`;
+    if (sessionDateStr === todayStr && isPast10AM) {
+      isCutoffClosed = true;
+      cutoffNotice = `Registration closed at 10:00 AM for today's OPD session (${sessionDateStr}).`;
+    } else if (todayStr > sessionDateStr) {
+      isCutoffClosed = true;
+      cutoffNotice = `Registration for ${sessionDateStr} session is closed.`;
+    }
   }
 
   const isOpen = doctorRegistrationOpen && !isCutoffClosed;
@@ -45,6 +47,8 @@ export function usePatientView() {
     endTime: doctor?.end_time || "09:00 PM",
     date: doctor?.session_date || null,
     message: cutoffNotice || doctor?.opd_message || (doctor ? `${doctor.name}'s OPD Session` : "OPD Registration"),
+    patientsPerHour: doctor?.patients_per_hour ?? 10,
+    autoClose10AM,
   };
 
   useEffect(() => {
