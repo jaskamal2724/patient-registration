@@ -445,16 +445,23 @@ function RegistrationForm({
   addPatient: (form: PatientForm) => Promise<Patient>;
   patients: Patient[];
 }) {
+  const initialSlots = getTimeSlots(
+    regWindow.startTime || "09:00",
+    regWindow.endTime || "18:00",
+    "13:00",
+    "14:00"
+  ).map((s: TimeSlot) => s.label);
+
   const [form, setForm] = useState({
     name: "",
     age: "",
     gender: "Male" as "Male" | "Female" | "Other",
     phone: "",
-    time_slot: "",
+    time_slot: initialSlots[0] || "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [TIME_SLOTS, setTIME_SLOTS] = useState<string[]>([]);
+  const [TIME_SLOTS, setTIME_SLOTS] = useState<string[]>(initialSlots);
 
   const capacity = regWindow.patientsPerHour || 10;
 
@@ -493,13 +500,9 @@ function RegistrationForm({
 
   const fetchTimeSlot = async () => {
     try {
-      const response = await fetch("/api/time-slot", {
-        method: "GET",
-        headers: { Content_type: "application/json" },
-      });
-
+      const response = await fetch("/api/time-slot");
       const result = await response.json();
-      if (result?.data?.[0]) {
+      if (result?.data?.[0]?.start_time && result?.data?.[0]?.end_time) {
         const startTime = result.data[0].start_time;
         const endTime = result.data[0].end_time;
         const breakStart = "13:00";
@@ -507,22 +510,12 @@ function RegistrationForm({
 
         const slots = getTimeSlots(startTime, endTime, breakStart, breakEnd);
         const slotLabels = slots.map((slot: TimeSlot) => slot.label);
-        setTIME_SLOTS(slotLabels);
-        if (slotLabels.length > 0 && !form.time_slot) {
-          setForm((f) => ({ ...f, time_slot: slotLabels[0] }));
-        }
-      } else {
-        // Fallback slots if API does not return custom slots
-        const defaultSlots = getTimeSlots(
-          regWindow.startTime || "09:00",
-          regWindow.endTime || "18:00",
-          "13:00",
-          "14:00"
-        );
-        const defaultLabels = defaultSlots.map((s: TimeSlot) => s.label);
-        setTIME_SLOTS(defaultLabels);
-        if (defaultLabels.length > 0 && !form.time_slot) {
-          setForm((f) => ({ ...f, time_slot: defaultLabels[0] }));
+        if (slotLabels.length > 0) {
+          setTIME_SLOTS(slotLabels);
+          setForm((f) => ({
+            ...f,
+            time_slot: f.time_slot && slotLabels.includes(f.time_slot) ? f.time_slot : slotLabels[0],
+          }));
         }
       }
     } catch (err) {
