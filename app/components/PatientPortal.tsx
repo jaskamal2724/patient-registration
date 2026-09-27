@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toPng } from "html-to-image";
 import { usePatientView } from "@/lib/usePatientView";
 import type { Patient, RegistrationWindow } from "@/lib/types";
@@ -898,19 +898,18 @@ export default function PatientPortal() {
   } = usePatientView();
   const router = useRouter();
   const pageRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+  const isFormStep = searchParams?.get("step") === "form";
 
-  // 2-Second Animated Loading Screen state as requested by user!
-  const [showLoading, setShowLoading] = useState(true);
-  const [step, setStep] = useState<Step>("home");
+  const [step, setStep] = useState<Step>(isFormStep ? "form" : "home");
   const [registeredPatient, setRegisteredPatient] = useState<Patient | null>(null);
   const [TIME_SLOTS, setTIME_SLOTS] = useState<string[]>([]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowLoading(false);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, []);
+    if (searchParams?.get("step") === "form") {
+      setStep("form");
+    }
+  }, [searchParams]);
 
   // Fetch slot availability to check if ALL slots are full
   useEffect(() => {
@@ -957,7 +956,7 @@ export default function PatientPortal() {
 
   const inProgress = patients.find((p) => p.status === "in-progress");
 
-  if (showLoading || initialLoading) {
+  if (initialLoading) {
     return <LoadingScreen />;
   }
 

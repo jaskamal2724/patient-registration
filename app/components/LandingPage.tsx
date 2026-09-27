@@ -18,10 +18,12 @@ import InstallPWA from "./InstallPWA";
 import LogiquelAdCard from "./LogiquelAdCard";
 import LogiquelLogo from "./LogiquelLogo";
 import DocCareLogo from "./DocCareLogo";
+import LoadingScreen from "./LoadingScreen";
 
 export default function LandingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [showPortalLoading, setShowPortalLoading] = useState(true);
   const [showPinModal, setShowPinModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setEmail] = useState("");
@@ -29,6 +31,13 @@ export default function LandingPage() {
   const [loginError, setLoginError] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowPortalLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -61,6 +70,10 @@ export default function LandingPage() {
     }
   };
 
+  if (showPortalLoading) {
+    return <LoadingScreen />;
+  }
+
   return (
     <div className="min-h-screen relative overflow-x-hidden max-w-full bg-[#FAFAFA] flex flex-col justify-between">
       {/* Top Header */}
@@ -84,7 +97,7 @@ export default function LandingPage() {
             {isLoggedIn ? (
               <UserCheck size={16} className="text-emerald-400" />
             ) : (
-              <Stethoscope size={16} className="text-blue-400" />
+              <Stethoscope size={16} className="text-[#0066FF]" />
             )}
             <span>Dr. Login</span>
           </button>
@@ -112,7 +125,7 @@ export default function LandingPage() {
 
               {/* Book Appointment Pill Button */}
               <button
-                onClick={() => router.push("/patient")}
+                onClick={() => router.push("/patient?step=form")}
                 className="bg-[#1D68F3] hover:bg-[#1554C6] text-white font-bold text-xs sm:text-sm px-4 sm:px-6 py-3 sm:py-3.5 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer whitespace-nowrap w-fit"
               >
                 <Calendar size={16} className="shrink-0" />
