@@ -35,9 +35,12 @@ export default function InstallPWA() {
       return;
     }
 
-    // Detect iOS
+    // Detect iOS (including iPadOS 13+ which reports as Macintosh)
     const ua = window.navigator.userAgent;
-    const isApple = /ipad|iphone|ipod/i.test(ua) && !(window as any).MSStream;
+    const isApple =
+      (/ipad|iphone|ipod/i.test(ua) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) &&
+      !(window as any).MSStream;
     setIsIOS(isApple);
 
     // Pick up prompt that was captured early (before React mounted)
@@ -110,7 +113,7 @@ export default function InstallPWA() {
 
   if (isInstalled) {
     return (
-      <div className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1 shrink-0">
+      <div className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1 shrink-0 w-fit">
         <CheckCircle2 size={12} className="text-emerald-600" />
         <span>Installed</span>
       </div>
@@ -121,7 +124,7 @@ export default function InstallPWA() {
     <>
       <button
         onClick={handleInstallClick}
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 border border-blue-500 rounded-full px-3 py-1.5 shadow-md shadow-blue-500/20 transition-all cursor-pointer shrink-0"
+        className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 border border-blue-500 rounded-full px-3 py-1.5 shadow-md shadow-blue-500/20 transition-all cursor-pointer shrink-0 w-fit"
         title="Install MediQueue App"
       >
         <Download size={13} className="text-white" />
@@ -152,6 +155,9 @@ export default function InstallPWA() {
 
             {isIOS ? (
               <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3 font-body text-xs text-slate-700">
+                <p className="text-[10px] text-amber-600 font-semibold bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 mb-1">
+                  ⚠️ This must be done in <strong>Safari</strong>. Other browsers don&apos;t support Add to Home Screen on iOS.
+                </p>
                 <div className="flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">
                     1

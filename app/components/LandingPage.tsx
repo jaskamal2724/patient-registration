@@ -17,6 +17,7 @@ import {
 import InstallPWA from "./InstallPWA";
 import LogiquelAdCard from "./LogiquelAdCard";
 import LogiquelLogo from "./LogiquelLogo";
+import DocCareLogo from "./DocCareLogo";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -64,19 +65,9 @@ export default function LandingPage() {
     <div className="min-h-screen relative overflow-x-hidden max-w-full bg-[#FAFAFA] flex flex-col justify-between">
       {/* Top Header */}
       <header className="relative z-10 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto">
-        <div className="flex items-start gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/25 shrink-0 text-white mt-0.5">
-            <Stethoscope size={22} />
-          </div>
-          <div>
-            <h1 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight leading-none mb-0.5">
-              MediQueue
-            </h1>
-            <p className="text-xs text-slate-500 font-body font-medium leading-none mb-2">
-              Smart Patient Registration
-            </p>
-            <InstallPWA />
-          </div>
+        <div className="flex flex-col gap-1.5">
+          <DocCareLogo variant="full" subtitle="Care, just a tap away." />
+          <InstallPWA />
         </div>
 
         <div className="flex items-center gap-2">
