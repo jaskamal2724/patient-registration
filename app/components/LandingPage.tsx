@@ -190,33 +190,33 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Bottom 3-Feature Bar (Exact Screenshot Soft Blue Container) */}
-          <div className="bg-[#F4F8FF] rounded-2xl p-2.5 sm:p-3.5 grid grid-cols-3 divide-x divide-blue-100/90 text-center items-center mt-2">
-            <div className="px-1 flex items-center justify-center gap-1.5 min-w-0">
+          {/* Bottom 3-Feature Bar */}
+          <div className="bg-[#F4F8FF] border border-blue-100/70 rounded-2xl p-2.5 sm:p-3.5 grid grid-cols-3 divide-x divide-blue-100/90 text-center items-center mt-2">
+            <div className="px-1 sm:px-2 flex flex-col xs:flex-row items-center justify-center gap-1 sm:gap-2 min-w-0">
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white border border-blue-100/80 text-[#1D68F3] flex items-center justify-center shrink-0 shadow-2xs">
-                <Ticket size={14} />
+                <Ticket size={14} className="sm:w-4 sm:h-4" />
               </div>
-              <div className="flex flex-col text-left text-[10px] sm:text-xs font-bold text-slate-700 leading-tight min-w-0">
-                <span className="truncate">{t("digitalToken")}</span>
-              </div>
+              <span className="text-[10px] sm:text-xs font-bold text-slate-700 leading-tight text-center xs:text-left break-words">
+                {t("digitalToken")}
+              </span>
             </div>
 
-            <div className="px-1 flex items-center justify-center gap-1.5 min-w-0">
+            <div className="px-1 sm:px-2 flex flex-col xs:flex-row items-center justify-center gap-1 sm:gap-2 min-w-0">
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white border border-blue-100/80 text-[#1D68F3] flex items-center justify-center shrink-0 shadow-2xs">
-                <Radio size={14} />
+                <Radio size={14} className="sm:w-4 sm:h-4" />
               </div>
-              <div className="flex flex-col text-left text-[10px] sm:text-xs font-bold text-slate-700 leading-tight min-w-0">
-                <span className="truncate">{t("liveQueue")}</span>
-              </div>
+              <span className="text-[10px] sm:text-xs font-bold text-slate-700 leading-tight text-center xs:text-left break-words">
+                {t("liveQueue")}
+              </span>
             </div>
 
-            <div className="px-1 flex items-center justify-center gap-1.5 min-w-0">
+            <div className="px-1 sm:px-2 flex flex-col xs:flex-row items-center justify-center gap-1 sm:gap-2 min-w-0">
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white border border-blue-100/80 text-[#1D68F3] flex items-center justify-center shrink-0 shadow-2xs">
-                <User size={14} />
+                <User size={14} className="sm:w-4 sm:h-4" />
               </div>
-              <div className="flex flex-col text-left text-[10px] sm:text-xs font-bold text-slate-700 leading-tight min-w-0">
-                <span className="truncate">{t("easyRegister")}</span>
-              </div>
+              <span className="text-[10px] sm:text-xs font-bold text-slate-700 leading-tight text-center xs:text-left break-words">
+                {t("easyRegister")}
+              </span>
             </div>
           </div>
         </div>

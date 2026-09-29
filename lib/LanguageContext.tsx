@@ -197,7 +197,7 @@ export const translations = {
     tokenBadge: "टोकन",
     liveBadge: "लाइव",
     digitalToken: "डिजिटल टोकन",
-    liveQueue: "लाइव कतार स्थिति",
+    liveQueue: "लाइव कतार",
     easyRegister: "आसान पंजीकरण",
 
     // Doctor Login Modal
