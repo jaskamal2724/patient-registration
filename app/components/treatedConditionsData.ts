@@ -1,0 +1,380 @@
+export interface ConditionItem {
+  id: string;
+  hi: string;
+  en: string;
+  category: "general" | "women" | "children";
+}
+
+export const TREATED_CONDITIONS: ConditionItem[] = [
+  // --- GENERAL PROBLEMS (40 items) ---
+  {
+    id: "g1",
+    category: "general",
+    hi: "गठिया / अर्थराइटिस / लिगामेंट इंजुरी / ACL Tear",
+    en: "Arthritis / Gout / Ligament Injury / ACL Tear",
+  },
+  {
+    id: "g2",
+    category: "general",
+    hi: "हनुग्रह - जबड़ों का न खुल पाना (Lock Jaw)",
+    en: "Lock Jaw / Inability to open jaw (Trismus)",
+  },
+  {
+    id: "g3",
+    category: "general",
+    hi: "नर्व कम्प्रेशन (नसों का दब जाना), शरीर में जलन, झुनझुनी, सुन्नपन व नस संबंधित रोग",
+    en: "Nerve Compression (Pinched Nerve), Body Burning Sensation, Tingling, Numbness & Nerve Disorders",
+  },
+  {
+    id: "g4",
+    category: "general",
+    hi: "न्यूरोपैथी / रेडिक्युलोपैथी, पैरों / हाथों का तिरछापन",
+    en: "Neuropathy / Radiculopathy, Curvature/Deformity of Hands & Legs",
+  },
+  {
+    id: "g5",
+    category: "general",
+    hi: "कंधा (Cervical), Frozen Shoulder",
+    en: "Cervical Spondylosis, Frozen Shoulder",
+  },
+  {
+    id: "g6",
+    category: "general",
+    hi: "कान में सीटी बजना, चक्कर आना (Vertigo) भ्रम",
+    en: "Tinnitus (Ringing in Ears), Dizziness / Vertigo & Confusion",
+  },
+  {
+    id: "g7",
+    category: "general",
+    hi: "पुरानी चोट एवं (Failed Operation) जोड़ो का जामपन",
+    en: "Old Injury, Failed Surgery Complications & Joint Stiffness",
+  },
+  {
+    id: "g8",
+    category: "general",
+    hi: "रीढ़ की हड्डी का तिरछापन / दर्द / Scoliosis",
+    en: "Spinal Deformity / Back Pain / Scoliosis",
+  },
+  {
+    id: "g9",
+    category: "general",
+    hi: "डिस्क / स्लिपडिस्क / पैरों में झुनझुनी एवं भारीपन",
+    en: "Disc Bulge / Slip Disc / Leg Tingling & Heaviness",
+  },
+  {
+    id: "g10",
+    category: "general",
+    hi: "डिस्क प्रोलैप्स / पैरों छोटा-बड़ा होना",
+    en: "Disc Prolapse / Leg Length Discrepancy",
+  },
+  {
+    id: "g11",
+    category: "general",
+    hi: "घुटने का दर्द (फ्लूड खत्म होना / गैप आना) Replacement की सलाह दी गई हो",
+    en: "Knee Pain (Cartilage/Fluid Loss, Gap) - Recommended Knee Replacement",
+  },
+  {
+    id: "g12",
+    category: "general",
+    hi: "माइग्रेन / सिर का भारीपन, अल्जाइमर, मेमोरी लॉस, आँखों की कमजोरी",
+    en: "Migraine / Head Heaviness, Alzheimer's, Memory Loss, Eye Weakness",
+  },
+  {
+    id: "g13",
+    category: "general",
+    hi: "चेहरे एवं शरीर का लकवा (Paralysis)",
+    en: "Facial & Body Paralysis / Stroke",
+  },
+  {
+    id: "g14",
+    category: "general",
+    hi: "पैरों का लचक जाना, अचानक झटका लगना व गिरना",
+    en: "Leg Instability, Sudden Spasms & Frequent Falls",
+  },
+  {
+    id: "g15",
+    category: "general",
+    hi: "सायटिका / वेरिकोज वेन्स",
+    en: "Sciatica / Varicose Veins",
+  },
+  {
+    id: "g16",
+    category: "general",
+    hi: "ऐड़ी का दर्द (Plantar Fasciitis)",
+    en: "Heel Pain (Plantar Fasciitis)",
+  },
+  {
+    id: "g17",
+    category: "general",
+    hi: "कुल्हे एवं पिंडली का दर्द",
+    en: "Hip Pain & Calf Pain",
+  },
+  {
+    id: "g18",
+    category: "general",
+    hi: "स्पोंडिलाइटिस (Ankylosing)",
+    en: "Ankylosing Spondylitis",
+  },
+  {
+    id: "g19",
+    category: "general",
+    hi: "कम्पवात (Parkinson)",
+    en: "Parkinson's Disease (Tremors & Stiffness)",
+  },
+  {
+    id: "g20",
+    category: "general",
+    hi: "अंगों का फड़कना या हिलना (OCD), मिर्गी",
+    en: "Involuntary Body Twitching / Tremors (OCD) & Fits / Epilepsy",
+  },
+  {
+    id: "g21",
+    category: "general",
+    hi: "मस्तिष्क पक्षाघात (Cerebral Palsy)",
+    en: "Cerebral Palsy",
+  },
+  {
+    id: "g22",
+    category: "general",
+    hi: "Muscular Dystrophy स्नायु / मांसपेशियों की दुर्बलता",
+    en: "Muscular Dystrophy / Muscle Weakness & Wasting",
+  },
+  {
+    id: "g23",
+    category: "general",
+    hi: "वात विसर्प (हर्पिस के बाद नसों का दर्द) (PHN)",
+    en: "Post-Herpetic Neuralgia (PHN / Nerve Pain After Herpes)",
+  },
+  {
+    id: "g24",
+    category: "general",
+    hi: "कोलेस्ट्रॉल (Cholesterol)",
+    en: "High Cholesterol Management",
+  },
+  {
+    id: "g25",
+    category: "general",
+    hi: "शराब से मुक्ति",
+    en: "Alcohol De-addiction & Freedom from Addiction",
+  },
+  {
+    id: "g26",
+    category: "general",
+    hi: "लता (Muscular Atrophy)",
+    en: "Muscular Atrophy (Muscle Wasting)",
+  },
+  {
+    id: "g27",
+    category: "general",
+    hi: "पाददाह (Burning Sensation in Feet)",
+    en: "Burning Sensation in Feet / Soles",
+  },
+  {
+    id: "g28",
+    category: "general",
+    hi: "श्वास (Asthma), तुण्डीकेरी (Tonsil)",
+    en: "Asthma / Breathing Issues & Tonsillitis",
+  },
+  {
+    id: "g29",
+    category: "general",
+    hi: "आक्षेप (Epilepsy Convulsion)",
+    en: "Epilepsy & Fits / Convulsions",
+  },
+  {
+    id: "g30",
+    category: "general",
+    hi: "शरीर में किसी भी प्रकार की गांठ",
+    en: "Any Type of Body Lumps, Cysts & Tumors",
+  },
+  {
+    id: "g31",
+    category: "general",
+    hi: "उत्कंठा, घबराहट (Anxiety)",
+    en: "Anxiety, Restlessness & Panic Attacks",
+  },
+  {
+    id: "g32",
+    category: "general",
+    hi: "अवसाद (Depression)",
+    en: "Depression & Mental Stress",
+  },
+  {
+    id: "g33",
+    category: "general",
+    hi: "धड़कन का बढ़ना या कम होना (Palpitation)",
+    en: "Irregular Heartbeat / Palpitations",
+  },
+  {
+    id: "g34",
+    category: "general",
+    hi: "शारीरिक कमजोरी",
+    en: "General Physical Weakness & Debility",
+  },
+  {
+    id: "g35",
+    category: "general",
+    hi: "अनिद्रा (Sleeplessness)",
+    en: "Insomnia & Sleeplessness",
+  },
+  {
+    id: "g36",
+    category: "general",
+    hi: "बार-बार पेशाब आना (Frequent Urination)",
+    en: "Frequent Urination Issues",
+  },
+  {
+    id: "g37",
+    category: "general",
+    hi: "पुरानी एलर्जी एवं खांसी, बार-बार छींक आना",
+    en: "Chronic Allergies, Persistent Cough & Frequent Sneezing",
+  },
+  {
+    id: "g38",
+    category: "general",
+    hi: "बार-बार डकार आना, पुराना कब्ज",
+    en: "Frequent Belching, Acidity & Chronic Constipation",
+  },
+  {
+    id: "g39",
+    category: "general",
+    hi: "रोग प्रतिरोधक क्षमता (Auto Immune)",
+    en: "Autoimmune Disorders & Low Immunity",
+  },
+  {
+    id: "g40",
+    category: "general",
+    hi: "नाक की हड्डी टेढ़ी होना या बढ़ना, साइनस की समस्या",
+    en: "Deviated Nasal Septum (Crooked Nose Bone) & Sinusitis",
+  },
+
+  // --- FOR WOMEN (7 items) ---
+  {
+    id: "w1",
+    category: "women",
+    hi: "शरीर में किसी भी प्रकार की पीड़ा",
+    en: "Chronic Body & Joint Pain in Women",
+  },
+  {
+    id: "w2",
+    category: "women",
+    hi: "शरीर में जलन, झुनझुनी, सुन्नपन व नस संबंधित रोग",
+    en: "Body Burning Sensation, Tingling, Numbness & Nerve Issues",
+  },
+  {
+    id: "w3",
+    category: "women",
+    hi: "स्तनों में गाँठ एवं बच्चेदानी में गाँठ",
+    en: "Breast Lumps & Uterine Fibroids / Cysts",
+  },
+  {
+    id: "w4",
+    category: "women",
+    hi: "थायराईड, PCOD, PCOS",
+    en: "Thyroid, PCOD, PCOS Disorders",
+  },
+  {
+    id: "w5",
+    category: "women",
+    hi: "पेशाब का नियंत्रण छूटना (छींकने व खांसने पर यूरीन लीकेज)",
+    en: "Loss of Urinary Control (Urine leakage on coughing/sneezing)",
+  },
+  {
+    id: "w6",
+    category: "women",
+    hi: "बालों का झड़ना",
+    en: "Hair Fall & Hair Loss",
+  },
+  {
+    id: "w7",
+    category: "women",
+    hi: "अवसाद (Depression)",
+    en: "Female Depression, Anxiety & Mood Swings",
+  },
+
+  // --- FOR CHILDREN (14 items) ---
+  {
+    id: "c1",
+    category: "children",
+    hi: "मानसिक एवं शारीरिक कमजोरी, नसों की सभी समस्या",
+    en: "Mental & Physical Weakness, All Nerve Problems in Children",
+  },
+  {
+    id: "c2",
+    category: "children",
+    hi: "ऐड़ी उठाकर चलना (Balance) की कमी",
+    en: "Toe-Walking & Lack of Body Balance",
+  },
+  {
+    id: "c3",
+    category: "children",
+    hi: "पैरों एवं हाथों का तिरछापन",
+    en: "Curvature / Deformity in Legs & Arms",
+  },
+  {
+    id: "c4",
+    category: "children",
+    hi: "प्री-मैच्योर बेबीज (कम सुनना / कम देखना)",
+    en: "Premature Baby Complications (Reduced Hearing / Vision)",
+  },
+  {
+    id: "c5",
+    category: "children",
+    hi: "विलम्ब शारीरिक विकास",
+    en: "Delayed Physical Growth & Milestone Development",
+  },
+  {
+    id: "c6",
+    category: "children",
+    hi: "सेरेब्रल पाल्सी (Cerebral Palsy), ऑटिज्म, झटका",
+    en: "Cerebral Palsy, Autism & Seizures / Fits",
+  },
+  {
+    id: "c7",
+    category: "children",
+    hi: "स्पीच प्रॉब्लम / अत्यधिक लार का गिरना, मिर्गी",
+    en: "Speech Problems, Excessive Drooling & Epilepsy in Children",
+  },
+  {
+    id: "c8",
+    category: "children",
+    hi: "अतिचंचलता / जोड़ों का खिसकना",
+    en: "Hyperactivity (ADHD) & Joint Dislocation",
+  },
+  {
+    id: "c9",
+    category: "children",
+    hi: "बच्चों की लम्बाई में कमी",
+    en: "Stunted Growth / Short Stature in Children",
+  },
+  {
+    id: "c10",
+    category: "children",
+    hi: "भेंगापन एवं आँखों के ऐनक का नम्बर जल्दी बदलना",
+    en: "Squint Eye (Strabismus) & Frequent Eye Power Change",
+  },
+  {
+    id: "c11",
+    category: "children",
+    hi: "तोतलाना या बोल नहीं पाना",
+    en: "Stammering, Lisping or Speech Inability",
+  },
+  {
+    id: "c12",
+    category: "children",
+    hi: "सर्दी, खांसी, बुखार व तुण्डीकेरी (Tonsil)",
+    en: "Frequent Cold, Cough, Fever & Tonsillitis",
+  },
+  {
+    id: "c13",
+    category: "children",
+    hi: "कृमि की समस्या",
+    en: "Intestinal Worm Infestation",
+  },
+  {
+    id: "c14",
+    category: "children",
+    hi: "बिस्तर गीला करना",
+    en: "Bed Wetting (Enuresis)",
+  },
+];

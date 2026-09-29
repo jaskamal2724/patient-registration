@@ -174,7 +174,20 @@ export const translations = {
     androidStep2Middle: "or",
     androidStep2Bold2: "Add to Home screen",
     androidStep2Suffix: ".",
-    gotIt: "Got it"
+    gotIt: "Got it",
+
+    // Treated Conditions Modal
+    viewTreatedConditionsBtn: "Problems Treated",
+    treatedConditionsModalTitle: "Treatment & Care For Following Problems",
+    treatedConditionsModalSubtitle: "Specialized consultation & treatment available for these medical conditions",
+    tabAll: "All (61)",
+    tabGeneral: "General (40)",
+    tabWomen: "For Women (7)",
+    tabChildren: "For Children (14)",
+    searchConditionsPlaceholder: "Search disease or problem...",
+    noConditionsFound: "No matching condition found.",
+    totalConditionsCount: "61 treated conditions listed",
+    closeModal: "Close"
   },
   hi: {
     // Header & Brand
@@ -346,7 +359,20 @@ export const translations = {
     androidStep2Middle: "या",
     androidStep2Bold2: "Add to Home screen",
     androidStep2Suffix: "चुनें।",
-    gotIt: "समझ गया"
+    gotIt: "समझ गया",
+
+    // Treated Conditions Modal
+    viewTreatedConditionsBtn: "इलाज योग्य समस्याएं",
+    treatedConditionsModalTitle: "अब पाये निदान निम्न समस्याओं से...",
+    treatedConditionsModalSubtitle: "निम्नलिखित स्वास्थ्य समस्याओं के लिए विशेष परामर्श एवं उपचार उपलब्ध है",
+    tabAll: "सभी समस्याएं (61)",
+    tabGeneral: "मुख्य समस्याएं (40)",
+    tabWomen: "महिलाओं के लिए (7)",
+    tabChildren: "बच्चों के लिए (14)",
+    searchConditionsPlaceholder: "बीमारी या समस्या खोजें...",
+    noConditionsFound: "कोई संबंधित समस्या नहीं मिली।",
+    totalConditionsCount: "61 बीमारियों/समस्याओं की सूची",
+    closeModal: "बंद करें"
   }
 };
 

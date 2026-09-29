@@ -1,4 +1,5 @@
 import { useLanguage } from "@/lib/LanguageContext";
+import { useRouter } from "next/navigation";
 
 export function DocCareIcon({ className = "w-11 h-11" }: { className?: string }) {
   return (
@@ -47,6 +48,7 @@ export default function DocCareLogo({
 }) {
   const { t, language } = useLanguage();
   const displaySubtitle = subtitle !== undefined ? subtitle : t("appSubtitle");
+  const router = useRouter();
 
   if (variant === "icon") {
     return <DocCareIcon className={className || "w-11 h-11"} />;
@@ -54,7 +56,9 @@ export default function DocCareLogo({
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      <DocCareIcon className="w-11 h-11 sm:w-12 sm:h-12" />
+      <button onClick={() => router.push("/")} className="cursor-pointer">
+        <DocCareIcon className="w-11 h-11 sm:w-12 sm:h-12" />
+      </button>
       <div className="text-left leading-none">
         <h1 className="font-display text-xl sm:text-2xl font-black tracking-tight leading-none mb-1">
           {language === "hi" ? (

@@ -14,6 +14,7 @@ import {
   User,
   Clock,
   MapPin,
+  Activity,
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
 import LogiquelAdCard from "./LogiquelAdCard";
@@ -21,6 +22,7 @@ import LogiquelLogo from "./LogiquelLogo";
 import DocCareLogo from "./DocCareLogo";
 import LoadingScreen from "./LoadingScreen";
 import LanguageSelector from "./LanguageSelector";
+import TreatedConditionsModal from "./TreatedConditionsModal";
 import { useLanguage } from "@/lib/LanguageContext";
 
 export default function LandingPage() {
@@ -29,6 +31,7 @@ export default function LandingPage() {
   const { t } = useLanguage();
   const [showPortalLoading, setShowPortalLoading] = useState(true);
   const [showPinModal, setShowPinModal] = useState(false);
+  const [showConditionsModal, setShowConditionsModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -140,15 +143,25 @@ export default function LandingPage() {
                 {t("bookAppointmentSubtitle")}
               </p>
 
-              {/* Book Appointment Pill Button */}
-              <button
-                onClick={() => router.push("/patient?step=form")}
-                className="bg-[#1D68F3] hover:bg-[#1554C6] text-white font-bold text-xs sm:text-sm px-4 sm:px-6 py-3 sm:py-3.5 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer whitespace-nowrap w-fit"
-              >
-                <Calendar size={16} className="shrink-0" />
-                <span>{t("bookSlotBtn")}</span>
-                <ArrowRight size={14} className="shrink-0" />
-              </button>
+              {/* Action Buttons: Book Slot + Treated Conditions (Stacked) */}
+              <div className="flex flex-col items-start gap-2.5">
+                <button
+                  onClick={() => router.push("/patient")}
+                  className="bg-[#1D68F3] hover:bg-[#1554C6] text-white font-bold text-xs sm:text-sm px-4 sm:px-6 py-3 sm:py-3.5 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer whitespace-nowrap w-fit"
+                >
+                  <Calendar size={16} className="shrink-0" />
+                  <span>{t("bookSlotBtn")}</span>
+                  <ArrowRight size={14} className="shrink-0" />
+                </button>
+
+                <button
+                  onClick={() => setShowConditionsModal(true)}
+                  className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/90 font-bold text-xs px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl shadow-xs flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer whitespace-nowrap w-fit"
+                >
+                  <Activity size={14} className="text-emerald-600 shrink-0" />
+                  <span>{t("viewTreatedConditionsBtn")}</span>
+                </button>
+              </div>
             </div>
 
             {/* Right OPD Clipboard Graphic Illustration (Compact & Scaled) */}
@@ -298,6 +311,12 @@ export default function LandingPage() {
           </div>
         </div>
       )}
+
+      {/* Treated Conditions Popup Modal */}
+      <TreatedConditionsModal
+        isOpen={showConditionsModal}
+        onClose={() => setShowConditionsModal(false)}
+      />
     </div>
   );
 }
