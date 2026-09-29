@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/lib/LanguageContext";
 import {
   Download,
-  CheckCircle2,
   Share,
   PlusSquare,
   MoreVertical,
@@ -18,6 +18,7 @@ declare global {
 }
 
 export default function InstallPWA() {
+  const { t } = useLanguage();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
@@ -112,12 +113,7 @@ export default function InstallPWA() {
   };
 
   if (isInstalled) {
-    return (
-      <div className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1 shrink-0 w-fit">
-        <CheckCircle2 size={12} className="text-emerald-600" />
-        <span>Installed</span>
-      </div>
-    );
+    return null;
   }
 
   return (
@@ -125,10 +121,10 @@ export default function InstallPWA() {
       <button
         onClick={handleInstallClick}
         className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 border border-blue-500 rounded-full px-3 py-1.5 shadow-md shadow-blue-500/20 transition-all cursor-pointer shrink-0 w-fit"
-        title="Install MediQueue App"
+        title={t("installPwaBtn")}
       >
         <Download size={13} className="text-white" />
-        <span>Install App</span>
+        <span>{t("installPwaBtn")}</span>
       </button>
 
       {/* Guide Modal for devices/browsers where native prompt is not directly triggered */}
@@ -147,25 +143,26 @@ export default function InstallPWA() {
             </div>
 
             <h3 className="font-display text-lg font-extrabold text-slate-900 mb-1">
-              Install MediQueue App
+              {t("installAppTitle")}
             </h3>
             <p className="font-body text-xs text-slate-500 mb-4 font-medium leading-relaxed">
-              Add MediQueue to your phone or desktop home screen for fast 1-tap access.
+              {t("installAppSubtitle")}
             </p>
 
             {isIOS ? (
               <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3 font-body text-xs text-slate-700">
                 <p className="text-[10px] text-amber-600 font-semibold bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 mb-1">
-                  ⚠️ This must be done in <strong>Safari</strong>. Other browsers don&apos;t support Add to Home Screen on iOS.
+                  {t("iosSafariNotice")}
                 </p>
                 <div className="flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">
                     1
                   </div>
                   <p>
-                    Tap the <strong>Share</strong> button{" "}
+                    {t("iosStep1Prefix")}{" "}
+                    <strong>{t("iosStep1Bold")}</strong>{" "}
                     <Share size={14} className="inline text-blue-600 mx-0.5" />{" "}
-                    in Safari navigation bar.
+                    {t("iosStep1Suffix")}
                   </p>
                 </div>
                 <div className="flex items-center gap-2.5">
@@ -173,13 +170,13 @@ export default function InstallPWA() {
                     2
                   </div>
                   <p>
-                    Scroll down and select{" "}
-                    <strong>Add to Home Screen</strong>{" "}
+                    {t("iosStep2Prefix")}{" "}
+                    <strong>{t("iosStep2Bold")}</strong>{" "}
                     <PlusSquare
                       size={14}
                       className="inline text-blue-600 mx-0.5"
                     />
-                    .
+                    {t("iosStep2Suffix")}
                   </p>
                 </div>
               </div>
@@ -190,12 +187,12 @@ export default function InstallPWA() {
                     1
                   </div>
                   <p>
-                    Tap your browser menu{" "}
+                    {t("androidStep1Prefix")}{" "}
                     <MoreVertical
                       size={14}
                       className="inline text-blue-600 mx-0.5"
                     />{" "}
-                    (top right 3 dots).
+                    {t("androidStep1Suffix")}
                   </p>
                 </div>
                 <div className="flex items-center gap-2.5">
@@ -203,8 +200,11 @@ export default function InstallPWA() {
                     2
                   </div>
                   <p>
-                    Select <strong>Install app</strong> or{" "}
-                    <strong>Add to Home screen</strong>.
+                    {t("androidStep2Prefix")}{" "}
+                    <strong>{t("androidStep2Bold")}</strong>{" "}
+                    {t("androidStep2Middle")}{" "}
+                    <strong>{t("androidStep2Bold2")}</strong>
+                    {t("androidStep2Suffix")}
                   </p>
                 </div>
               </div>
@@ -214,7 +214,7 @@ export default function InstallPWA() {
               onClick={() => setShowGuideModal(false)}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 text-xs font-bold font-body mt-4 transition-all shadow-md cursor-pointer"
             >
-              Got it
+              {t("gotIt")}
             </button>
           </div>
         </div>

@@ -1,4 +1,4 @@
-"use client";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export function DocCareIcon({ className = "w-11 h-11" }: { className?: string }) {
   return (
@@ -38,13 +38,16 @@ export function DocCareIcon({ className = "w-11 h-11" }: { className?: string })
 
 export default function DocCareLogo({
   variant = "header",
-  subtitle = "Care, just a tap away.",
+  subtitle,
   className = "",
 }: {
   variant?: "header" | "full" | "icon";
   subtitle?: string;
   className?: string;
 }) {
+  const { t, language } = useLanguage();
+  const displaySubtitle = subtitle !== undefined ? subtitle : t("appSubtitle");
+
   if (variant === "icon") {
     return <DocCareIcon className={className || "w-11 h-11"} />;
   }
@@ -54,11 +57,20 @@ export default function DocCareLogo({
       <DocCareIcon className="w-11 h-11 sm:w-12 sm:h-12" />
       <div className="text-left leading-none">
         <h1 className="font-display text-xl sm:text-2xl font-black tracking-tight leading-none mb-1">
-          <span className="text-[#0B1938]">Doc</span>
-          <span className="text-[#0066FF]">Care</span>
+          {language === "hi" ? (
+            <>
+              <span className="text-[#0B1938]">डॉक</span>
+              <span className="text-[#0066FF]">केयर</span>
+            </>
+          ) : (
+            <>
+              <span className="text-[#0B1938]">Doc</span>
+              <span className="text-[#0066FF]">Care</span>
+            </>
+          )}
         </h1>
         <p className="font-body text-xs text-slate-500 font-medium tracking-wide leading-none">
-          {subtitle}
+          {displaySubtitle}
         </p>
       </div>
     </div>

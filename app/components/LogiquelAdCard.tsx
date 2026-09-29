@@ -1,5 +1,6 @@
 "use client";
 
+import { useLanguage } from "@/lib/LanguageContext";
 import LogiquelLogo from "./LogiquelLogo";
 import {
   Globe,
@@ -54,8 +55,14 @@ export default function LogiquelAdCard({
 }: {
   variant?: "token" | "landing";
 }) {
-  const whatsappUrl =
-    "https://wa.me/917048995281?text=hey%20i%20am%20intrested%20in%20avaling%20logiquel%20services";
+  const { t, language } = useLanguage();
+
+  const whatsappText =
+    language === "hi"
+      ? "नमस्ते, मैं Logiquel की सेवाओं में रुचि रखता हूँ।"
+      : "hey i am interested in availing logiquel services";
+
+  const whatsappUrl = `https://wa.me/917048995281?text=${encodeURIComponent(whatsappText)}`;
 
   return (
     <div className="bg-white rounded-[24px] sm:rounded-[28px] p-4 sm:p-7 border border-slate-100 shadow-xl shadow-blue-900/5 relative overflow-hidden text-left mb-6">
@@ -65,7 +72,7 @@ export default function LogiquelAdCard({
           <LogiquelLogo className="h-5 sm:h-6 w-auto" />
         </div>
         <span className="bg-[#F1F5F9] text-slate-500 text-[11px] sm:text-xs font-medium px-3 py-0.5 rounded-full border border-slate-200/60">
-          Built by Logiquel
+          {t("builtByLogiquel")}
         </span>
       </div>
 
@@ -73,54 +80,54 @@ export default function LogiquelAdCard({
       <div className="flex items-start justify-between gap-4 mb-5">
         <div className="flex-1 min-w-0">
           <h3 className="font-display font-extrabold text-slate-900 text-lg sm:text-xl sm:text-2xl tracking-tight leading-snug mb-2">
-            We build digital solutions for modern businesses.
+            {t("logiquelHeadline")}
           </h3>
           <p className="font-body text-xs sm:text-sm text-slate-500 font-medium leading-relaxed max-w-md">
-            From web &amp; mobile apps to AI &amp; automation, Logiquel helps companies build scalable, future-ready products.
+            {t("logiquelDesc")}
           </p>
         </div>
         <LaptopIllustration className="hidden xs:flex w-28 h-28 sm:w-36 sm:h-36" />
       </div>
 
-      {/* 4 Feature Pills Row - 2-line stacked label structure to prevent overflow */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 mb-5">
-        <div className="bg-[#EFF6FF] border border-blue-100 text-slate-800 p-2 sm:p-2.5 rounded-2xl flex items-center gap-2 min-w-0">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-            <Globe size={15} />
+      {/* 4 Feature Cards - 2x2 Grid (2 per row across all devices) */}
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 mb-5">
+        <div className="bg-[#EFF6FF] border border-blue-100 text-slate-800 p-2.5 sm:p-3 rounded-2xl flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+            <Globe size={16} />
           </div>
-          <div className="flex flex-col text-[11px] sm:text-xs font-bold leading-tight min-w-0">
-            <span className="truncate">Web</span>
-            <span className="truncate">Applications</span>
-          </div>
-        </div>
-
-        <div className="bg-[#FAF5FF] border border-purple-100 text-slate-800 p-2 sm:p-2.5 rounded-2xl flex items-center gap-2 min-w-0">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-            <Smartphone size={15} />
-          </div>
-          <div className="flex flex-col text-[11px] sm:text-xs font-bold leading-tight min-w-0">
-            <span className="truncate">Mobile</span>
-            <span className="truncate">Apps</span>
+          <div className="flex flex-col text-xs sm:text-[13px] font-bold leading-tight min-w-0">
+            <span className="truncate">{t("webAppsPill1")}</span>
+            <span className="truncate">{t("webAppsPill2")}</span>
           </div>
         </div>
 
-        <div className="bg-[#F0FDF4] border border-emerald-100 text-slate-800 p-2 sm:p-2.5 rounded-2xl flex items-center gap-2 min-w-0">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-            <Cpu size={15} />
+        <div className="bg-[#FAF5FF] border border-purple-100 text-slate-800 p-2.5 sm:p-3 rounded-2xl flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+            <Smartphone size={16} />
           </div>
-          <div className="flex flex-col text-[11px] sm:text-xs font-bold leading-tight min-w-0">
-            <span className="truncate">AI &amp;</span>
-            <span className="truncate">Automation</span>
+          <div className="flex flex-col text-xs sm:text-[13px] font-bold leading-tight min-w-0">
+            <span className="truncate">{t("mobileAppsPill1")}</span>
+            <span className="truncate">{t("mobileAppsPill2")}</span>
           </div>
         </div>
 
-        <div className="bg-[#FFFBEB] border border-amber-100 text-slate-800 p-2 sm:p-2.5 rounded-2xl flex items-center gap-2 min-w-0">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
-            <Code2 size={15} />
+        <div className="bg-[#F0FDF4] border border-emerald-100 text-slate-800 p-2.5 sm:p-3 rounded-2xl flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+            <Cpu size={16} />
           </div>
-          <div className="flex flex-col text-[11px] sm:text-xs font-bold leading-tight min-w-0">
-            <span className="truncate">Custom</span>
-            <span className="truncate">Software</span>
+          <div className="flex flex-col text-xs sm:text-[13px] font-bold leading-tight min-w-0">
+            <span className="truncate">{t("aiAutomationPill1")}</span>
+            <span className="truncate">{t("aiAutomationPill2")}</span>
+          </div>
+        </div>
+
+        <div className="bg-[#FFFBEB] border border-amber-100 text-slate-800 p-2.5 sm:p-3 rounded-2xl flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+            <Code2 size={16} />
+          </div>
+          <div className="flex flex-col text-xs sm:text-[13px] font-bold leading-tight min-w-0">
+            <span className="truncate">{t("customSoftwarePill1")}</span>
+            <span className="truncate">{t("customSoftwarePill2")}</span>
           </div>
         </div>
       </div>
@@ -133,10 +140,10 @@ export default function LogiquelAdCard({
           </div>
           <div>
             <p className="font-display font-extrabold text-[#1E3A8A] text-sm sm:text-base leading-tight">
-              Let&apos;s Build Something Great
+              {t("letsBuildSomethingGreat")}
             </p>
             <p className="font-body text-xs text-slate-500 font-medium mt-0.5">
-              Your idea. Our technology.
+              {t("yourIdeaOurTech")}
             </p>
           </div>
         </div>
@@ -146,7 +153,7 @@ export default function LogiquelAdCard({
           rel="noopener noreferrer"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold px-5 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-md shadow-blue-500/25 flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01] active:scale-[0.98] cursor-pointer"
         >
-          <span>Get in Touch</span>
+          <span>{t("getInTouch")}</span>
           <ArrowRight size={15} />
         </a>
       </div>

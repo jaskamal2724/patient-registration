@@ -23,6 +23,9 @@ import {
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
 import LogiquelAdCard from "./LogiquelAdCard";
+import LanguageSelector from "./LanguageSelector";
+import { useLanguage } from "@/lib/LanguageContext";
+import { formatDelayText } from "../util/timeSlot";
 
 type Tab = "queue" | "settings";
 
@@ -168,6 +171,9 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
           </nav>
 
           <div className="border-t border-surface-200 pt-4 mt-4">
+            <div className="mb-4">
+              <LanguageSelector className="w-full justify-center py-2" />
+            </div>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center font-display text-sm font-bold text-brand-700">
                 {doctorName
@@ -209,6 +215,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0 ml-2">
+            <LanguageSelector />
             <div
               className={`flex items-center gap-1.5 text-[10px] font-body font-semibold px-2.5 py-1 rounded-full border ${regWindow.isOpen ? "bg-brand-50 text-brand-700 border-brand-200" : "bg-surface-100 text-surface-500 border-surface-200"}`}
             >
@@ -278,36 +285,63 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                 </p>
               </div>
 
-              {/* Registration Toggle Button */}
-              <button
-                onClick={() => toggleRegistration(!regWindow.isOpen)}
-                disabled={loading}
-                className={`w-fit flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-body text-xs sm:text-sm font-bold transition-all shadow-md active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed ${
-                  regWindow.isOpen
-                    ? "bg-red-500 hover:bg-red-600 text-white shadow-red-500/20"
-                    : "bg-brand-600 hover:bg-brand-700 text-white shadow-brand-500/20"
-                }`}
-              >
-                {loading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                    <span>Please wait...</span>
-                  </>
-                ) : (
-                  <>
-                    {regWindow.isOpen ? (
-                      <Square size={16} />
-                    ) : (
-                      <Play size={16} />
-                    )}
-                    <span>
-                      {regWindow.isOpen
-                        ? "Close Registration"
-                        : "Open Registration"}
-                    </span>
-                  </>
-                )}
-              </button>
+              {/* Action Buttons & Quick Controls */}
+              <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                <LanguageSelector />
+                {/* Doctor Delay Quick Selector */}
+                <div className={`relative flex items-center gap-1.5 border rounded-xl px-3 py-2 transition-all shadow-xs ${
+                  regWindow.delayMinutes > 0
+                    ? "bg-amber-50 border-amber-300 text-amber-900"
+                    : "bg-surface-50 border-surface-200 text-surface-700"
+                }`}>
+                  <Clock size={16} className={regWindow.delayMinutes > 0 ? "text-amber-600 animate-pulse shrink-0" : "text-surface-400 shrink-0"} />
+                  <span className="font-body text-xs font-semibold whitespace-nowrap">Late Status:</span>
+                  <select
+                    value={regWindow.delayMinutes}
+                    onChange={(e) => setRegWindow({ delayMinutes: parseInt(e.target.value, 10) || 0 })}
+                    className="bg-transparent font-body text-xs font-extrabold text-surface-900 focus:outline-none cursor-pointer pr-1"
+                  >
+                    <option value={0}>🟢 On Time (0m)</option>
+                    <option value={15}>⏱️ +15 Mins Late</option>
+                    <option value={30}>⏱️ +30 Mins Late</option>
+                    <option value={45}>⏱️ +45 Mins Late</option>
+                    <option value={60}>⏱️ +1 Hour Late</option>
+                    <option value={90}>⏱️ +1.5 Hours Late</option>
+                    <option value={120}>⏱️ +2 Hours Late</option>
+                  </select>
+                </div>
+
+                {/* Registration Toggle Button */}
+                <button
+                  onClick={() => toggleRegistration(!regWindow.isOpen)}
+                  disabled={loading}
+                  className={`w-fit flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-body text-xs sm:text-sm font-bold transition-all shadow-md active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed ${
+                    regWindow.isOpen
+                      ? "bg-red-500 hover:bg-red-600 text-white shadow-red-500/20"
+                      : "bg-brand-600 hover:bg-brand-700 text-white shadow-brand-500/20"
+                  }`}
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                      <span>Please wait...</span>
+                    </>
+                  ) : (
+                    <>
+                      {regWindow.isOpen ? (
+                        <Square size={16} />
+                      ) : (
+                        <Play size={16} />
+                      )}
+                      <span>
+                        {regWindow.isOpen
+                          ? "Close Registration"
+                          : "Open Registration"}
+                      </span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Stats Grid */}
@@ -660,6 +694,67 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                           }`}
                         />
                       </button>
+                    </div>
+
+                    {/* Doctor Delay / Running Late Management Card */}
+                    <div className="sm:col-span-2 bg-gradient-to-r from-amber-50/90 via-orange-50/60 to-amber-50/90 border border-amber-200/90 rounded-2xl p-5 shadow-xs">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2.5 bg-amber-100 text-amber-700 rounded-xl shrink-0">
+                          <Clock size={20} />
+                        </div>
+                        <div>
+                          <h3 className="font-display text-base font-extrabold text-slate-900">
+                            Doctor Delay Management
+                          </h3>
+                          <p className="font-body text-xs text-slate-600 font-medium">
+                            If doctor is late, set delay duration. Time slots on patient portal automatically adjust (+30 mins, +1 hour, etc.).
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 mt-4">
+                        {[
+                          { label: "🟢 On Time (0m)", minutes: 0 },
+                          { label: "⏱️ +15 Mins", minutes: 15 },
+                          { label: "⏱️ +30 Mins", minutes: 30 },
+                          { label: "⏱️ +45 Mins", minutes: 45 },
+                          { label: "⏱️ +1 Hour", minutes: 60 },
+                          { label: "⏱️ +1.5 Hours", minutes: 90 },
+                          { label: "⏱️ +2 Hours", minutes: 120 },
+                        ].map((preset) => {
+                          const isSelected = regWindow.delayMinutes === preset.minutes;
+                          return (
+                            <button
+                              key={preset.minutes}
+                              type="button"
+                              onClick={() => setRegWindow({ delayMinutes: preset.minutes })}
+                              className={`px-3.5 py-2 rounded-xl text-xs font-extrabold border transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 ${
+                                isSelected
+                                  ? "bg-slate-900 text-white border-slate-900 shadow-md ring-2 ring-slate-400/30"
+                                  : "bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-100"
+                              }`}
+                            >
+                              {isSelected && <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />}
+                              <span>{preset.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {regWindow.delayMinutes > 0 && (
+                        <div className="mt-4 bg-amber-100/90 border border-amber-300/80 rounded-xl p-3 text-xs text-amber-900 font-bold flex items-center justify-between">
+                          <span>
+                            ⚠️ Active Schedule Shift: All patient booking slots are currently shifted by +{formatDelayText(regWindow.delayMinutes)}.
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setRegWindow({ delayMinutes: 0 })}
+                            className="text-amber-800 underline hover:text-amber-950 font-extrabold ml-2 shrink-0 cursor-pointer"
+                          >
+                            Reset to 0m
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

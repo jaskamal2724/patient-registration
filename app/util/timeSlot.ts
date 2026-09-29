@@ -33,19 +33,20 @@ export const getTimeSlots = (
   breakStart: string = "13:00",
   breakEnd: string = "14:00",
   duration = 60,
+  delayMinutes = 0,
 ) => {
   const slots = [];
 
-  let start = toMinutes(startTime || "09:00");
-  let end = toMinutes(endTime || "18:00");
+  let start = toMinutes(startTime || "09:00") + delayMinutes;
+  let end = toMinutes(endTime || "18:00") + delayMinutes;
 
   // If end time is before or equal to start time (e.g. start 9 AM [540 min], end 01:00 [60 min] representing 1 PM)
   if (end <= start && end < 12 * 60) {
     end += 12 * 60;
   }
 
-  let breakS = toMinutes(breakStart || "13:00");
-  let breakE = toMinutes(breakEnd || "14:00");
+  let breakS = toMinutes(breakStart || "13:00") + delayMinutes;
+  let breakE = toMinutes(breakEnd || "14:00") + delayMinutes;
 
   let current = start;
 
@@ -65,15 +66,34 @@ export const getTimeSlots = (
   // Fallback if no slots generated
   if (slots.length === 0) {
     return [
-      { label: "9:00 AM - 10:00 AM" },
-      { label: "10:00 AM - 11:00 AM" },
-      { label: "11:00 AM - 12:00 PM" },
-      { label: "12:00 PM - 1:00 PM" },
-      { label: "2:00 PM - 3:00 PM" },
-      { label: "3:00 PM - 4:00 PM" },
-      { label: "4:00 PM - 5:00 PM" },
+      { label: `${formatTime(9 * 60 + delayMinutes)} - ${formatTime(10 * 60 + delayMinutes)}` },
+      { label: `${formatTime(10 * 60 + delayMinutes)} - ${formatTime(11 * 60 + delayMinutes)}` },
+      { label: `${formatTime(11 * 60 + delayMinutes)} - ${formatTime(12 * 60 + delayMinutes)}` },
+      { label: `${formatTime(12 * 60 + delayMinutes)} - ${formatTime(13 * 60 + delayMinutes)}` },
+      { label: `${formatTime(14 * 60 + delayMinutes)} - ${formatTime(15 * 60 + delayMinutes)}` },
+      { label: `${formatTime(15 * 60 + delayMinutes)} - ${formatTime(16 * 60 + delayMinutes)}` },
+      { label: `${formatTime(16 * 60 + delayMinutes)} - ${formatTime(17 * 60 + delayMinutes)}` },
     ];
   }
 
   return slots;
 };
+
+export function formatDelayText(delayMinutes: number): string {
+  if (delayMinutes <= 0) return "No Delay";
+  if (delayMinutes < 60) return `${delayMinutes} mins`;
+  const hours = delayMinutes / 60;
+  if (Number.isInteger(hours)) return `${hours} hour${hours > 1 ? "s" : ""}`;
+  return `${hours.toFixed(1)} hours`;
+}
+
+export function shiftSlotLabel(slotLabel: string | undefined, delayMinutes: number): string {
+  if (!slotLabel || delayMinutes <= 0) return slotLabel || "";
+  const parts = slotLabel.split(" - ");
+  if (parts.length !== 2) return slotLabel;
+
+  const startMin = toMinutes(parts[0]) + delayMinutes;
+  const endMin = toMinutes(parts[1]) + delayMinutes;
+
+  return `${formatTime(startMin)} - ${formatTime(endMin)}`;
+}

@@ -29,10 +29,13 @@ import {
   Shield,
   Heart,
   Info,
+  ExternalLink,
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
 import DocCareLogo from "./DocCareLogo";
-import { getTimeSlots } from "../util/timeSlot";
+import LanguageSelector from "./LanguageSelector";
+import { useLanguage } from "@/lib/LanguageContext";
+import { getTimeSlots, formatDelayText, shiftSlotLabel } from "../util/timeSlot";
 import {
   DoctorAvatarSVG,
   RegisterIllustrationSVG,
@@ -72,6 +75,7 @@ function formatTime12Hour(timeStr: string | null | undefined): string {
 }
 
 function SmartArrivalGuidance({ waitingBefore }: { waitingBefore: number }) {
+  const { t } = useLanguage();
   if (waitingBefore <= 2) {
     return (
       <div className="bg-emerald-50/90 border border-emerald-200/80 rounded-2xl p-4 text-left flex items-start gap-3 shadow-xs">
@@ -81,14 +85,12 @@ function SmartArrivalGuidance({ waitingBefore }: { waitingBefore: number }) {
         <div>
           <div className="flex items-center gap-2">
             <span className="font-body text-sm font-extrabold text-emerald-900">
-              Please Be Present in Clinic
+              {t("reachClinicNow")}
             </span>
             <span className="w-2 h-2 rounded-full bg-emerald-500 status-live" />
           </div>
           <p className="font-body text-xs text-emerald-700 mt-0.5 font-semibold leading-relaxed">
-            Your turn is near ({waitingBefore}{" "}
-            {waitingBefore === 1 ? "person" : "people"} ahead). Please remain
-            inside the clinic waiting area.
+            {t("reachClinicNowMsg")}
           </p>
         </div>
       </div>
@@ -104,12 +106,11 @@ function SmartArrivalGuidance({ waitingBefore }: { waitingBefore: number }) {
         <div>
           <div className="flex items-center gap-2">
             <span className="font-body text-sm font-extrabold text-amber-900">
-              On Your Way — Head to Clinic
+              {t("leaveHomeNow")}
             </span>
           </div>
           <p className="font-body text-xs text-amber-700 mt-0.5 font-semibold leading-relaxed">
-            Arrive within 15–20 minutes. There are {waitingBefore} people
-            waiting ahead of you.
+            {t("leaveHomeNowMsg")}
           </p>
         </div>
       </div>
@@ -124,12 +125,11 @@ function SmartArrivalGuidance({ waitingBefore }: { waitingBefore: number }) {
       <div>
         <div className="flex items-center gap-2">
           <span className="font-body text-sm font-extrabold text-blue-900">
-            Relax — You Have Time
+            {t("relaxAtHome")}
           </span>
         </div>
         <p className="font-body text-xs text-blue-700 mt-0.5 font-semibold leading-relaxed">
-          {waitingBefore} people ahead. Avoid clinic crowding — head to clinic
-          when 3 people are ahead.
+          {t("relaxAtHomeMsg")}
         </p>
       </div>
     </div>
@@ -138,22 +138,34 @@ function SmartArrivalGuidance({ waitingBefore }: { waitingBefore: number }) {
 
 {/* Header Component */}
 function PatientHeader({ onExit }: { onExit: () => void }) {
+  const { t } = useLanguage();
   return (
-    <header className="relative z-10 flex items-center justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto">
-      <DocCareLogo variant="header" subtitle="Patient Portal" />
+    <header className="relative z-10 flex items-center justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
+      <DocCareLogo variant="header" subtitle={t("patientPortal")} />
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap justify-end">
         <InstallPWA />
+        <a
+          href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200 rounded-full px-3 py-1.5 shadow-xs transition-all cursor-pointer shrink-0"
+          title="Clinic Location on Google Maps"
+        >
+          <MapPin size={13} className="text-emerald-600" />
+          <span>{t("location")}</span>
+        </a>
+        <LanguageSelector />
         <div className="bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-full px-3 py-1 font-extrabold text-xs flex items-center gap-1.5 shadow-2xs">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Open</span>
+          <span>{t("open")}</span>
         </div>
         <div className="h-4 w-px bg-slate-200 mx-0.5" />
         <button
           onClick={onExit}
           className="text-slate-600 hover:text-slate-900 font-bold text-sm transition-colors cursor-pointer"
         >
-          Exit
+          {t("exit")}
         </button>
       </div>
     </header>
@@ -164,10 +176,13 @@ function PatientHeader({ onExit }: { onExit: () => void }) {
 function CheckTokenSearchCard({
   patients,
   onSelectPatient,
+  delayMinutes = 0,
 }: {
   patients: Patient[];
   onSelectPatient: (p: Patient) => void;
+  delayMinutes?: number;
 }) {
+  const { t, tTimeSlot } = useLanguage();
   const [searchPhone, setSearchPhone] = useState("");
   const cleanQuery = searchPhone.replace(/\D/g, "");
 
@@ -191,15 +206,15 @@ function CheckTokenSearchCard({
       <div className="flex items-center gap-2 mb-3">
         <TicketBadgeIconSVG className="w-7 h-7" />
         <span className="bg-white/90 backdrop-blur-xs border border-blue-200 text-blue-600 font-extrabold text-[11px] uppercase tracking-wider px-3 py-1 rounded-full">
-          LIVE TOKEN STATUS
+          {t("liveTokenStatus")}
         </span>
       </div>
 
       <h2 className="font-display text-xl sm:text-2xl font-extrabold text-slate-900 mb-1 tracking-tight">
-        Check Your Token Number
+        {t("checkTokenTitle")}
       </h2>
       <p className="font-body text-xs sm:text-sm text-slate-600 font-medium mb-4 max-w-sm leading-relaxed">
-        Already registered? Forgot your token number? Just search with your mobile number.
+        {t("checkTokenSubtitle")}
       </p>
 
       {/* Pill Search Input Bar */}
@@ -209,7 +224,7 @@ function CheckTokenSearchCard({
           type="tel"
           maxLength={10}
           className="w-full bg-transparent font-body text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:outline-none pr-8 py-2"
-          placeholder="Enter your 10-digit mobile number"
+          placeholder={t("enterMobilePlaceholder")}
           value={searchPhone}
           onChange={(e) => setSearchPhone(e.target.value.replace(/\D/g, ""))}
         />
@@ -249,37 +264,39 @@ function CheckTokenSearchCard({
                 statusBadge = (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    In Consultation
+                    {t("inConsultation")}
                   </span>
                 );
-                statusMessage = "🎉 It's your turn right now! Please enter doctor's cabin.";
+                statusMessage = t("inConsultationMsg");
               } else if (patient.status === "waiting") {
                 statusBadge = (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
                     <Clock size={12} />
-                    Waiting
+                    {t("waiting")}
                   </span>
                 );
                 statusMessage =
                   waitingAhead === 0
-                    ? "⚡ You are next in line! Please wait nearby."
-                    : `⌛ ${waitingAhead} ${waitingAhead === 1 ? "person" : "people"} ahead of you in queue.`;
+                    ? t("nextInLineMsg")
+                    : waitingAhead === 1
+                      ? t("aheadInQueueOneMsg")
+                      : t("aheadInQueueManyMsg", { count: waitingAhead });
               } else if (patient.status === "done") {
                 statusBadge = (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
                     <CheckCircle2 size={12} />
-                    Completed
+                    {t("completed")}
                   </span>
                 );
-                statusMessage = "✅ Your consultation is completed.";
+                statusMessage = t("completedMsg");
               } else {
                 statusBadge = (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">
                     <AlertCircle size={12} />
-                    Skipped
+                    {t("skipped")}
                   </span>
                 );
-                statusMessage = "⚠️ Your token was skipped. Please inform receptionist.";
+                statusMessage = t("skippedMsg");
               }
 
               return (
@@ -301,7 +318,7 @@ function CheckTokenSearchCard({
                           {patient.phone}{" "}
                           {patient.time_slot && (
                             <span className="ml-1 font-semibold text-blue-600">
-                              ({patient.time_slot})
+                              ({tTimeSlot(shiftSlotLabel(patient.time_slot, delayMinutes))})
                             </span>
                           )}
                         </p>
@@ -312,7 +329,7 @@ function CheckTokenSearchCard({
                   <div className="text-xs font-body font-semibold text-slate-600 bg-slate-50 rounded-xl px-3 py-2 border border-slate-100 flex items-center justify-between gap-2">
                     <span>{statusMessage}</span>
                     <span className="text-[11px] font-bold text-blue-600 hover:underline shrink-0">
-                      View Ticket &rarr;
+                      {t("viewTicket")} &rarr;
                     </span>
                   </div>
                   {patient.status === "waiting" && (
@@ -326,13 +343,13 @@ function CheckTokenSearchCard({
           ) : cleanQuery.length >= 10 ? (
             <div className="bg-white rounded-2xl p-4 border border-slate-200 text-center">
               <p className="font-body text-xs font-bold text-slate-700">
-                No registered patient found with phone{" "}
+                {t("noPatientFound")}{" "}
                 <span className="font-mono-custom font-black text-slate-900">
                   {searchPhone}
                 </span>
               </p>
               <p className="font-body text-[11px] text-slate-400 mt-0.5 font-medium">
-                Please check the number or book an appointment below.
+                {t("checkNumberOrBook")}
               </p>
             </div>
           ) : null}
@@ -350,6 +367,7 @@ function AppointmentsFullView({
   patients: Patient[];
   onSelectPatient: (p: Patient) => void;
 }) {
+  const { t } = useLanguage();
   const [showWalkinNotice, setShowWalkinNotice] = useState(false);
 
   return (
@@ -361,10 +379,10 @@ function AppointmentsFullView({
 
         {/* Title & Subtitle */}
         <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-[#0D1B3E] mb-2 tracking-tight">
-          Appointments are Full
+          {t("appointmentsFullTitle")}
         </h2>
         <p className="font-body text-xs sm:text-sm text-slate-600 font-medium max-w-md mx-auto leading-relaxed mb-6">
-          All appointment slots for today are booked. You can still visit the clinic directly (walk-in), but you may have to wait a little.
+          {t("appointmentsFullSubtitle")}
         </p>
 
         {/* Priority Info Pill Box */}
@@ -374,13 +392,13 @@ function AppointmentsFullView({
           </div>
           <div className="w-px h-8 bg-blue-200/80 shrink-0 self-center" />
           <p className="font-body text-xs sm:text-sm font-semibold text-blue-900 leading-snug self-center">
-            Priority will be given to people who have taken an appointment.
+            {t("walkinNote")}
           </p>
         </div>
 
         {/* Section Heading */}
         <h3 className="font-display text-sm sm:text-base font-extrabold text-slate-900 text-left mb-3">
-          What you can do now
+          {t("walkinGuidanceTitle")}
         </h3>
 
         {/* Walk-in Button Card */}
@@ -392,10 +410,10 @@ function AppointmentsFullView({
             <WalkInIconSVG className="w-11 h-11" />
             <div>
               <h4 className="font-display font-extrabold text-slate-900 text-sm sm:text-base group-hover:text-blue-700 transition-colors">
-                Visit the clinic (Walk-in)
+                {t("walkinGuidanceTitle")}
               </h4>
               <p className="font-body text-xs text-slate-500 font-medium">
-                Come directly and wait for your turn.
+                {t("walkinGuidanceText")}
               </p>
             </div>
           </div>
@@ -403,11 +421,21 @@ function AppointmentsFullView({
         </div>
 
         {showWalkinNotice && (
-          <div className="mt-3 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left text-xs font-semibold text-amber-900 animate-fade-in">
-            <p className="mb-1 font-bold">📍 Walk-in Guidance:</p>
+          <div className="mt-3 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left text-xs font-semibold text-amber-900 animate-fade-in space-y-2">
+            <p className="font-bold">{t("walkinGuidanceTitle")}</p>
             <p className="leading-relaxed text-amber-800">
-              Please visit the clinic reception desk directly. Walk-in tokens will be issued at the counter subject to availability.
+              {t("walkinGuidanceText")}
             </p>
+            <a
+              href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow-xs transition-all cursor-pointer mt-1"
+            >
+              <MapPin size={14} />
+              <span>{t("getDirectionsGoogleMaps")}</span>
+              <ExternalLink size={13} />
+            </a>
           </div>
         )}
 
@@ -419,9 +447,7 @@ function AppointmentsFullView({
         </div>
 
         <p className="font-body text-[11px] text-slate-400 font-medium leading-relaxed max-w-xs mx-auto">
-          Thank you for your patience and understanding.
-          <br />
-          We are here to take care of you.
+          {t("thankYouPatience")}
         </p>
       </div>
 
@@ -445,11 +471,14 @@ function RegistrationForm({
   addPatient: (form: PatientForm) => Promise<Patient>;
   patients: Patient[];
 }) {
+  const { t, tDynamic, tDelay, tTimeSlot, tTime12Hour } = useLanguage();
   const initialSlots = getTimeSlots(
     regWindow.startTime || "09:00",
     regWindow.endTime || "18:00",
     "13:00",
-    "14:00"
+    "14:00",
+    60,
+    regWindow.delayMinutes || 0
   ).map((s: TimeSlot) => s.label);
 
   const [form, setForm] = useState({
@@ -508,7 +537,8 @@ function RegistrationForm({
         const breakStart = "13:00";
         const breakEnd = "14:00";
 
-        const slots = getTimeSlots(startTime, endTime, breakStart, breakEnd);
+        const delayMins = result?.data?.[0]?.delay_minutes ?? regWindow.delayMinutes ?? 0;
+        const slots = getTimeSlots(startTime, endTime, breakStart, breakEnd, 60, delayMins);
         const slotLabels = slots.map((slot: TimeSlot) => slot.label);
         if (slotLabels.length > 0) {
           setTIME_SLOTS(slotLabels);
@@ -535,7 +565,7 @@ function RegistrationForm({
         className="flex items-center gap-1.5 text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 font-body text-xs font-bold mb-4 transition-colors px-3.5 py-1.5 rounded-full shadow-2xs cursor-pointer"
       >
         <ArrowLeft size={14} />
-        <span>Back</span>
+        <span>{t("backToHome")}</span>
       </button>
 
       {/* Screen Header Block (IMAGE 1 TOP HEADER) */}
@@ -546,16 +576,15 @@ function RegistrationForm({
           </div>
           <div>
             <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight mb-0.5">
-              Register for OPD
+              {t("patientRegistration")}
             </h2>
             <p className="font-body text-xs sm:text-sm text-slate-500 font-semibold mb-1">
-              {regWindow.message.includes("OPD") ? regWindow.message : `${regWindow.message}'s OPD Session`}
+              {tDynamic(regWindow.message)}
             </p>
             <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
               <Clock size={14} className="text-slate-400" />
               <span>
-                {formatTime12Hour(regWindow.startTime)} to{" "}
-                {formatTime12Hour(regWindow.endTime)}
+                {tTime12Hour(regWindow.startTime)} – {tTime12Hour(regWindow.endTime)}
               </span>
             </div>
           </div>
@@ -571,7 +600,7 @@ function RegistrationForm({
         <div>
           <label className="font-body text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
             <User size={15} className="text-blue-600" />
-            <span>Full Name</span>
+            <span>{t("fullNameLabel")}</span>
             <span className="text-red-500">*</span>
           </label>
           <div className="relative">
@@ -581,7 +610,7 @@ function RegistrationForm({
             />
             <input
               className={`w-full border rounded-xl pl-11 pr-4 py-3 font-body text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${errors.name ? "border-red-300 bg-red-50 text-red-900" : "border-slate-200 bg-slate-50/50 text-slate-900 focus:bg-white"}`}
-              placeholder="Enter your full name"
+              placeholder={t("fullNamePlaceholder")}
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             />
@@ -597,7 +626,7 @@ function RegistrationForm({
           <div>
             <label className="font-body text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
               <Calendar size={15} className="text-blue-600" />
-              <span>Age</span>
+              <span>{t("ageLabel")}</span>
               <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -610,7 +639,7 @@ function RegistrationForm({
                 min={1}
                 max={120}
                 className={`w-full border rounded-xl pl-11 pr-3 py-3 font-body text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${errors.age ? "border-red-300 bg-red-50 text-red-900" : "border-slate-200 bg-slate-50/50 text-slate-900 focus:bg-white"}`}
-                placeholder="e.g. 35"
+                placeholder={t("agePlaceholder")}
                 value={form.age}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, age: e.target.value }))
@@ -626,7 +655,7 @@ function RegistrationForm({
           <div>
             <label className="font-body text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
               <User size={15} className="text-blue-600" />
-              <span>Gender</span>
+              <span>{t("genderLabel")}</span>
               <span className="text-red-500">*</span>
             </label>
             <select
@@ -636,9 +665,9 @@ function RegistrationForm({
                 setForm((f) => ({ ...f, gender: e.target.value as any }))
               }
             >
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
+              <option value="Male">{t("male")}</option>
+              <option value="Female">{t("female")}</option>
+              <option value="Other">{t("other")}</option>
             </select>
           </div>
         </div>
@@ -647,7 +676,7 @@ function RegistrationForm({
         <div>
           <label className="font-body text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
             <Phone size={15} className="text-blue-600" />
-            <span>Phone Number</span>
+            <span>{t("mobileNumberLabel")}</span>
             <span className="text-red-500">*</span>
           </label>
           <div className="relative">
@@ -659,7 +688,7 @@ function RegistrationForm({
               type="tel"
               maxLength={10}
               className={`w-full border rounded-xl pl-11 pr-4 py-3 font-body text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${errors.phone ? "border-red-300 bg-red-50 text-red-900" : "border-slate-200 bg-slate-50/50 text-slate-900 focus:bg-white"}`}
-              placeholder="10-digit mobile number"
+              placeholder={t("mobilePlaceholder")}
               value={form.phone}
               onChange={(e) =>
                 setForm((f) => ({
@@ -674,12 +703,19 @@ function RegistrationForm({
           )}
         </div>
 
-        {/* Time Slot Picker (IMAGE 1 TIME SLOT LIST) */}
+        {/* Time Slot Picker */}
         <div>
-          <label className="font-body text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
-            <Clock size={15} className="text-blue-600" />
-            <span>Select OPD Time Slot (Max {capacity} per slot)</span>
-            <span className="text-red-500">*</span>
+          <label className="font-body text-xs font-bold text-slate-700 mb-2 flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              <Clock size={15} className="text-blue-600" />
+              <span>{t("selectTimeSlot")} (Max {capacity})</span>
+              <span className="text-red-500">*</span>
+            </span>
+            {regWindow.delayMinutes > 0 && (
+              <span className="text-[11px] font-extrabold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-0.5">
+                +{tDelay(regWindow.delayMinutes)} {t("delayApplied")}
+              </span>
+            )}
           </label>
           {errors.time_slot && (
             <p className="mb-2 text-xs font-bold text-red-500">{errors.time_slot}</p>
@@ -729,7 +765,7 @@ function RegistrationForm({
                         }
                       />
                       <span className="font-body text-xs sm:text-sm">
-                        {slot}
+                        {tTimeSlot(slot)}
                       </span>
                     </div>
                   </div>
@@ -744,7 +780,7 @@ function RegistrationForm({
                           : "bg-slate-100 text-slate-500"
                     }`}
                   >
-                    {isFull ? `FULL (${capacity}/${capacity})` : `${bookedCount}/${capacity}`}
+                    {isFull ? `${t("fullSlotText")} (${capacity}/${capacity})` : `${bookedCount}/${capacity}`}
                   </span>
                 </button>
               );
@@ -761,11 +797,11 @@ function RegistrationForm({
           {submitting ? (
             <>
               <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-              <span>Generating Token...</span>
+              <span>{t("submitting")}</span>
             </>
           ) : (
             <>
-              <span>Get Token Number</span>
+              <span>{t("getOPDToken")}</span>
               <ChevronRight size={18} />
             </>
           )}
@@ -774,7 +810,7 @@ function RegistrationForm({
         {/* Security Footer Notice (IMAGE 1 FOOTER) */}
         <div className="bg-blue-50/80 border border-blue-100/80 rounded-full px-4 py-2 flex items-center justify-center gap-2 text-xs font-semibold text-blue-700 w-fit mx-auto mt-4">
           <Shield size={14} className="text-blue-600 shrink-0" />
-          <span>Your details are secure and used only for this appointment.</span>
+          <span>{t("securityNotice")}</span>
         </div>
       </div>
     </div>
@@ -786,11 +822,14 @@ function SuccessScreen({
   patient,
   patients,
   pageRef,
+  delayMinutes = 0,
 }: {
   patient: Patient;
   patients: Patient[];
   pageRef: React.RefObject<HTMLDivElement | null>;
+  delayMinutes?: number;
 }) {
+  const { t, tDelay, tTimeSlot } = useLanguage();
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState(false);
 
@@ -828,7 +867,7 @@ function SuccessScreen({
 
         <div className="inline-flex items-center justify-center gap-2 text-white/90 text-xs sm:text-sm font-medium tracking-wide mb-2 relative z-10">
           <Ticket size={16} className="text-blue-200" />
-          <span>Your Token Number</span>
+          <span>{t("yourToken")}</span>
         </div>
 
         <p className="font-mono-custom text-6xl sm:text-7xl md:text-8xl font-black leading-none tracking-tight text-white drop-shadow-md my-2 relative z-10">
@@ -837,17 +876,20 @@ function SuccessScreen({
 
         <div className="mt-3 inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/25 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold text-white relative z-10 shadow-inner">
           <Clock size={15} className="text-white" />
-          <span>Slot: {patient.time_slot || "10:00 AM – 11:00 AM"}</span>
+          <span>
+            {t("selectTimeSlot")}: {tTimeSlot(shiftSlotLabel(patient.time_slot, delayMinutes))}
+            {delayMinutes > 0 ? ` (+${tDelay(delayMinutes)})` : ""}
+          </span>
         </div>
 
         <div className="w-12 h-1 bg-white/30 rounded-full mx-auto my-4 relative z-10" />
 
         <div className="relative z-10">
           <p className="font-display font-extrabold text-white text-base sm:text-lg mb-1">
-            You&apos;re registered successfully!
+            {t("registrationSuccessful")}
           </p>
           <p className="font-body text-blue-100/90 text-xs sm:text-sm max-w-xs mx-auto font-medium">
-            Thank you for your patience. Please keep this token for your appointment.
+            {t("tokenIssuedMsg")}
           </p>
         </div>
       </div>
@@ -864,10 +906,10 @@ function SuccessScreen({
           className="border-2 border-blue-600 hover:bg-blue-50 text-blue-600 font-bold text-xs sm:text-sm py-3 px-7 rounded-full flex items-center gap-2 transition-all shadow-xs hover:shadow-md cursor-pointer active:scale-95 disabled:opacity-60"
         >
           <Download size={16} />
-          <span>{downloading ? "Preparing Image..." : "Download / Take Screenshot"}</span>
+          <span>{downloading ? t("downloadingToken") : t("downloadTokenCard")}</span>
         </button>
         <p className="text-xs text-slate-400 font-medium mt-2.5">
-          Keep this token for your reference
+          {t("queueTrackingTip")}
         </p>
         {downloadError && (
           <p className="mt-2 text-xs font-medium text-red-500 font-body">
@@ -889,6 +931,7 @@ export default function PatientPortal() {
     toast,
     initialLoading,
   } = usePatientView();
+  const { t, tDelay, tDynamic, tTime12Hour, tTimeSlot } = useLanguage();
   const router = useRouter();
   const pageRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
@@ -910,12 +953,15 @@ export default function PatientPortal() {
       try {
         const res = await fetch("/api/time-slot");
         const json = await res.json();
+        const delayMins = json?.data?.[0]?.delay_minutes ?? regWindow.delayMinutes ?? 0;
         if (json?.data?.[0]) {
           const slots = getTimeSlots(
             json.data[0].start_time,
             json.data[0].end_time,
             "13:00",
-            "14:00"
+            "14:00",
+            60,
+            delayMins
           );
           setTIME_SLOTS(slots.map((s: TimeSlot) => s.label));
         } else {
@@ -923,7 +969,9 @@ export default function PatientPortal() {
             regWindow.startTime || "09:00",
             regWindow.endTime || "18:00",
             "13:00",
-            "14:00"
+            "14:00",
+            60,
+            delayMins
           );
           setTIME_SLOTS(slots.map((s: TimeSlot) => s.label));
         }
@@ -932,7 +980,9 @@ export default function PatientPortal() {
           regWindow.startTime || "09:00",
           regWindow.endTime || "18:00",
           "13:00",
-          "14:00"
+          "14:00",
+          60,
+          regWindow.delayMinutes || 0
         );
         setTIME_SLOTS(slots.map((s: TimeSlot) => s.label));
       }
@@ -974,20 +1024,37 @@ export default function PatientPortal() {
               }}
             />
           ) : (
-            /* IMAGE 3 & 4: Patient Portal Home View */
+            /* Patient Portal Home View */
             <div className="animate-slide-up text-left space-y-4">
-              {/* CARD 1: Doctor Status Card (IMAGE 3 vs IMAGE 4) */}
+              {/* Doctor Delay Alert Banner */}
+              {regWindow.delayMinutes > 0 && (
+                <div className="bg-amber-500/10 border border-amber-300/80 rounded-[22px] p-4 text-left flex items-start gap-3 text-amber-950 shadow-xs">
+                  <div className="p-2.5 bg-amber-100/90 rounded-xl shrink-0 text-amber-700 mt-0.5">
+                    <Clock size={18} className="animate-pulse" />
+                  </div>
+                  <div>
+                    <span className="font-display text-sm font-extrabold text-amber-950 block">
+                      {t("doctorLateTitle")} (+{tDelay(regWindow.delayMinutes)})
+                    </span>
+                    <p className="font-body text-xs font-semibold text-amber-800 mt-0.5 leading-relaxed">
+                      {t("doctorLateDesc", { delay: tDelay(regWindow.delayMinutes) })}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* CARD 1: Doctor Status Card */}
               {inProgress ? (
                 /* IMAGE 4: When doctor HAS STARTED seeing patients */
                 <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
                   <h3 className="font-display text-base font-extrabold text-slate-900 mb-3">
-                    Live Queue Status
+                    {t("liveQueue")}
                   </h3>
                   <div className="flex items-center gap-4">
                     <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
                     <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 rounded-2xl p-4 text-white shadow-md shadow-blue-500/20 flex-1 relative overflow-hidden">
                       <p className="font-body text-[11px] font-bold text-blue-100 uppercase tracking-widest mb-1">
-                        DOCTOR IS SEEING
+                        {t("doctorSeeingTitle")}
                       </p>
                       <div className="flex items-baseline justify-between gap-2">
                         <span className="font-mono-custom text-4xl sm:text-5xl font-black text-white leading-none">
@@ -996,11 +1063,11 @@ export default function PatientPortal() {
                         <div className="flex flex-col items-end gap-1">
                           <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
                             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                            In consultation
+                            {t("inConsultation")}
                           </span>
                           {inProgress.time_slot && (
                             <span className="bg-white/20 backdrop-blur-xs rounded-md px-2 py-0.5 text-[11px] font-mono-custom font-semibold text-white">
-                              {inProgress.time_slot}
+                              {tTimeSlot(inProgress.time_slot)}
                             </span>
                           )}
                         </div>
@@ -1015,10 +1082,10 @@ export default function PatientPortal() {
                     <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
                     <div>
                       <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
-                        Doctor will visit shortly
+                        {t("doctorWillVisitTitle")}
                       </h3>
                       <p className="font-body text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-                        The doctor has not started seeing patients yet. You will be able to see the live token number once the doctor starts the session.
+                        {t("doctorNotStartedMsg")}
                       </p>
                     </div>
                   </div>
@@ -1027,7 +1094,7 @@ export default function PatientPortal() {
                   <div className="bg-[#F0F5FF] border border-blue-100/80 rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-bold text-blue-900 mt-4">
                     <Clock size={16} className="text-blue-600 shrink-0" />
                     <span>
-                      Expected time: {formatTime12Hour(regWindow.startTime)} – {formatTime12Hour(regWindow.endTime)}
+                      {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)} – {tTime12Hour(regWindow.endTime)}
                     </span>
                   </div>
                 </div>
@@ -1040,6 +1107,7 @@ export default function PatientPortal() {
                   setRegisteredPatient(p);
                   setStep("success");
                 }}
+                delayMinutes={regWindow.delayMinutes}
               />
 
               {/* CARD 3: Book an Appointment Card */}
@@ -1055,10 +1123,10 @@ export default function PatientPortal() {
                 <BookAppointmentIconSVG className="w-12 h-12 mb-3" />
 
                 <h3 className="font-display text-xl sm:text-2xl font-extrabold text-slate-900 mb-1 tracking-tight">
-                  Book an Appointment
+                  {t("bookAppointmentTitle")}
                 </h3>
                 <p className="font-body text-xs sm:text-sm text-slate-600 font-medium mb-5 max-w-sm leading-relaxed">
-                  If you haven&apos;t taken an appointment yet, click below and fill in your details.
+                  {t("bookAppointmentSubtitle")}
                 </p>
 
                 <button
@@ -1072,7 +1140,7 @@ export default function PatientPortal() {
                   }}
                   className="w-full bg-[#FFC629] hover:bg-[#F5B813] text-slate-900 font-display font-extrabold text-base rounded-2xl py-3.5 flex items-center justify-center gap-2 shadow-md shadow-amber-400/20 cursor-pointer transition-all hover:scale-[1.01] active:scale-[0.99]"
                 >
-                  <span>Book Appointment</span>
+                  <span>{t("bookSlotBtn")}</span>
                   <ChevronRight size={18} />
                 </button>
               </div>
@@ -1080,7 +1148,7 @@ export default function PatientPortal() {
               {/* Footer Note */}
               <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400 font-medium pt-2">
                 <Shield size={14} className="text-slate-400" />
-                <span>Your health and privacy are important to us.</span>
+                <span>{t("privacyNotice")}</span>
               </div>
             </div>
           )
@@ -1106,6 +1174,7 @@ export default function PatientPortal() {
             patient={registeredPatient}
             patients={patients}
             pageRef={pageRef}
+            delayMinutes={regWindow.delayMinutes}
           />
         )}
       </main>

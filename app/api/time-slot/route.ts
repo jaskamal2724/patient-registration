@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   try {
     const { data, error } = await supabase
       .from("doctors")
-      .select("start_time, end_time");
+      .select("start_time, end_time, delay_minutes");
 
     if (error) {
       return NextResponse.json(

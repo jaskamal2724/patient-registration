@@ -24,8 +24,9 @@ export function useDoctor(initialDoctor: Doctor) {
     message: doctor.opd_message || session?.message || "",
     patientsPerHour: doctor.patients_per_hour ?? 10,
     autoClose10AM: Boolean(doctor.auto_close_10am),
+    delayMinutes: doctor.delay_minutes ?? 0,
   };
-
+ 
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -78,6 +79,7 @@ export function useDoctor(initialDoctor: Doctor) {
       if (w.message !== undefined) docPatch.opd_message = w.message;
       if (w.patientsPerHour !== undefined) docPatch.patients_per_hour = w.patientsPerHour;
       if (w.autoClose10AM !== undefined) docPatch.auto_close_10am = w.autoClose10AM;
+      if (w.delayMinutes !== undefined) docPatch.delay_minutes = w.delayMinutes;
 
       const updatedDoc = await api.updateDoctorProfile(doctor.id, docPatch);
       setDoctor(updatedDoc);

@@ -49,6 +49,7 @@ export function usePatientView() {
     message: cutoffNotice || doctor?.opd_message || (doctor ? `${doctor.name}'s OPD Session` : "OPD Registration"),
     patientsPerHour: doctor?.patients_per_hour ?? 10,
     autoClose10AM,
+    delayMinutes: doctor?.delay_minutes ?? 0,
   };
 
   useEffect(() => {

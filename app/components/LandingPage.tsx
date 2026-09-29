@@ -13,16 +13,20 @@ import {
   Radio,
   User,
   Clock,
+  MapPin,
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
 import LogiquelAdCard from "./LogiquelAdCard";
 import LogiquelLogo from "./LogiquelLogo";
 import DocCareLogo from "./DocCareLogo";
 import LoadingScreen from "./LoadingScreen";
+import LanguageSelector from "./LanguageSelector";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export default function LandingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
   const [showPortalLoading, setShowPortalLoading] = useState(true);
   const [showPinModal, setShowPinModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -59,7 +63,7 @@ export default function LandingPage() {
     } catch (e) {
       setLoginError(true);
       setError(
-        e instanceof Error ? e.message : "Invalid credentials. Try again.",
+        e instanceof Error ? e.message : t("invalidCredentials"),
       );
       setTimeout(() => {
         setLoginError(false);
@@ -77,13 +81,26 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen relative overflow-x-hidden max-w-full bg-[#FAFAFA] flex flex-col justify-between">
       {/* Top Header */}
-      <header className="relative z-10 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto">
+      <header className="relative z-10 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
         <div className="flex flex-col gap-1.5">
-          <DocCareLogo variant="full" subtitle="Care, just a tap away." />
-          <InstallPWA />
+          <DocCareLogo variant="full" subtitle={t("appSubtitle")} />
+          <div className="flex items-center gap-2 flex-wrap">
+            <InstallPWA />
+            <a
+              href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200 rounded-full px-3 py-1.5 shadow-xs transition-all cursor-pointer shrink-0 w-fit"
+              title="Clinic Location on Google Maps"
+            >
+              <MapPin size={13} className="text-emerald-600" />
+              <span>{t("location")}</span>
+            </a>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <LanguageSelector />
           <button
             onClick={() => {
               if (isLoggedIn) {
@@ -92,14 +109,14 @@ export default function LandingPage() {
                 setShowPinModal(true);
               }
             }}
-            className="flex items-center gap-2 bg-[#0F172A] hover:bg-slate-800 text-white rounded-full px-4 py-2 font-body text-xs sm:text-sm font-bold transition-all shadow-md hover:scale-[1.03] active:scale-[0.97] border border-slate-700/50 cursor-pointer"
+            className="flex items-center gap-2 bg-[#0F172A] hover:bg-slate-800 text-white rounded-full px-3.5 sm:px-4 py-1.5 sm:py-2 font-body text-xs sm:text-sm font-bold transition-all shadow-md hover:scale-[1.03] active:scale-[0.97] border border-slate-700/50 cursor-pointer shrink-0"
           >
             {isLoggedIn ? (
               <UserCheck size={16} className="text-emerald-400" />
             ) : (
               <Stethoscope size={16} className="text-[#0066FF]" />
             )}
-            <span>Dr. Login</span>
+            <span>{t("doctorLogin")}</span>
           </button>
         </div>
       </header>
@@ -111,16 +128,16 @@ export default function LandingPage() {
           {/* Top Pill Tag */}
           <div className="inline-flex items-center gap-1.5 bg-[#EBF3FF] border border-[#D0E2FF] text-[#1D68F3] rounded-full px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-wider mb-4">
             <Calendar size={14} className="text-[#1D68F3]" />
-            <span>Doctor Sarvesh OPD</span>
+            <span>{t("doctorName")}</span>
           </div>
 
           <div className="flex items-center justify-between gap-2 sm:gap-4 mb-5">
             <div className="flex-1 min-w-0 pr-1">
-              <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-[#0B1527] tracking-tight leading-snug mb-2">
-                Book your<br />appointment
+              <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-[#0B1527] tracking-tight leading-snug mb-2 whitespace-pre-line">
+                {t("bookAppointmentTitle")}
               </h2>
               <p className="font-body text-xs sm:text-sm text-slate-500 font-medium leading-relaxed mb-4 sm:mb-5 max-w-[240px]">
-                Get your digital token and track your queue live.
+                {t("bookAppointmentSubtitle")}
               </p>
 
               {/* Book Appointment Pill Button */}
@@ -129,7 +146,7 @@ export default function LandingPage() {
                 className="bg-[#1D68F3] hover:bg-[#1554C6] text-white font-bold text-xs sm:text-sm px-4 sm:px-6 py-3 sm:py-3.5 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer whitespace-nowrap w-fit"
               >
                 <Calendar size={16} className="shrink-0" />
-                <span>Book your slot</span>
+                <span>{t("bookSlotBtn")}</span>
                 <ArrowRight size={14} className="shrink-0" />
               </button>
             </div>
@@ -155,7 +172,7 @@ export default function LandingPage() {
 
                 {/* Token A024 Badge */}
                 <div className="bg-white rounded-lg border border-slate-200/90 p-1 sm:p-1.5 shadow-xs text-left w-20 sm:w-24 -ml-1">
-                  <p className="text-[9px] text-slate-400 font-semibold font-body leading-none">Token</p>
+                  <p className="text-[9px] text-slate-400 font-semibold font-body leading-none">{t("tokenBadge")}</p>
                   <p className="text-xs sm:text-sm font-extrabold text-[#1D68F3] font-mono-custom tracking-wider leading-none mt-0.5">A024</p>
                 </div>
               </div>
@@ -168,7 +185,7 @@ export default function LandingPage() {
               {/* Floating Green Live Badge */}
               <div className="bg-[#00B887] text-white text-[9px] sm:text-[10px] font-extrabold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-md z-30 absolute bottom-0 right-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                <span>Live</span>
+                <span>{t("liveBadge")}</span>
               </div>
             </div>
           </div>
@@ -180,8 +197,7 @@ export default function LandingPage() {
                 <Ticket size={14} />
               </div>
               <div className="flex flex-col text-left text-[10px] sm:text-xs font-bold text-slate-700 leading-tight min-w-0">
-                <span className="truncate">Digital</span>
-                <span className="truncate">Token</span>
+                <span className="truncate">{t("digitalToken")}</span>
               </div>
             </div>
 
@@ -190,8 +206,7 @@ export default function LandingPage() {
                 <Radio size={14} />
               </div>
               <div className="flex flex-col text-left text-[10px] sm:text-xs font-bold text-slate-700 leading-tight min-w-0">
-                <span className="truncate">Live</span>
-                <span className="truncate">Queue</span>
+                <span className="truncate">{t("liveQueue")}</span>
               </div>
             </div>
 
@@ -200,8 +215,7 @@ export default function LandingPage() {
                 <User size={14} />
               </div>
               <div className="flex flex-col text-left text-[10px] sm:text-xs font-bold text-slate-700 leading-tight min-w-0">
-                <span className="truncate">Easy</span>
-                <span className="truncate">Register</span>
+                <span className="truncate">{t("easyRegister")}</span>
               </div>
             </div>
           </div>
@@ -223,15 +237,15 @@ export default function LandingPage() {
               <Lock size={22} />
             </div>
             <h3 className="font-display text-xl sm:text-2xl font-extrabold text-slate-900 mb-1">
-              Doctor Login
+              {t("doctorLoginTitle")}
             </h3>
             <p className="font-body text-xs sm:text-sm text-slate-500 mb-6 font-medium">
-              Enter your credentials to access the dashboard.
+              {t("doctorLoginSubtitle")}
             </p>
 
             <input
               type="email"
-              placeholder="Email address"
+              placeholder={t("emailAddress")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleDoctorLogin()}
@@ -244,7 +258,7 @@ export default function LandingPage() {
             />
             <input
               type="password"
-              placeholder="Password"
+              placeholder={t("password")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleDoctorLogin()}
@@ -256,7 +270,7 @@ export default function LandingPage() {
             />
             {loginError && (
               <p className="text-red-500 text-xs font-body font-medium text-center mb-3">
-                {error || "Invalid credentials. Try again."}
+                {error || t("invalidCredentials")}
               </p>
             )}
 
@@ -268,7 +282,7 @@ export default function LandingPage() {
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
               ) : (
-                "Access Dashboard"
+                t("accessDashboard")
               )}
             </button>
             <button
@@ -279,7 +293,7 @@ export default function LandingPage() {
               }}
               className="w-full text-slate-400 hover:text-slate-600 text-xs py-2 font-body font-semibold transition-colors cursor-pointer"
             >
-              Cancel
+              {t("cancel")}
             </button>
           </div>
         </div>
