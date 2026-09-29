@@ -51,7 +51,7 @@ export default function TreatedConditionsModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl border border-slate-100 animate-slide-up relative overflow-hidden text-left"
+        className="bg-white rounded-3xl w-full max-w-2xl h-[80vh] flex flex-col shadow-2xl border border-slate-100 animate-slide-up relative overflow-hidden text-left"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Bar */}
@@ -75,12 +75,7 @@ export default function TreatedConditionsModal({
             </span>
           </div>
 
-          <h3 className="font-display text-xl sm:text-2xl font-extrabold text-white tracking-tight leading-snug">
-            {t("treatedConditionsModalTitle")}
-          </h3>
-          <p className="font-body text-xs sm:text-sm text-blue-100 mt-1 font-medium leading-relaxed max-w-xl">
-            {t("treatedConditionsModalSubtitle")}
-          </p>
+         
         </div>
 
         {/* Filter Tabs */}
