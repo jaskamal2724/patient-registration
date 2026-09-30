@@ -97,3 +97,11 @@ export function shiftSlotLabel(slotLabel: string | undefined, delayMinutes: numb
 
   return `${formatTime(startMin)} - ${formatTime(endMin)}`;
 }
+
+export function normalizeSlotLabel(slot: string | null | undefined): string {
+  if (!slot) return "";
+  return slot
+    .replace(/\b0([0-9]:[0-9]{2})/g, "$1")
+    .replace(/\s*[-–]\s*/g, " - ")
+    .trim();
+}

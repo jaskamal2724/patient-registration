@@ -35,7 +35,7 @@ import InstallPWA from "./InstallPWA";
 import DocCareLogo from "./DocCareLogo";
 import LanguageSelector from "./LanguageSelector";
 import { useLanguage } from "@/lib/LanguageContext";
-import { getTimeSlots, formatDelayText, shiftSlotLabel } from "../util/timeSlot";
+import { getTimeSlots, formatDelayText, shiftSlotLabel, normalizeSlotLabel } from "../util/timeSlot";
 import {
   DoctorAvatarSVG,
   RegisterIllustrationSVG,
@@ -751,7 +751,7 @@ function RegistrationForm({
           <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
             {TIME_SLOTS.map((slot) => {
               const bookedCount = patients.filter(
-                (p) => p.time_slot === slot,
+                (p) => normalizeSlotLabel(p.time_slot) === normalizeSlotLabel(slot),
               ).length;
               const isFull = bookedCount >= capacity;
               const isSelected = form.time_slot === slot;
@@ -1021,7 +1021,10 @@ export default function PatientPortal() {
   const allSlotsFull =
     TIME_SLOTS.length > 0 &&
     TIME_SLOTS.every(
-      (slot) => patients.filter((p) => p.time_slot === slot).length >= capacity
+      (slot) =>
+        patients.filter(
+          (p) => normalizeSlotLabel(p.time_slot) === normalizeSlotLabel(slot)
+        ).length >= capacity
     );
 
   const inProgress = patients.find((p) => p.status === "in-progress");

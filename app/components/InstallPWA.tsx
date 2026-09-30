@@ -179,6 +179,16 @@ export default function InstallPWA() {
                     {t("iosStep2Suffix")}
                   </p>
                 </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs shrink-0">
+                    3
+                  </div>
+                  <p>
+                    {t("iosStep3Prefix")}{" "}
+                    <strong className="text-blue-600">{t("iosStep3Bold")}</strong>{" "}
+                    {t("iosStep3Suffix")}
+                  </p>
+                </div>
               </div>
             ) : (
               <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3 font-body text-xs text-slate-700">
