@@ -1,26 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
-import { getAuthUser } from "@/lib/auth";
 
-export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { id } = await params;
-    const { status } = await req.json();
+    const body = await req.json();
+    const { status } = body;
 
-    const valid = ["waiting", "in-progress", "done", "skipped"];
-    if (!valid.includes(status)) {
-      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    if (!["waiting", "in-progress", "done", "skipped"].includes(status)) {
+      return NextResponse.json({ error: "Invalid status value" }, { status: 400 });
     }
 
     const supabase = createServerClient();
-
-    const user = await getAuthUser(req);
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { data, error } = await supabase
-      .from("patients")
+      .from("walkin_patients")
       .update({ status })
       .eq("id", id)
       .select()

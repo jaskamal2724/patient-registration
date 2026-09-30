@@ -4,17 +4,25 @@ import { createServerClient } from "@/lib/supabase";
 export async function GET(req: NextRequest) {
   try {
     const supabase = createServerClient();
+    const { searchParams } = new URL(req.url);
+    const doctorId = searchParams.get("doctor_id");
 
-    const { data, error } = await supabase
-      .from("patients")
+    let query = supabase
+      .from("walkin_patients")
       .select("*")
       .order("token_number", { ascending: true });
+
+    if (doctorId) {
+      query = query.eq("doctor_id", doctorId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ patients: data || [] });
+    return NextResponse.json({ walkin_patients: data || [] });
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
@@ -23,18 +31,14 @@ export async function GET(req: NextRequest) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { doctor_id, name, age, gender, phone, time_slot, reason } = body;
+    const { doctor_id, name, age, gender, phone, city_village, reason } = body;
 
-    if (!name || !age || !gender || !phone || !time_slot) {
-      return NextResponse.json({ error: "Name, age, gender, phone, and time slot are required" }, { status: 400 });
+    if (!name || !age || !gender || !phone) {
+      return NextResponse.json({ error: "Name, age, gender, and phone number are required" }, { status: 400 });
     }
 
     if (!name.trim()) {
       return NextResponse.json({ error: "Name cannot be empty" }, { status: 400 });
-    }
-
-    if (!time_slot.trim()) {
-      return NextResponse.json({ error: "Please select a valid time slot" }, { status: 400 });
     }
 
     if (isNaN(+age) || +age < 1 || +age > 120) {
@@ -61,7 +65,7 @@ export async function POST(req: Request) {
     // Direct check: Doctor's registration status
     const { data: doctor, error: docErr } = await supabase
       .from("doctors")
-      .select("id, registration, patients_per_hour")
+      .select("id, registration")
       .eq("id", targetDoctorId)
       .single();
 
@@ -73,59 +77,46 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Registration is currently closed by the doctor" }, { status: 403 });
     }
 
-    // Prevent duplicate registration with the same phone number
-    const { data: existingPatient } = await supabase
-      .from("patients")
-      .select("id, token_number, slot_token_number")
+    // Prevent duplicate registration with the same phone number for walkin patients
+    const { data: existingWalkin } = await supabase
+      .from("walkin_patients")
+      .select("id, token_number, walkin_token_display")
       .eq("phone", cleanPhone)
       .maybeSingle();
 
-    if (existingPatient) {
-      const tokenDisplay = existingPatient.slot_token_number || existingPatient.token_number;
+    if (existingWalkin) {
       return NextResponse.json(
-        { error: `This phone number (${cleanPhone}) is already registered with Token #${tokenDisplay}. Duplicate registrations with the same phone number are not allowed.` },
+        {
+          error: `This phone number (${cleanPhone}) is already registered for Walk-in with Token ${existingWalkin.walkin_token_display || existingWalkin.token_number}.`,
+          patient: existingWalkin,
+        },
         { status: 400 }
       );
     }
 
-    // Calculate sequential token number
-    const { count: globalCount } = await supabase
-      .from("patients")
+    // Calculate sequential walk-in token number
+    const { count: walkinCount } = await supabase
+      .from("walkin_patients")
       .select("*", { count: "exact", head: true });
 
-    const nextToken = (globalCount || 0) + 1;
+    const nextToken = (walkinCount || 0) + 1;
+    const walkinTokenDisplay = `W-${nextToken}`;
 
-    // Check slot capacity based on doctor's patients_per_hour
-    const capacity = doctor.patients_per_hour ?? 10;
-    const { count: slotCount } = await supabase
-      .from("patients")
-      .select("*", { count: "exact", head: true })
-      .eq("time_slot", time_slot.trim());
-
-    if ((slotCount || 0) >= capacity) {
-      return NextResponse.json(
-        { error: `This time slot is full (maximum ${capacity} patients allowed per slot). Please select another time slot.` },
-        { status: 400 }
-      );
-    }
-
-    const slotTokenNumber = (slotCount || 0) + 1;
-
-    // Insert patient directly without session_id
     const insertPayload: Record<string, unknown> = {
+      doctor_id: targetDoctorId,
       token_number: nextToken,
-      slot_token_number: slotTokenNumber,
-      time_slot: time_slot.trim(),
+      walkin_token_display: walkinTokenDisplay,
       name: name.trim(),
       age: String(age),
       gender,
       phone: cleanPhone,
+      city_village: (city_village || "").trim(),
       reason: (reason || "").trim(),
       status: "waiting",
     };
 
-    const { data: patient, error: insertErr } = await supabase
-      .from("patients")
+    const { data: walkinPatient, error: insertErr } = await supabase
+      .from("walkin_patients")
       .insert(insertPayload)
       .select()
       .single();
@@ -134,7 +125,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: insertErr.message }, { status: 500 });
     }
 
-    return NextResponse.json({ patient }, { status: 201 });
+    return NextResponse.json({ patient: walkinPatient }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

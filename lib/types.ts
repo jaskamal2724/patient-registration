@@ -2,7 +2,7 @@ export type PatientStatus = "waiting" | "in-progress" | "done" | "skipped";
 
 export type Patient = {
   id: string;
-  session_id: string;
+  session_id?: string | null;
   token_number: number;
   slot_token_number?: number;
   time_slot?: string;
@@ -13,6 +13,31 @@ export type Patient = {
   reason?: string;
   registered_at: string;
   status: PatientStatus;
+};
+
+export type WalkinPatient = {
+  id: string;
+  session_id?: string | null;
+  doctor_id?: string | null;
+  token_number: number;
+  walkin_token_display: string;
+  name: string;
+  age: string;
+  gender: "Male" | "Female" | "Other";
+  phone: string;
+  city_village?: string | null;
+  reason?: string | null;
+  registered_at: string;
+  status: PatientStatus;
+};
+
+export type WalkinPatientForm = {
+  name: string;
+  age: string;
+  gender: "Male" | "Female" | "Other";
+  phone: string;
+  city_village?: string;
+  reason?: string;
 };
 
 export type Session = {
@@ -56,7 +81,7 @@ export type RegistrationWindow = {
   date: string | null;
   message: string;
   patientsPerHour: number;
-  autoClose10AM: boolean;
+  autoClose10AM?: boolean;
   delayMinutes: number;
 };
 

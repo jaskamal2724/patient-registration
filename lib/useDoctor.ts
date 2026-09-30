@@ -2,15 +2,18 @@
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import * as api from "@/lib/api";
+import { createBrowserClient } from "@/lib/supabase";
 import { useToast } from "@/lib/useToast";
-import type { Doctor, Patient, RegistrationWindow, Session } from "@/lib/types";
+import type { Doctor, Patient, RegistrationWindow, WalkinPatient } from "@/lib/types";
+
+const supabase = createBrowserClient();
 
 export function useDoctor(initialDoctor: Doctor) {
   const router = useRouter();
   const { toast, showToast } = useToast();
   const [doctor, setDoctor] = useState<Doctor>(initialDoctor);
-  const [session, setSession] = useState<Session | null>(null);
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [walkinPatients, setWalkinPatients] = useState<WalkinPatient[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,43 +21,58 @@ export function useDoctor(initialDoctor: Doctor) {
 
   const regWindow: RegistrationWindow = {
     isOpen: Boolean(doctor.registration),
-    startTime: doctor.start_time || session?.start_time || "09:00",
-    endTime: doctor.end_time || session?.end_time || "21:00",
-    date: doctor.session_date || session?.date || new Date().toISOString().split("T")[0],
-    message: doctor.opd_message || session?.message || "",
+    startTime: doctor.start_time || "09:00",
+    endTime: doctor.end_time || "21:00",
+    date: doctor.session_date || new Date().toISOString().split("T")[0],
+    message: doctor.opd_message || "",
     patientsPerHour: doctor.patients_per_hour ?? 10,
-    autoClose10AM: Boolean(doctor.auto_close_10am),
     delayMinutes: doctor.delay_minutes ?? 0,
   };
- 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const today = doctor.session_date || new Date().toISOString().split("T")[0];
-        let s = await api.fetchSession(doctor.id, today);
-        if (!s) s = await api.createSession(doctor.id, today);
-        if (!cancelled) setSession(s);
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load session");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [doctor.id, doctor.session_date]);
 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      const ps = await api.fetchAllPatients(doctor.id);
-      if (!cancelled) setPatients(ps);
+      try {
+        const [ps, wps] = await Promise.all([
+          api.fetchAllPatients(doctor.id),
+          api.fetchWalkinPatients(doctor.id).catch(() => []),
+        ]);
+        if (!cancelled) {
+          setPatients(ps);
+          setWalkinPatients(wps);
+        }
+      } catch {
+        // quiet catch
+      }
     };
     load();
-    const interval = setInterval(load, 10000);
-    return () => { cancelled = true; clearInterval(interval); };
+
+    const channel = supabase
+      .channel(`doctor-queue-${doctor.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "patients",
+        },
+        load
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "walkin_patients",
+        },
+        load
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      void supabase.removeChannel(channel);
+    };
   }, [doctor.id]);
 
   const setDoctorName = useCallback(async (name: string) => {
@@ -84,40 +102,26 @@ export function useDoctor(initialDoctor: Doctor) {
       const updatedDoc = await api.updateDoctorProfile(doctor.id, docPatch);
       setDoctor(updatedDoc);
 
-      if (session) {
-        const sessPatch: Record<string, unknown> = {};
-        if (w.date !== undefined) sessPatch.date = w.date;
-        if (w.startTime !== undefined) sessPatch.start_time = w.startTime;
-        if (w.endTime !== undefined) sessPatch.end_time = w.endTime;
-        if (w.message !== undefined) sessPatch.message = w.message;
-
-        const updatedSess = await api.updateSession(session.id, sessPatch);
-        setSession(updatedSess);
-      }
-
-      showToast("Session settings saved", "success");
+      showToast("Settings saved", "success");
     } catch {
       showToast("Failed to update settings", "error");
     } finally {
       setLoading(false);
     }
-  }, [doctor.id, session, showToast]);
+  }, [doctor.id, showToast]);
 
   const toggleRegistration = useCallback(async (open: boolean) => {
     setLoading(true);
     try {
       const updatedDoc = await api.updateDoctorRegistration(doctor.id, open);
       setDoctor(updatedDoc);
-      if (session) {
-        await api.updateSession(session.id, { is_open: open }).catch(() => {});
-      }
       showToast(open ? "Registration is now OPEN" : "Registration is now CLOSED", open ? "success" : "info");
     } catch {
       showToast("Failed to toggle registration", "error");
     } finally {
       setLoading(false);
     }
-  }, [doctor.id, session, showToast]);
+  }, [doctor.id, showToast]);
 
   const callNext = useCallback(async () => {
     const nextWaiting = patients.find(p => p.status === "waiting");
@@ -143,7 +147,7 @@ export function useDoctor(initialDoctor: Doctor) {
         return p;
       }));
 
-      showToast(`Now calling Token #${nextWaiting.token_number}`, "success");
+      showToast(`Now calling Token ${nextWaiting.token_number}`, "success");
     } catch {
       showToast("Failed to call next patient", "error");
     } finally {
@@ -177,6 +181,54 @@ export function useDoctor(initialDoctor: Doctor) {
     }
   }, [showToast]);
 
+  const markWalkinDone = useCallback(async (id: string) => {
+    setLoading(true);
+    try {
+      await api.updateWalkinPatientStatus(id, "done");
+      setWalkinPatients(prev => prev.map(p => p.id === id ? { ...p, status: "done" as const } : p));
+      showToast("Walk-in patient marked as done", "success");
+    } catch {
+      showToast("Failed to update walk-in patient", "error");
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
+
+  const skipWalkinPatient = useCallback(async (id: string) => {
+    setLoading(true);
+    try {
+      await api.updateWalkinPatientStatus(id, "skipped");
+      setWalkinPatients(prev => prev.map(p => p.id === id ? { ...p, status: "skipped" as const } : p));
+      showToast("Walk-in patient skipped", "info");
+    } catch {
+      showToast("Failed to skip walk-in patient", "error");
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
+
+  const callNextWalkin = useCallback(async () => {
+    const nextWaiting = walkinPatients.find(p => p.status === "waiting");
+    if (!nextWaiting) {
+      showToast("No more walk-in patients in queue", "info");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await api.updateWalkinPatientStatus(nextWaiting.id, "in-progress");
+      setWalkinPatients(prev => prev.map(p => {
+        if (p.id === nextWaiting.id) return { ...p, status: "in-progress" as const };
+        return p;
+      }));
+      showToast(`Calling Walk-in Token ${nextWaiting.walkin_token_display || nextWaiting.token_number}`, "success");
+    } catch {
+      showToast("Failed to call walk-in patient", "error");
+    } finally {
+      setLoading(false);
+    }
+  }, [walkinPatients, showToast]);
+
   const logout = useCallback(async () => {
     await api.signOut();
     router.push("/");
@@ -187,15 +239,18 @@ export function useDoctor(initialDoctor: Doctor) {
     doctorName: doctor.name,
     setDoctorName,
     logout,
-    session,
     regWindow,
     setRegWindow,
     toggleRegistration,
     patients,
+    walkinPatients,
     currentToken,
     callNext,
     markDone,
     skipPatient,
+    markWalkinDone,
+    skipWalkinPatient,
+    callNextWalkin,
     loading,
     error,
     toast,

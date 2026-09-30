@@ -5,57 +5,56 @@ import { useLanguage } from "@/lib/LanguageContext";
 import { Globe } from "lucide-react";
 
 export default function LanguageSelector({
-  variant = "pill",
   className = "",
+  showLabel = false,
 }: {
   variant?: "pill" | "segmented";
   className?: string;
+  showLabel?: boolean;
 }) {
-  const { language, setLanguage, toggleLanguage } = useLanguage();
+  const { language, setLanguage } = useLanguage();
 
-  if (variant === "segmented") {
-    return (
-      <div
-        className={`inline-flex items-center bg-slate-100 p-0.5 rounded-full border border-slate-200/90 text-xs font-bold font-body ${className}`}
-      >
-        <button
-          type="button"
-          onClick={() => setLanguage("en")}
-          className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
-            language === "en"
-              ? "bg-white text-blue-600 shadow-xs font-extrabold"
-              : "text-slate-500 hover:text-slate-800"
-          }`}
-        >
-          English
-        </button>
-        <button
-          type="button"
-          onClick={() => setLanguage("hi")}
-          className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
-            language === "hi"
-              ? "bg-white text-blue-600 shadow-xs font-extrabold"
-              : "text-slate-500 hover:text-slate-800"
-          }`}
-        >
-          हिंदी
-        </button>
-      </div>
-    );
-  }
-
-  // Default Pill Switcher
   return (
-    <button
-      type="button"
-      onClick={toggleLanguage}
-      className={`inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 active:scale-95 border border-slate-200 rounded-full px-3 py-1.5 shadow-xs transition-all cursor-pointer shrink-0 w-fit ${className}`}
-      title={language === "en" ? "Switch to Hindi" : "अंग्रेजी में बदलें"}
+    <div
+      role="group"
+      aria-label="Select Language / भाषा चुनें"
+      className={`inline-flex items-center bg-slate-100/90 p-1 rounded-full border border-slate-200/90 shadow-2xs font-body shrink-0 ${className}`}
     >
-      <Globe size={13} className="text-blue-600 shrink-0" />
-      <span className="font-extrabold text-blue-600">
-        {language === "en" ? "English" : "हिंदी"}
-      </span>
-    </button>
+      <div className="flex items-center gap-1 pl-1.5 pr-1 text-slate-500 select-none">
+        <Globe size={14} className="text-blue-600 shrink-0" />
+        {showLabel && (
+          <span className="text-[11px] font-bold text-slate-600 hidden sm:inline mr-0.5">
+            Language:
+          </span>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={() => setLanguage("en")}
+        aria-pressed={language === "en"}
+        className={`px-2.5 py-1 text-xs rounded-full transition-all cursor-pointer select-none font-bold ${
+          language === "en"
+            ? "bg-white text-blue-600 shadow-xs font-extrabold"
+            : "text-slate-600 hover:text-slate-900"
+        }`}
+        title="Switch to English"
+      >
+        English
+      </button>
+      <button
+        type="button"
+        onClick={() => setLanguage("hi")}
+        aria-pressed={language === "hi"}
+        className={`px-2.5 py-1 text-xs rounded-full transition-all cursor-pointer select-none font-bold ${
+          language === "hi"
+            ? "bg-white text-blue-600 shadow-xs font-extrabold"
+            : "text-slate-600 hover:text-slate-900"
+        }`}
+        title="हिंदी में बदलें"
+      >
+        हिंदी
+      </button>
+    </div>
   );
 }
+

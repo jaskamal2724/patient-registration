@@ -55,12 +55,12 @@ export default function DocCareLogo({
   }
 
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
-      <button onClick={() => router.push("/")} className="cursor-pointer">
-        <DocCareIcon className="w-11 h-11 sm:w-12 sm:h-12" />
+    <div className={`flex items-center gap-2.5 sm:gap-3 shrink-0 ${className}`}>
+      <button onClick={() => router.push("/")} className="cursor-pointer shrink-0">
+        <DocCareIcon className="w-10 h-10 sm:w-12 sm:h-12" />
       </button>
-      <div className="text-left leading-none">
-        <h1 className="font-display text-xl sm:text-2xl font-black tracking-tight leading-none mb-1">
+      <div className="text-left leading-none shrink-0">
+        <h1 className="font-display text-xl sm:text-2xl font-black tracking-tight leading-none mb-1 whitespace-nowrap">
           {language === "hi" ? (
             <>
               <span className="text-[#0B1938]">डॉक</span>
@@ -73,7 +73,7 @@ export default function DocCareLogo({
             </>
           )}
         </h1>
-        <p className="font-body text-xs text-slate-500 font-medium tracking-wide leading-none">
+        <p className="font-body text-[11px] sm:text-xs text-slate-500 font-medium tracking-wide leading-none whitespace-nowrap">
           {displaySubtitle}
         </p>
       </div>

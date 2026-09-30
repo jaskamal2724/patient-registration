@@ -11,10 +11,11 @@ export const translations = {
     patientPortal: "Patient Portal",
     doctorLogin: "Dr. Login",
     location: "Location",
+    clickForGoogleMapLocation: "Get Google Map location",
     installApp: "Install App",
     open: "Open",
     closed: "Closed",
-    exit: "Exit",
+    exit: "Back",
     doctorName: "Doctor Sarvesh OPD",
     langNameEn: "English",
     langNameHi: "हिंदी",
@@ -187,7 +188,19 @@ export const translations = {
     searchConditionsPlaceholder: "Search disease or problem...",
     noConditionsFound: "No matching condition found.",
     totalConditionsCount: "61 treated conditions listed",
-    closeModal: "Close"
+    closeModal: "Close",
+
+    // Walk-in Portal
+    walkinPortal: "Walk-in OPD Portal",
+    walkinBadge: "Walk-in Registration",
+    walkinTitle: "Direct Clinic\nWalk-in Registration",
+    walkinSubtitle: "Generate an instant walk-in token directly at the clinic counter.",
+    getWalkinToken: "Get Walk-in Token",
+    walkinTokenNotice: "Your walk-in token will be called by clinic staff in order.",
+    walkinWaitLobbyMsg: "Please relax in the clinic waiting lobby. Doctor/reception will call your token shortly.",
+    searchWalkinTokenTitle: "Forgot Your Walk-in Token?",
+    searchWalkinTokenSubtitle: "Enter your 10-digit mobile number to retrieve your walk-in token.",
+    walkinQueueTrackingTip: "Keep this walk-in token for reception reference"
   },
   hi: {
     // Header & Brand
@@ -195,10 +208,11 @@ export const translations = {
     patientPortal: "मरीज पोर्टल",
     doctorLogin: "डॉक्टर लॉगिन",
     location: "स्थान",
+    clickForGoogleMapLocation: "Google Map लोकेशन देखें",
     installApp: "ऐप इंस्टॉल करें",
     open: "खुला है",
     closed: "बंद है",
-    exit: "बाहर निकलें",
+    exit: "वापस जाएं",
     doctorName: "डॉ. सर्वेश ओपीडी",
     langNameEn: "English",
     langNameHi: "हिंदी",
@@ -372,7 +386,19 @@ export const translations = {
     searchConditionsPlaceholder: "बीमारी या समस्या खोजें...",
     noConditionsFound: "कोई संबंधित समस्या नहीं मिली।",
     totalConditionsCount: "61 बीमारियों/समस्याओं की सूची",
-    closeModal: "बंद करें"
+    closeModal: "बंद करें",
+
+    // Walk-in Portal
+    walkinPortal: "वॉक-इन ओपीडी पोर्टल",
+    walkinBadge: "वॉक-इन पंजीकरण",
+    walkinTitle: "सीधे क्लिनिक\nवॉक-इन पंजीकरण",
+    walkinSubtitle: "क्लिनिक काउंटर पर तुरंत अपना वॉक-इन डिजिटल टोकन प्राप्त करें।",
+    getWalkinToken: "वॉक-इन टोकन प्राप्त करें",
+    walkinTokenNotice: "क्लिनिक स्टाफ द्वारा आपका वॉक-इन टोकन क्रमानुसार पुकारा जाएगा।",
+    walkinWaitLobbyMsg: "कृपया क्लिनिक प्रतीक्षालय में बैठें। आपका टोकन नंबर आने पर आपको बुलाया जाएगा।",
+    searchWalkinTokenTitle: "अपना वॉक-इन टोकन जांचें",
+    searchWalkinTokenSubtitle: "अपना 10 अंकों का मोबाइल नंबर दर्ज करके अपना टोकन नंबर देखें।",
+    walkinQueueTrackingTip: "रिसेप्शन संदर्भ के लिए यह वॉक-इन टोकन सुरक्षित रखें"
   }
 };
 

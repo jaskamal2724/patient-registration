@@ -65,7 +65,7 @@ export default function LogiquelAdCard({
   const whatsappUrl = `https://wa.me/917048995281?text=${encodeURIComponent(whatsappText)}`;
 
   return (
-    <div className="bg-white rounded-[24px] sm:rounded-[28px] p-4 sm:p-7 border border-slate-100 shadow-xl shadow-blue-900/5 relative overflow-hidden text-left mb-6">
+    <div className="bg-white rounded-[24px] sm:rounded-[28px] p-4 sm:p-7 border border-slate-100 shadow-xl shadow-blue-900/5 relative overflow-hidden text-left mb-6 -mt-3">
       {/* Header Row */}
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">

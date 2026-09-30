@@ -140,30 +140,19 @@ function SmartArrivalGuidance({ waitingBefore }: { waitingBefore: number }) {
 function PatientHeader({ onExit }: { onExit: () => void }) {
   const { t } = useLanguage();
   return (
-    <header className="relative z-10 flex items-center justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
-      <DocCareLogo variant="header" subtitle={t("patientPortal")} />
-
-      <div className="flex items-center gap-2 flex-wrap justify-end">
-        <InstallPWA />
-        <a
-          href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200 rounded-full px-3 py-1.5 shadow-xs transition-all cursor-pointer shrink-0"
-          title="Clinic Location on Google Maps"
-        >
-          <MapPin size={13} className="text-emerald-600" />
-          <span>{t("location")}</span>
-        </a>
-        <LanguageSelector />
-        <div className="bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-full px-3 py-1 font-extrabold text-xs flex items-center gap-1.5 shadow-2xs">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>{t("open")}</span>
+    <header className="relative z-10 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
+      <div className="flex flex-col gap-1.5">
+        <DocCareLogo variant="header" subtitle={t("patientPortal")} />
+        <div className="flex items-center gap-2 flex-wrap">
+          <InstallPWA />
         </div>
-        <div className="h-4 w-px bg-slate-200 mx-0.5" />
+      </div>
+
+      <div className="flex flex-col items-end gap-1.5 shrink-0">
+        <LanguageSelector />
         <button
           onClick={onExit}
-          className="text-slate-600 hover:text-slate-900 font-bold text-sm transition-colors cursor-pointer"
+          className="inline-flex items-center justify-center text-xs font-bold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 active:scale-95 border border-slate-200/90 rounded-full px-3 py-1 mr-1 sm:mr-1.5 shadow-2xs transition-all cursor-pointer"
         >
           {t("exit")}
         </button>
@@ -308,7 +297,7 @@ function CheckTokenSearchCard({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center font-mono-custom text-lg font-black text-blue-700">
-                        #{patient.slot_token_number || patient.token_number}
+                        {patient.slot_token_number || patient.token_number}
                       </div>
                       <div>
                         <p className="font-body text-sm font-extrabold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">
@@ -871,7 +860,7 @@ function SuccessScreen({
         </div>
 
         <p className="font-mono-custom text-6xl sm:text-7xl md:text-8xl font-black leading-none tracking-tight text-white drop-shadow-md my-2 relative z-10">
-          #{displayToken}
+          {displayToken}
         </p>
 
         <div className="mt-3 inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/25 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold text-white relative z-10 shadow-inner">
@@ -1047,9 +1036,21 @@ export default function PatientPortal() {
               {inProgress ? (
                 /* IMAGE 4: When doctor HAS STARTED seeing patients */
                 <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
-                  <h3 className="font-display text-base font-extrabold text-slate-900 mb-3">
-                    {t("liveQueue")}
-                  </h3>
+                  <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+                    <h3 className="font-display text-base font-extrabold text-slate-900">
+                      {t("liveQueue")}
+                    </h3>
+                    <a
+                      href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200 rounded-full px-2.5 sm:px-3 py-1 shadow-xs transition-all cursor-pointer shrink-0"
+                      title="Clinic Location on Google Maps"
+                    >
+                      <MapPin size={12} className="text-emerald-600 shrink-0" />
+                      <span>{t("clickForGoogleMapLocation")}</span>
+                    </a>
+                  </div>
                   <div className="flex items-center gap-4">
                     <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
                     <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 rounded-2xl p-4 text-white shadow-md shadow-blue-500/20 flex-1 relative overflow-hidden">
@@ -1058,7 +1059,7 @@ export default function PatientPortal() {
                       </p>
                       <div className="flex items-baseline justify-between gap-2">
                         <span className="font-mono-custom text-4xl sm:text-5xl font-black text-white leading-none">
-                          #{inProgress.slot_token_number || inProgress.token_number}
+                          {inProgress.slot_token_number || inProgress.token_number}
                         </span>
                         <div className="flex flex-col items-end gap-1">
                           <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
@@ -1072,22 +1073,39 @@ export default function PatientPortal() {
                           )}
                         </div>
                       </div>
+                      <div className="mt-2.5 pt-2 border-t border-white/20 flex items-center justify-between gap-2">
+                        <p className="font-body text-sm sm:text-base font-extrabold text-white truncate">
+                          {inProgress.name}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
               ) : (
                 /* IMAGE 3: When doctor HAS NOT started seeing patients yet */
                 <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
-                  <div className="flex items-start gap-4">
-                    <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
-                    <div>
-                      <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
-                        {t("doctorWillVisitTitle")}
-                      </h3>
-                      <p className="font-body text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-                        {t("doctorNotStartedMsg")}
-                      </p>
+                  <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                    <div className="flex items-start gap-4 min-w-0">
+                      <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
+                      <div>
+                        <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
+                          {t("doctorWillVisitTitle")}
+                        </h3>
+                        <p className="font-body text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+                          {t("doctorNotStartedMsg")}
+                        </p>
+                      </div>
                     </div>
+                    <a
+                      href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200 rounded-full px-2.5 sm:px-3 py-1 shadow-xs transition-all cursor-pointer shrink-0"
+                      title="Clinic Location on Google Maps"
+                    >
+                      <MapPin size={12} className="text-emerald-600 shrink-0" />
+                      <span>{t("clickForGoogleMapLocation")}</span>
+                    </a>
                   </div>
 
                   {/* Expected Time Pill Box */}
@@ -1111,23 +1129,8 @@ export default function PatientPortal() {
               />
 
               {/* CARD 3: Book an Appointment Card */}
-              <div className="bg-gradient-to-br from-[#FFFDF2] to-[#FFF9E6] rounded-[24px] sm:rounded-[28px] border border-amber-200/60 p-5 sm:p-6 text-left relative overflow-hidden shadow-xs mb-6">
-                <div className="absolute top-4 right-4 pointer-events-none">
-                  <svg viewBox="0 0 40 40" className="w-8 h-8 opacity-70">
-                    <path d="M20 5L20 0" stroke="#FFC629" strokeWidth="2.5" strokeLinecap="round" />
-                    <path d="M30 10L35 6" stroke="#FFC629" strokeWidth="2.5" strokeLinecap="round" />
-                    <path d="M35 20L40 20" stroke="#FFC629" strokeWidth="2.5" strokeLinecap="round" />
-                  </svg>
-                </div>
-
-                <BookAppointmentIconSVG className="w-12 h-12 mb-3" />
-
-                <h3 className="font-display text-xl sm:text-2xl font-extrabold text-slate-900 mb-1 tracking-tight">
-                  {t("bookAppointmentTitle")}
-                </h3>
-                <p className="font-body text-xs sm:text-sm text-slate-600 font-medium mb-5 max-w-sm leading-relaxed">
-                  {t("bookAppointmentSubtitle")}
-                </p>
+              <div className="bg-gradient-to-br from-[#FFFDF2] to-[#FFF9E6] rounded-[24px] sm:rounded-[28px] border border-amber-200/60 p-4 sm:p-5 text-left relative overflow-hidden shadow-xs mb-6 flex items-center justify-between gap-3 sm:gap-4">
+                <BookAppointmentIconSVG className="w-11 h-11 sm:w-12 sm:h-12 shrink-0" />
 
                 <button
                   onClick={() => {
@@ -1138,12 +1141,15 @@ export default function PatientPortal() {
                       setStep("form");
                     }
                   }}
-                  className="w-full bg-[#FFC629] hover:bg-[#F5B813] text-slate-900 font-display font-extrabold text-base rounded-2xl py-3.5 flex items-center justify-center gap-2 shadow-md shadow-amber-400/20 cursor-pointer transition-all hover:scale-[1.01] active:scale-[0.99]"
+                  className="flex-1 bg-[#FFC629] hover:bg-[#F5B813] text-slate-900 font-display font-extrabold text-sm sm:text-base rounded-2xl py-3 px-4 flex items-center justify-center gap-2 shadow-md shadow-amber-400/20 cursor-pointer transition-all hover:scale-[1.01] active:scale-[0.99]"
                 >
                   <span>{t("bookSlotBtn")}</span>
-                  <ChevronRight size={18} />
+                  <ChevronRight size={18} className="shrink-0" />
                 </button>
               </div>
+
+              {/* Logiquel Branding Banner */}
+              <LogiquelAdCard variant="landing" />
 
               {/* Footer Note */}
               <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400 font-medium pt-2">

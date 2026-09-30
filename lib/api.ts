@@ -145,3 +145,29 @@ export async function updateDoctorName(id: string, name: string): Promise<void> 
     body: JSON.stringify({ name }),
   });
 }
+
+export async function fetchWalkinPatients(doctorId?: string): Promise<import("./types").WalkinPatient[]> {
+  const url = doctorId ? `/api/walkin-patients?doctor_id=${doctorId}` : `/api/walkin-patients`;
+  const res = await fetch(url);
+  const json = await res.json();
+  const patients = (json.walkin_patients as import("./types").WalkinPatient[]) ?? [];
+  return patients.sort((a, b) => a.token_number - b.token_number);
+}
+
+export async function addWalkinPatient(doctorId: string, form: import("./types").WalkinPatientForm): Promise<import("./types").WalkinPatient> {
+  const res = await fetch("/api/walkin-patients", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...form, doctor_id: doctorId }),
+  });
+  const json = await jsonOrThrow(res);
+  return json.patient as import("./types").WalkinPatient;
+}
+
+export async function updateWalkinPatientStatus(id: string, status: PatientStatus): Promise<void> {
+  await fetch(`/api/walkin-patients/${id}/status`, {
+    method: "PATCH",
+    headers: await authHeaders(),
+    body: JSON.stringify({ status }),
+  });
+}
