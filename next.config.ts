@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "1mb",
     },
   },
-  allowedDevOrigins: ["192.168.1.36"],
+  allowedDevOrigins: ["192.168.1.12"],
 };
 
 export default withSerwist(nextConfig);

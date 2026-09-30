@@ -124,86 +124,87 @@ export default function LandingPage() {
             <span>{t("doctorName")}</span>
           </div>
 
-          <div className="flex items-center justify-between gap-2 sm:gap-4 mb-5">
+          {/* Top Row: Title/Subtitle on Left + OPD Illustration on Right */}
+          <div className="flex items-center justify-between gap-2 sm:gap-4 mb-4">
             <div className="flex-1 min-w-0 pr-1">
               <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-[#0B1527] tracking-tight leading-snug mb-2 whitespace-pre-line">
                 {t("bookAppointmentTitle")}
               </h2>
-              <p className="font-body text-xs sm:text-sm text-slate-500 font-medium leading-relaxed mb-4 sm:mb-5 max-w-[240px]">
+              <p className="font-body text-xs sm:text-sm text-slate-500 font-medium leading-relaxed max-w-[240px]">
                 {t("bookAppointmentSubtitle")}
               </p>
-
-              {/* Action Buttons: Book Slot + Treated Conditions (Stacked) */}
-              <div className="flex flex-col items-start gap-2.5">
-                <button
-                  onClick={() => router.push("/patient")}
-                  className="bg-[#1D68F3] hover:bg-[#1554C6] text-white font-bold text-xs sm:text-sm px-4 sm:px-6 py-3 sm:py-3.5 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer whitespace-nowrap w-fit"
-                >
-                  <Calendar size={16} className="shrink-0" />
-                  <span>{t("bookSlotBtn")}</span>
-                  <ArrowRight size={14} className="shrink-0" />
-                </button>
-
-                <button
-                  onClick={() => setShowConditionsModal(true)}
-                  className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/90 font-bold text-xs px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl shadow-xs flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer whitespace-nowrap w-fit"
-                >
-                  <Activity size={14} className="text-emerald-600 shrink-0" />
-                  <span>{t("viewTreatedConditionsBtn")}</span>
-                </button>
-              </div>
             </div>
 
-            {/* Right Column: Location Pill + OPD Clipboard Graphic Illustration */}
-            <div className="flex flex-col items-center gap-2.5 shrink-0">
-              <a
-                href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200 rounded-full px-3 py-1.5 shadow-xs transition-all cursor-pointer shrink-0"
-                title="Clinic Location on Google Maps"
+            {/* Right Column: OPD Clipboard Graphic Illustration */}
+            <div className="relative w-28 h-28 sm:w-34 sm:h-34 shrink-0 flex items-center justify-center">
+              {/* Soft light blue circular backdrop */}
+              <div className="absolute inset-0 bg-[#F0F6FF] rounded-full -z-0" />
+
+              {/* Clipboard Document Box */}
+              <div className="relative z-10 bg-white rounded-xl sm:rounded-2xl shadow-md border border-blue-100/90 p-2.5 sm:p-3 w-24 sm:w-28 h-28 sm:h-32 flex flex-col justify-between">
+                {/* Header Blue Medical Cross Badge */}
+                <div className="flex flex-col items-center">
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#1D68F3] text-white flex items-center justify-center shadow-xs mx-auto mb-1">
+                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M19 10.5h-5.5V5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v5.5H5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5h5.5V19c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5H19c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z" />
+                    </svg>
+                  </div>
+                  {/* Skeleton lines */}
+                  <div className="w-12 sm:w-14 h-1 bg-[#D0E2FF] rounded-full mb-1" />
+                  <div className="w-8 sm:w-10 h-1 bg-[#E2EEFF] rounded-full" />
+                </div>
+
+                {/* Token A024 Badge */}
+                <div className="bg-white rounded-lg border border-slate-200/90 p-1 sm:p-1.5 shadow-xs text-left w-20 sm:w-22 -ml-1">
+                  <p className="text-[9px] text-slate-400 font-semibold font-body leading-none">{t("tokenBadge")}</p>
+                  <p className="text-xs sm:text-sm font-extrabold text-[#1D68F3] font-mono-custom tracking-wider leading-none mt-0.5">A024</p>
+                </div>
+              </div>
+
+              {/* Floating Blue Outline Clock Icon */}
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border-2 border-[#1D68F3] text-[#1D68F3] flex items-center justify-center shadow-md z-20 absolute bottom-5 right-1">
+                <Clock size={13} strokeWidth={2.5} />
+              </div>
+
+              {/* Floating Green Live Badge */}
+              <div className="bg-[#00B887] text-white text-[9px] sm:text-[10px] font-extrabold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-md z-30 absolute bottom-0 right-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                <span>{t("liveBadge")}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons: Book Slot + Problems Treated (2-Col Grid) + Location Pill */}
+          <div className="flex flex-col items-start gap-2.5 mb-4 w-full">
+            <div className="grid grid-cols-2 gap-2 sm:gap-2.5 w-full">
+              <button
+                onClick={() => router.push("/patient")}
+                className="bg-[#1D68F3] hover:bg-[#1554C6] text-white font-bold text-[11px] sm:text-xs md:text-sm py-2.5 sm:py-3 px-2 sm:px-3 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-1 sm:gap-1.5 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer min-w-0 text-center"
               >
-                <MapPin size={13} className="text-emerald-600 shrink-0" />
-                <span>{t("location")}</span>
-              </a>
+                <Calendar size={14} className="shrink-0" />
+                <span className="truncate">{t("bookSlotBtn")}</span>
+                <ArrowRight size={13} className="shrink-0 hidden xs:inline-block sm:inline-block" />
+              </button>
 
-              <div className="relative w-28 h-28 sm:w-36 sm:h-36 shrink-0 flex items-center justify-center">
-                {/* Soft light blue circular backdrop */}
-                <div className="absolute inset-0 bg-[#F0F6FF] rounded-full -z-0" />
-
-                {/* Clipboard Document Box */}
-                <div className="relative z-10 bg-white rounded-xl sm:rounded-2xl shadow-md border border-blue-100/90 p-2.5 sm:p-3 w-24 sm:w-30 h-28 sm:h-36 flex flex-col justify-between">
-                  {/* Header Blue Medical Cross Badge */}
-                  <div className="flex flex-col items-center">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#1D68F3] text-white flex items-center justify-center shadow-xs mx-auto mb-1">
-                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" viewBox="0 0 24 24">
-                        <path d="M19 10.5h-5.5V5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v5.5H5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5h5.5V19c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5H19c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z" />
-                      </svg>
-                    </div>
-                    {/* Skeleton lines */}
-                    <div className="w-12 sm:w-16 h-1 bg-[#D0E2FF] rounded-full mb-1" />
-                    <div className="w-8 sm:w-10 h-1 bg-[#E2EEFF] rounded-full" />
-                  </div>
-
-                  {/* Token A024 Badge */}
-                  <div className="bg-white rounded-lg border border-slate-200/90 p-1 sm:p-1.5 shadow-xs text-left w-20 sm:w-24 -ml-1">
-                    <p className="text-[9px] text-slate-400 font-semibold font-body leading-none">{t("tokenBadge")}</p>
-                    <p className="text-xs sm:text-sm font-extrabold text-[#1D68F3] font-mono-custom tracking-wider leading-none mt-0.5">A024</p>
-                  </div>
-                </div>
-
-                {/* Floating Blue Outline Clock Icon */}
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border-2 border-[#1D68F3] text-[#1D68F3] flex items-center justify-center shadow-md z-20 absolute bottom-6 right-1 sm:right-2">
-                  <Clock size={13} strokeWidth={2.5} />
-                </div>
-
-                {/* Floating Green Live Badge */}
-                <div className="bg-[#00B887] text-white text-[9px] sm:text-[10px] font-extrabold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-md z-30 absolute bottom-0 right-0">
-                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                  <span>{t("liveBadge")}</span>
-                </div>
-              </div>
+              <button
+                onClick={() => setShowConditionsModal(true)}
+                className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/90 font-bold text-[11px] sm:text-xs md:text-sm py-2.5 sm:py-3 px-2 sm:px-3 rounded-2xl shadow-2xs flex items-center justify-center gap-1 sm:gap-1.5 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer min-w-0 text-center"
+              >
+                <Activity size={14} className="text-emerald-600 shrink-0" />
+                <span className="truncate">{t("viewTreatedConditionsBtn")}</span>
+              </button>
             </div>
+
+            <a
+              href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200/90 rounded-xl px-3 py-1.5 sm:py-2 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer whitespace-nowrap"
+              title="Clinic Location on Google Maps"
+            >
+              <MapPin size={13} className="text-rose-600 shrink-0" />
+              <span>{t("clickToKnowGoogleMapLocation")}</span>
+            </a>
           </div>
 
           {/* Bottom 3-Feature Bar */}

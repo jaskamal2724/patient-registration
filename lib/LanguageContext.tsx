@@ -12,6 +12,9 @@ export const translations = {
     doctorLogin: "Dr. Login",
     location: "Location",
     clickForGoogleMapLocation: "Get Google Map location",
+    googleMapLocation: "Google Map Location",
+    clickToKnowGoogleMapLocation: "Click to know Google Map location",
+    clinicAddress: "610, Sector 10A, Gurugram, Haryana 122001",
     installApp: "Install App",
     open: "Open",
     closed: "Closed",
@@ -69,7 +72,7 @@ export const translations = {
     // Form / Booking Step
     patientRegistration: "Patient Registration",
     fillDetailsBelow: "Fill in patient details to generate an instant OPD token.",
-    backToHome: "Back to Home",
+    backToHome: "Back",
     fullNameLabel: "Full Name",
     fullNamePlaceholder: "Enter patient's full name",
     ageLabel: "Age (Years)",
@@ -118,6 +121,9 @@ export const translations = {
     bookAnother: "Book Another Token",
     shareOnWhatsApp: "Share on WhatsApp",
     queueTrackingTip: "Keep this token for your reference",
+    scanToPayTitle: "Scan & Pay via UPI",
+    scanToPaySubtitle: "Scan using Google Pay, PhonePe, Paytm or any UPI app",
+    savePaymentScreenshotNotice: "Please complete the payment and save a screenshot for future reference and clinic verification.",
 
     // Closed Window Step
     opdClosedTitle: "OPD Registration Currently Closed",
@@ -212,7 +218,10 @@ export const translations = {
     patientPortal: "मरीज पोर्टल",
     doctorLogin: "डॉक्टर लॉगिन",
     location: "स्थान",
-    clickForGoogleMapLocation: "Google Map लोकेशन देखें",
+    clickForGoogleMapLocation: "गूगल मैप लोकेशन देखें",
+    googleMapLocation: "गूगल मैप लोकेशन",
+    clickToKnowGoogleMapLocation: "गूगल मैप लोकेशन जानने के लिए क्लिक करें",
+    clinicAddress: "610, सेक्टर 10A, गुरुग्राम, हरियाणा 122001",
     installApp: "ऐप इंस्टॉल करें",
     open: "खुला है",
     closed: "बंद है",
@@ -319,6 +328,9 @@ export const translations = {
     bookAnother: "अन्य टोकन बुक करें",
     shareOnWhatsApp: "व्हाट्सएप पर शेयर करें",
     queueTrackingTip: "अपने संदर्भ के लिए यह टोकन सुरक्षित रखें",
+    scanToPayTitle: "स्कैन करें और UPI से भुगतान करें",
+    scanToPaySubtitle: "Google Pay, PhonePe, Paytm या किसी भी UPI ऐप से स्कैन करें",
+    savePaymentScreenshotNotice: "कृपया भुगतान पूरा करें और भविष्य के संदर्भ एवं क्लिनिक सत्यापन के लिए स्क्रीनशॉट सुरक्षित रखें।",
 
     // Closed Window Step
     opdClosedTitle: "ओपीडी पंजीकरण वर्तमान में बंद है",
@@ -476,7 +488,10 @@ const HINDI_MAP: Record<string, string> = {
   "back pain": "पीठ दर्द",
   "skin problem": "त्वचा की समस्या",
   "allergy": "एलर्जी",
-  "no delay": "कोई देरी नहीं"
+  "no delay": "कोई देरी नहीं",
+  "google map": "गूगल मैप",
+  "google maps": "गूगल मैप्स",
+  "location": "स्थान"
 };
 
 interface LanguageContextType {

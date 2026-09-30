@@ -21,6 +21,8 @@ import {
   MapPin,
   Stethoscope,
   HeartPulse,
+  QrCode,
+  Camera,
 } from "lucide-react";
 import * as api from "@/lib/api";
 import { createBrowserClient } from "@/lib/supabase";
@@ -595,6 +597,38 @@ export default function WalkinPatientPortal() {
                     <span className="font-bold text-white">{registeredPatient.reason}</span>
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* Payment QR Code Card */}
+            <div className="bg-white rounded-[28px] p-6 sm:p-7 border border-slate-100 shadow-xl shadow-blue-900/5 mb-5 text-center overflow-hidden relative">
+              <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200/80 rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide mb-3">
+                <QrCode size={14} className="text-blue-600 shrink-0" />
+                <span>{t("scanToPayTitle")}</span>
+              </div>
+
+              <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
+                {t("scanToPayTitle")}
+              </h3>
+              <p className="font-body text-xs sm:text-sm text-slate-500 font-medium mb-4 max-w-xs mx-auto">
+                {t("scanToPaySubtitle")}
+              </p>
+
+              {/* QR Code Container */}
+              <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-4 sm:p-5 w-fit mx-auto mb-4 shadow-inner">
+                <img
+                  src="/payment-qr.png"
+                  alt="Payment QR Code"
+                  className="w-48 h-48 sm:w-56 sm:h-56 object-contain mx-auto rounded-xl bg-white p-2 shadow-xs"
+                />
+              </div>
+
+              {/* Screenshot Saving Guidance Notice */}
+              <div className="bg-amber-50 border border-amber-200/90 rounded-2xl p-3.5 sm:p-4 text-left flex items-start gap-2.5 max-w-md mx-auto">
+                <Camera size={18} className="text-amber-600 shrink-0 mt-0.5" />
+                <p className="font-body text-xs font-semibold text-amber-900 leading-relaxed">
+                  {t("savePaymentScreenshotNotice")}
+                </p>
               </div>
             </div>
 

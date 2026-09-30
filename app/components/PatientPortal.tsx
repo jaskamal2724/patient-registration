@@ -30,6 +30,8 @@ import {
   Heart,
   Info,
   ExternalLink,
+  QrCode,
+  Camera,
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
 import DocCareLogo from "./DocCareLogo";
@@ -45,7 +47,7 @@ import {
   WalkInIconSVG,
 } from "./PatientPortalIllustrations";
 
-type Step = "home" | "form" | "success";
+type Step = "home" | "form" | "full" | "success";
 
 interface TimeSlot {
   label: string;
@@ -390,15 +392,28 @@ function CheckTokenSearchCard({
 function AppointmentsFullView({
   patients,
   onSelectPatient,
+  onBack,
 }: {
   patients: Patient[];
   onSelectPatient: (p: Patient) => void;
+  onBack?: () => void;
 }) {
   const { t } = useLanguage();
   const [showWalkinNotice, setShowWalkinNotice] = useState(false);
 
   return (
     <div className="animate-slide-up text-center w-full max-w-md sm:max-w-xl mx-auto">
+      {/* Top Back Pill Button */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1.5 text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 font-body text-xs font-bold mb-4 transition-colors px-3.5 py-1.5 rounded-full shadow-2xs cursor-pointer"
+        >
+          <ArrowLeft size={14} />
+          <span>{t("backToHome")}</span>
+        </button>
+      )}
+
       {/* Main Full Slots Card */}
       <div className="bg-white rounded-[28px] border border-slate-100/90 p-6 sm:p-8 shadow-xl shadow-blue-900/5 mb-6 text-center">
         {/* Top Calendar Full Illustration */}
@@ -921,6 +936,38 @@ function SuccessScreen({
         </div>
       </div>
 
+      {/* Payment QR Code Card */}
+      <div className="bg-white rounded-[28px] p-6 sm:p-7 border border-slate-100 shadow-xl shadow-blue-900/5 mb-6 text-center overflow-hidden relative">
+        <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200/80 rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide mb-3">
+          <QrCode size={14} className="text-blue-600 shrink-0" />
+          <span>{t("scanToPayTitle")}</span>
+        </div>
+
+        <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
+          {t("scanToPayTitle")}
+        </h3>
+        <p className="font-body text-xs sm:text-sm text-slate-500 font-medium mb-4 max-w-xs mx-auto">
+          {t("scanToPaySubtitle")}
+        </p>
+
+        {/* QR Code Container */}
+        <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-4 sm:p-5 w-fit mx-auto mb-4 shadow-inner">
+          <img
+            src="/payment-qr.png"
+            alt="Payment QR Code"
+            className="w-48 h-48 sm:w-56 sm:h-56 object-contain mx-auto rounded-xl bg-white p-2 shadow-xs"
+          />
+        </div>
+
+        {/* Screenshot Saving Guidance Notice */}
+        <div className="bg-amber-50 border border-amber-200/90 rounded-2xl p-3.5 sm:p-4 text-left flex items-start gap-2.5 max-w-md mx-auto">
+          <Camera size={18} className="text-amber-600 shrink-0 mt-0.5" />
+          <p className="font-body text-xs font-semibold text-amber-900 leading-relaxed">
+            {t("savePaymentScreenshotNotice")}
+          </p>
+        </div>
+      </div>
+
       {/* Logiquel Banner */}
       <LogiquelAdCard variant="token" />
 
@@ -1046,34 +1093,24 @@ export default function PatientPortal() {
       {/* Main Container */}
       <main className="relative z-10 max-w-md sm:max-w-xl w-full mx-auto px-4 sm:px-5 pb-12 flex-1">
         {step === "home" && (
-          allSlotsFull ? (
-            /* IMAGE 2: All Slots Are Full View */
-            <AppointmentsFullView
-              patients={patients}
-              onSelectPatient={(p) => {
-                setRegisteredPatient(p);
-                setStep("success");
-              }}
-            />
-          ) : (
-            /* Patient Portal Home View */
-            <div className="animate-slide-up text-left space-y-4">
-              {/* Doctor Delay Alert Banner */}
-              {regWindow.delayMinutes > 0 && (
-                <div className="bg-amber-500/10 border border-amber-300/80 rounded-[22px] p-4 text-left flex items-start gap-3 text-amber-950 shadow-xs">
-                  <div className="p-2.5 bg-amber-100/90 rounded-xl shrink-0 text-amber-700 mt-0.5">
-                    <Clock size={18} className="animate-pulse" />
-                  </div>
-                  <div>
-                    <span className="font-display text-sm font-extrabold text-amber-950 block">
-                      {t("doctorLateTitle")} (+{tDelay(regWindow.delayMinutes)})
-                    </span>
-                    <p className="font-body text-xs font-semibold text-amber-800 mt-0.5 leading-relaxed">
-                      {t("doctorLateDesc", { delay: tDelay(regWindow.delayMinutes) })}
-                    </p>
-                  </div>
+          /* Patient Portal Home View */
+          <div className="animate-slide-up text-left space-y-4">
+            {/* Doctor Delay Alert Banner */}
+            {regWindow.delayMinutes > 0 && (
+              <div className="bg-amber-500/10 border border-amber-300/80 rounded-[22px] p-4 text-left flex items-start gap-3 text-amber-950 shadow-xs">
+                <div className="p-2.5 bg-amber-100/90 rounded-xl shrink-0 text-amber-700 mt-0.5">
+                  <Clock size={18} className="animate-pulse" />
                 </div>
-              )}
+                <div>
+                  <span className="font-display text-sm font-extrabold text-amber-950 block">
+                    {t("doctorLateTitle")} (+{tDelay(regWindow.delayMinutes)})
+                  </span>
+                  <p className="font-body text-xs font-semibold text-amber-800 mt-0.5 leading-relaxed">
+                    {t("doctorLateDesc", { delay: tDelay(regWindow.delayMinutes) })}
+                  </p>
+                </div>
+              </div>
+            )}
 
               {/* CARD 1: Doctor Status Card */}
               {isDoctorVisitingToday ? (
@@ -1092,7 +1129,7 @@ export default function PatientPortal() {
                         title="Clinic Location on Google Maps"
                       >
                         <MapPin size={12} className="text-emerald-600 shrink-0" />
-                        <span>{t("clickForGoogleMapLocation")}</span>
+                        <span>{t("googleMapLocation")}</span>
                       </a>
                     </div>
                     <div className="flex items-center gap-4">
@@ -1148,7 +1185,7 @@ export default function PatientPortal() {
                         title="Clinic Location on Google Maps"
                       >
                         <MapPin size={12} className="text-emerald-600 shrink-0" />
-                        <span>{t("clickForGoogleMapLocation")}</span>
+                        <span>{t("googleMapLocation")}</span>
                       </a>
                     </div>
 
@@ -1159,6 +1196,18 @@ export default function PatientPortal() {
                         {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)} – {tTime12Hour(regWindow.endTime)}
                       </span>
                     </div>
+
+                    {/* Clinic Address */}
+                    <a
+                      href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-slate-50 hover:bg-slate-100/90 border border-slate-200/80 rounded-xl px-3.5 py-2.5 flex items-center gap-2 text-xs text-slate-700 font-medium mt-2 transition-all group cursor-pointer"
+                      title="Open Clinic Address on Google Maps"
+                    >
+                      <MapPin size={14} className="text-rose-600 shrink-0 group-hover:scale-110 transition-transform" />
+                      <span className="font-semibold text-slate-800">{t("clinicAddress")}</span>
+                    </a>
                   </div>
                 )
               ) : (
@@ -1181,7 +1230,7 @@ export default function PatientPortal() {
                       title="Clinic Location on Google Maps"
                     >
                       <MapPin size={12} className="text-emerald-600 shrink-0" />
-                      <span>{t("clickForGoogleMapLocation")}</span>
+                      <span>{t("googleMapLocation")}</span>
                     </a>
                   </div>
 
@@ -1192,6 +1241,18 @@ export default function PatientPortal() {
                       {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)} – {tTime12Hour(regWindow.endTime)}
                     </span>
                   </div>
+
+                  {/* Clinic Address */}
+                  <a
+                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-slate-50 hover:bg-slate-100/90 border border-slate-200/80 rounded-xl px-3.5 py-2.5 flex items-center gap-2 text-xs text-slate-700 font-medium mt-2 transition-all group cursor-pointer"
+                    title="Open Clinic Address on Google Maps"
+                  >
+                    <MapPin size={14} className="text-rose-600 shrink-0 group-hover:scale-110 transition-transform" />
+                    <span className="font-semibold text-slate-800">{t("clinicAddress")}</span>
+                  </a>
                 </div>
               )}
 
@@ -1212,8 +1273,7 @@ export default function PatientPortal() {
                 <button
                   onClick={() => {
                     if (allSlotsFull) {
-                      // If slots full, stay on appointments full view
-                      setStep("home");
+                      setStep("full");
                     } else {
                       setStep("form");
                     }
@@ -1234,7 +1294,18 @@ export default function PatientPortal() {
                 <span>{t("privacyNotice")}</span>
               </div>
             </div>
-          )
+        )}
+
+        {/* STEP: Appointments Full View (IMAGE 2) */}
+        {step === "full" && (
+          <AppointmentsFullView
+            patients={patients}
+            onBack={() => setStep("home")}
+            onSelectPatient={(p) => {
+              setRegisteredPatient(p);
+              setStep("success");
+            }}
+          />
         )}
 
         {/* STEP: Registration Form (IMAGE 1) */}
