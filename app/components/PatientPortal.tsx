@@ -74,6 +74,44 @@ function formatTime12Hour(timeStr: string | null | undefined): string {
   return clean;
 }
 
+function isDateToday(dateStr: string | null | undefined): boolean {
+  if (!dateStr) return true;
+  const clean = dateStr.trim().split("T")[0];
+  const today = new Date();
+  const y = today.getFullYear();
+  const m = String(today.getMonth() + 1).padStart(2, "0");
+  const d = String(today.getDate()).padStart(2, "0");
+  const todayFormatted = `${y}-${m}-${d}`;
+  return clean === todayFormatted;
+}
+
+function formatVisitDate(dateStr: string | null | undefined, lang: "en" | "hi" = "en"): string {
+  if (!dateStr) return "";
+  const clean = dateStr.trim().split("T")[0];
+  const parts = clean.split("-");
+  let d: Date | null = null;
+  if (parts.length === 3) {
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+      d = new Date(year, month, day);
+    }
+  }
+  if (!d) {
+    const parsed = new Date(dateStr);
+    if (!isNaN(parsed.getTime())) d = parsed;
+  }
+  if (!d) return dateStr;
+
+  return d.toLocaleDateString(lang === "hi" ? "hi-IN" : "en-IN", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
 function SmartArrivalGuidance({ waitingBefore }: { waitingBefore: number }) {
   const { t } = useLanguage();
   if (waitingBefore <= 2) {
@@ -920,7 +958,7 @@ export default function PatientPortal() {
     toast,
     initialLoading,
   } = usePatientView();
-  const { t, tDelay, tDynamic, tTime12Hour, tTimeSlot } = useLanguage();
+  const { t, tDelay, tDynamic, tTime12Hour, tTimeSlot, language } = useLanguage();
   const router = useRouter();
   const pageRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
@@ -987,6 +1025,8 @@ export default function PatientPortal() {
     );
 
   const inProgress = patients.find((p) => p.status === "in-progress");
+  const isDoctorVisitingToday = isDateToday(regWindow.date);
+  const formattedVisitDate = formatVisitDate(regWindow.date, language);
 
   if (initialLoading) {
     return <LoadingScreen />;
@@ -1033,67 +1073,101 @@ export default function PatientPortal() {
               )}
 
               {/* CARD 1: Doctor Status Card */}
-              {inProgress ? (
-                /* IMAGE 4: When doctor HAS STARTED seeing patients */
-                <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
-                  <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
-                    <h3 className="font-display text-base font-extrabold text-slate-900">
-                      {t("liveQueue")}
-                    </h3>
-                    <a
-                      href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200 rounded-full px-2.5 sm:px-3 py-1 shadow-xs transition-all cursor-pointer shrink-0"
-                      title="Clinic Location on Google Maps"
-                    >
-                      <MapPin size={12} className="text-emerald-600 shrink-0" />
-                      <span>{t("clickForGoogleMapLocation")}</span>
-                    </a>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
-                    <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 rounded-2xl p-4 text-white shadow-md shadow-blue-500/20 flex-1 relative overflow-hidden">
-                      <p className="font-body text-[11px] font-bold text-blue-100 uppercase tracking-widest mb-1">
-                        {t("doctorSeeingTitle")}
-                      </p>
-                      <div className="flex items-baseline justify-between gap-2">
-                        <span className="font-mono-custom text-4xl sm:text-5xl font-black text-white leading-none">
-                          {inProgress.slot_token_number || inProgress.token_number}
-                        </span>
-                        <div className="flex flex-col items-end gap-1">
-                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                            {t("inConsultation")}
-                          </span>
-                          {inProgress.time_slot && (
-                            <span className="bg-white/20 backdrop-blur-xs rounded-md px-2 py-0.5 text-[11px] font-mono-custom font-semibold text-white">
-                              {tTimeSlot(inProgress.time_slot)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="mt-2.5 pt-2 border-t border-white/20 flex items-center justify-between gap-2">
-                        <p className="font-body text-sm sm:text-base font-extrabold text-white truncate">
-                          {inProgress.name}
+              {isDoctorVisitingToday ? (
+                inProgress ? (
+                  /* IMAGE 4: When doctor HAS STARTED seeing patients */
+                  <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
+                    <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+                      <h3 className="font-display text-base font-extrabold text-slate-900">
+                        {t("liveQueue")}
+                      </h3>
+                      <a
+                        href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200 rounded-full px-2.5 sm:px-3 py-1 shadow-xs transition-all cursor-pointer shrink-0"
+                        title="Clinic Location on Google Maps"
+                      >
+                        <MapPin size={12} className="text-emerald-600 shrink-0" />
+                        <span>{t("clickForGoogleMapLocation")}</span>
+                      </a>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
+                      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 rounded-2xl p-4 text-white shadow-md shadow-blue-500/20 flex-1 relative overflow-hidden">
+                        <p className="font-body text-[11px] font-bold text-blue-100 uppercase tracking-widest mb-1">
+                          {t("doctorSeeingTitle")}
                         </p>
+                        <div className="flex items-baseline justify-between gap-2">
+                          <span className="font-mono-custom text-4xl sm:text-5xl font-black text-white leading-none">
+                            {inProgress.slot_token_number || inProgress.token_number}
+                          </span>
+                          <div className="flex flex-col items-end gap-1">
+                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                              {t("inConsultation")}
+                            </span>
+                            {inProgress.time_slot && (
+                              <span className="bg-white/20 backdrop-blur-xs rounded-md px-2 py-0.5 text-[11px] font-mono-custom font-semibold text-white">
+                                {tTimeSlot(inProgress.time_slot)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="mt-2.5 pt-2 border-t border-white/20 flex items-center justify-between gap-2">
+                          <p className="font-body text-sm sm:text-base font-extrabold text-white truncate">
+                            {inProgress.name}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  /* IMAGE 3: When today is appointment date, but doctor HAS NOT started seeing patients yet */
+                  <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
+                    <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                      <div className="flex items-start gap-4 min-w-0">
+                        <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
+                        <div>
+                          <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
+                            {t("doctorWillVisitTitle")}
+                          </h3>
+                          <p className="font-body text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+                            {t("doctorNotStartedMsg")}
+                          </p>
+                        </div>
+                      </div>
+                      <a
+                        href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200 rounded-full px-2.5 sm:px-3 py-1 shadow-xs transition-all cursor-pointer shrink-0"
+                        title="Clinic Location on Google Maps"
+                      >
+                        <MapPin size={12} className="text-emerald-600 shrink-0" />
+                        <span>{t("clickForGoogleMapLocation")}</span>
+                      </a>
+                    </div>
+
+                    {/* Expected Time Pill Box */}
+                    <div className="bg-[#F0F5FF] border border-blue-100/80 rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-bold text-blue-900 mt-4">
+                      <Clock size={16} className="text-blue-600 shrink-0" />
+                      <span>
+                        {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)} – {tTime12Hour(regWindow.endTime)}
+                      </span>
+                    </div>
+                  </div>
+                )
               ) : (
-                /* IMAGE 3: When doctor HAS NOT started seeing patients yet */
+                /* Doctor visit scheduled on a different date */
                 <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
                   <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
                     <div className="flex items-start gap-4 min-w-0">
                       <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
                       <div>
-                        <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
-                          {t("doctorWillVisitTitle")}
+                        <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
+                          {t("doctorWillVisitDateTitle", { date: formattedVisitDate })}
                         </h3>
-                        <p className="font-body text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-                          {t("doctorNotStartedMsg")}
-                        </p>
                       </div>
                     </div>
                     <a
