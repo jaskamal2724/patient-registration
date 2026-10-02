@@ -557,10 +557,10 @@ function RegistrationForm({
     const e: Record<string, string> = {};
     if (!form.name.trim()) e.name = "Full name is required";
     if (!form.age || +form.age < 1 || +form.age > 120)
-      e.age = "Enter a valid age";
+      e.age = "Enter a valid age (1-120)";
     const cleanPhone = form.phone.replace(/\D/g, "");
-    if (!cleanPhone || cleanPhone.length < 10) {
-      e.phone = "Enter valid 10-digit mobile number";
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      e.phone = "Enter a valid 10-digit mobile number";
     } else if (patients.some((p) => p.phone.replace(/\D/g, "") === cleanPhone)) {
       e.phone =
         "This phone number is already registered for this session.";
@@ -685,14 +685,15 @@ function RegistrationForm({
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
               />
               <input
-                type="number"
-                min={1}
-                max={120}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={3}
                 className={`w-full border rounded-xl pl-11 pr-3 py-3 font-body text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${errors.age ? "border-red-300 bg-red-50 text-red-900" : "border-slate-200 bg-slate-50/50 text-slate-900 focus:bg-white"}`}
                 placeholder={t("agePlaceholder")}
                 value={form.age}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, age: e.target.value }))
+                  setForm((f) => ({ ...f, age: e.target.value.replace(/\D/g, "").slice(0, 3) }))
                 }
               />
             </div>
@@ -736,6 +737,8 @@ function RegistrationForm({
             />
             <input
               type="tel"
+              inputMode="numeric"
+              pattern="[0-9]*"
               maxLength={10}
               className={`w-full border rounded-xl pl-11 pr-4 py-3 font-body text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${errors.phone ? "border-red-300 bg-red-50 text-red-900" : "border-slate-200 bg-slate-50/50 text-slate-900 focus:bg-white"}`}
               placeholder={t("mobilePlaceholder")}
@@ -743,7 +746,7 @@ function RegistrationForm({
               onChange={(e) =>
                 setForm((f) => ({
                   ...f,
-                  phone: e.target.value.replace(/\D/g, ""),
+                  phone: e.target.value.replace(/\D/g, "").slice(0, 10),
                 }))
               }
             />

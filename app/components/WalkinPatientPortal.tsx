@@ -453,13 +453,14 @@ export default function WalkinPatientPortal() {
                       {t("ageLabel")} *
                     </label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={3}
                       required
-                      min={1}
-                      max={120}
                       placeholder={t("agePlaceholder")}
                       value={age}
-                      onChange={(e) => setAge(e.target.value)}
+                      onChange={(e) => setAge(e.target.value.replace(/\D/g, "").slice(0, 3))}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-mono-custom"
                     />
                   </div>
@@ -491,6 +492,9 @@ export default function WalkinPatientPortal() {
                     </span>
                     <input
                       type="tel"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={10}
                       required
                       placeholder={t("mobilePlaceholder")}
                       value={phone}
