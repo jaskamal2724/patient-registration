@@ -32,6 +32,9 @@ export function usePatientView() {
 
   useEffect(() => {
     let cancelled = false;
+    const timer = setTimeout(() => {
+      if (!cancelled) setInitialLoading(false);
+    }, 1000);
     const load = async () => {
       const { doctor: doc, open } = await api.fetchActiveDoctor();
       if (cancelled) return;
@@ -39,12 +42,12 @@ export function usePatientView() {
       setDoctorRegistrationOpen(open);
       if (!doc && !cancelled) {
         setPatients([]);
-        setInitialLoading(false);
       }
     };
     load();
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, []);
 

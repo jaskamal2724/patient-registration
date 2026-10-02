@@ -32,6 +32,8 @@ import {
   ExternalLink,
   QrCode,
   Camera,
+  Copy,
+  Check,
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
 import DocCareLogo from "./DocCareLogo";
@@ -76,34 +78,54 @@ function formatTime12Hour(timeStr: string | null | undefined): string {
   return clean;
 }
 
+function parseDateOnly(dateStr: string | null | undefined): Date | null {
+  if (!dateStr) return null;
+  const clean = dateStr.trim().split("T")[0];
+  if (/^\d{1,2}[-/]\d{1,2}[-/]\d{4}$/.test(clean)) {
+    const parts = clean.split(/[-/]/);
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const year = parseInt(parts[2], 10);
+    const d = new Date(year, month, day);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  if (/^\d{4}[-/]\d{1,2}[-/]\d{1,2}$/.test(clean)) {
+    const parts = clean.split(/[-/]/);
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    const d = new Date(year, month, day);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return null;
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function getTodayDateOnly(): Date {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
 function isDateToday(dateStr: string | null | undefined): boolean {
   if (!dateStr) return true;
-  const clean = dateStr.trim().split("T")[0];
-  const today = new Date();
-  const y = today.getFullYear();
-  const m = String(today.getMonth() + 1).padStart(2, "0");
-  const d = String(today.getDate()).padStart(2, "0");
-  const todayFormatted = `${y}-${m}-${d}`;
-  return clean === todayFormatted;
+  const target = parseDateOnly(dateStr);
+  if (!target) return true;
+  const today = getTodayDateOnly();
+  return target.getTime() === today.getTime();
+}
+
+function isDateInFuture(dateStr: string | null | undefined): boolean {
+  if (!dateStr) return false;
+  const target = parseDateOnly(dateStr);
+  if (!target) return false;
+  const today = getTodayDateOnly();
+  return target.getTime() > today.getTime();
 }
 
 function formatVisitDate(dateStr: string | null | undefined, lang: "en" | "hi" = "en"): string {
   if (!dateStr) return "";
-  const clean = dateStr.trim().split("T")[0];
-  const parts = clean.split("-");
-  let d: Date | null = null;
-  if (parts.length === 3) {
-    const year = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1;
-    const day = parseInt(parts[2], 10);
-    if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
-      d = new Date(year, month, day);
-    }
-  }
-  if (!d) {
-    const parsed = new Date(dateStr);
-    if (!isNaN(parsed.getTime())) d = parsed;
-  }
+  const d = parseDateOnly(dateStr);
   if (!d) return dateStr;
 
   return d.toLocaleDateString(lang === "hi" ? "hi-IN" : "en-IN", {
@@ -239,12 +261,9 @@ function CheckTokenSearchCard({
         </span>
       </div>
 
-      <h2 className="font-display text-xl sm:text-2xl font-extrabold text-slate-900 mb-1 tracking-tight">
+      <h2 className="font-display text-xl sm:text-2xl font-extrabold text-slate-900 mb-3.5 tracking-tight">
         {t("checkTokenTitle")}
       </h2>
-      <p className="font-body text-xs sm:text-sm text-slate-600 font-medium mb-4 max-w-sm leading-relaxed">
-        {t("checkTokenSubtitle")}
-      </p>
 
       {/* Pill Search Input Bar */}
       <div className="bg-white rounded-full p-1.5 border border-blue-200/80 shadow-sm flex items-center gap-2 relative">
@@ -501,13 +520,11 @@ function AppointmentsFullView({
 
 {/* IMAGE 1: OPD Registration Form */}
 function RegistrationForm({
-  onBack,
   onSuccess,
   regWindow,
   addPatient,
   patients,
 }: {
-  onBack: () => void;
   onSuccess: (p: Patient) => void;
   regWindow: RegistrationWindow;
   addPatient: (form: PatientForm) => Promise<Patient>;
@@ -601,15 +618,6 @@ function RegistrationForm({
 
   return (
     <div className="animate-slide-up text-left w-full max-w-md sm:max-w-xl mx-auto">
-      {/* Top Back Pill Button */}
-      <button
-        onClick={onBack}
-        className="flex items-center gap-1.5 text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 font-body text-xs font-bold mb-4 transition-colors px-3.5 py-1.5 rounded-full shadow-2xs cursor-pointer"
-      >
-        <ArrowLeft size={14} />
-        <span>{t("backToHome")}</span>
-      </button>
-
       {/* Screen Header Block (IMAGE 1 TOP HEADER) */}
       <div className="flex items-center justify-between mb-5 px-1">
         <div className="flex items-start gap-3">
@@ -874,6 +882,36 @@ function SuccessScreen({
   const { t, tDelay, tTimeSlot } = useLanguage();
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [copiedUpi, setCopiedUpi] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  const UPI_ID = "sriji70007849@barodampay";
+  const MERCHANT_NAME = "SRI JI SEVA SANSTHAN";
+
+  const handleCopyUpi = async () => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(UPI_ID);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = UPI_ID;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+      setCopiedUpi(true);
+      setTimeout(() => setCopiedUpi(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy UPI ID:", err);
+    }
+  };
 
   const displayToken = patient.slot_token_number || patient.token_number;
 
@@ -902,71 +940,167 @@ function SuccessScreen({
 
   return (
     <div className="animate-slide-up text-center w-full max-w-md sm:max-w-xl mx-auto">
-      {/* Top Blue Token Display Card */}
-      <div className="bg-gradient-to-br from-[#1E5BF6] via-[#2563EB] to-[#4F46E5] rounded-[28px] p-6 sm:p-8 text-white shadow-xl shadow-blue-500/25 relative overflow-hidden text-center mb-6">
-        <div className="absolute -top-12 -right-12 w-44 h-44 bg-cyan-400/20 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-12 -left-12 w-44 h-44 bg-blue-400/30 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="inline-flex items-center justify-center gap-2 text-white/90 text-xs sm:text-sm font-medium tracking-wide mb-2 relative z-10">
-          <Ticket size={16} className="text-blue-200" />
-          <span>{t("yourToken")}</span>
+      {/* Compact Token Display Card */}
+      <div className="bg-gradient-to-br from-[#1E5BF6] to-[#2563EB] rounded-2xl p-4 sm:p-5 text-white shadow-md shadow-blue-500/20 relative overflow-hidden text-center mb-4">
+        {/* Token number */}
+        <div className="flex flex-col items-center justify-center gap-1 py-0.5">
+          <span className="text-[11px] font-bold text-blue-100 uppercase tracking-widest">
+            {t("yourToken")}
+          </span>
+          <span className="font-mono-custom text-4xl sm:text-5xl font-black leading-none text-white drop-shadow-sm">
+            {displayToken}
+          </span>
         </div>
 
-        <p className="font-mono-custom text-6xl sm:text-7xl md:text-8xl font-black leading-none tracking-tight text-white drop-shadow-md my-2 relative z-10">
-          {displayToken}
-        </p>
-
-        <div className="mt-3 inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/25 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold text-white relative z-10 shadow-inner">
-          <Clock size={15} className="text-white" />
+        {/* Time slot */}
+        <div className="mt-2.5 inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-xs border border-white/25 rounded-full px-3 py-1 text-xs font-semibold text-white">
+          <Clock size={13} className="shrink-0" />
           <span>
-            {t("selectTimeSlot")}: {tTimeSlot(shiftSlotLabel(patient.time_slot, delayMinutes))}
+            {tTimeSlot(shiftSlotLabel(patient.time_slot, delayMinutes))}
             {delayMinutes > 0 ? ` (+${tDelay(delayMinutes)})` : ""}
           </span>
         </div>
 
-        <div className="w-12 h-1 bg-white/30 rounded-full mx-auto my-4 relative z-10" />
-
-        <div className="relative z-10">
-          <p className="font-display font-extrabold text-white text-base sm:text-lg mb-1">
-            {t("registrationSuccessful")}
-          </p>
-          <p className="font-body text-blue-100/90 text-xs sm:text-sm max-w-xs mx-auto font-medium">
-            {t("tokenIssuedMsg")}
-          </p>
+        {/* Success message at last */}
+        <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold text-emerald-200 mt-2.5">
+          <CheckCircle2 size={15} className="text-emerald-300 shrink-0" />
+          <span>{t("registrationSuccessful")}</span>
         </div>
       </div>
 
-      {/* Payment QR Code Card */}
-      <div className="bg-white rounded-[28px] p-6 sm:p-7 border border-slate-100 shadow-xl shadow-blue-900/5 mb-6 text-center overflow-hidden relative">
-        <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200/80 rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide mb-3">
+      {/* Payment UPI Card */}
+      <div className="bg-white rounded-[24px] p-5 sm:p-6 border border-slate-100 shadow-xl shadow-blue-900/5 mb-5 text-center overflow-hidden relative">
+        <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200/80 rounded-full px-3.5 py-1 text-xs font-extrabold uppercase tracking-wide mb-3.5">
           <QrCode size={14} className="text-blue-600 shrink-0" />
           <span>{t("scanToPayTitle")}</span>
         </div>
 
-        <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
-          {t("scanToPayTitle")}
-        </h3>
-        <p className="font-body text-xs sm:text-sm text-slate-500 font-medium mb-4 max-w-xs mx-auto">
-          {t("scanToPaySubtitle")}
-        </p>
+        {/* UPI ID Display Box */}
+        <div className="bg-slate-50 border border-slate-200/90 rounded-xl px-3.5 py-2.5 mb-3.5 text-center max-w-sm mx-auto">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+            {MERCHANT_NAME}
+          </span>
+          <span className="font-mono-custom text-xs sm:text-sm font-extrabold text-slate-800 break-all block mt-0.5">
+            {UPI_ID}
+          </span>
+        </div>
 
-        {/* QR Code Container */}
-        <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-4 sm:p-5 w-fit mx-auto mb-4 shadow-inner">
-          <img
-            src="/payment-qr.png"
-            alt="Payment QR Code"
-            className="w-48 h-48 sm:w-56 sm:h-56 object-contain mx-auto rounded-xl bg-white p-2 shadow-xs"
-          />
+        {/* 2 Action Buttons: View QR Code + Copy UPI ID */}
+        <div className="grid grid-cols-2 gap-2.5 max-w-sm mx-auto mb-3.5">
+          <button
+            type="button"
+            onClick={() => setShowQrModal(true)}
+            className="bg-blue-50 hover:bg-blue-100 active:scale-95 text-blue-700 border border-blue-200/90 font-bold text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+          >
+            <QrCode size={16} className="text-blue-600 shrink-0" />
+            <span className="truncate">{t("viewQrCodeBtn")}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleCopyUpi}
+            className={`font-bold text-xs sm:text-sm py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs active:scale-95 ${
+              copiedUpi
+                ? "bg-emerald-600 text-white border border-emerald-600"
+                : "bg-slate-900 hover:bg-slate-800 text-white border border-slate-900"
+            }`}
+          >
+            {copiedUpi ? (
+              <>
+                <Check size={16} className="text-white shrink-0" />
+                <span>{t("upiIdCopied")}</span>
+              </>
+            ) : (
+              <>
+                <Copy size={15} className="shrink-0" />
+                <span className="truncate">{t("copyUpiIdBtn")}</span>
+              </>
+            )}
+          </button>
         </div>
 
         {/* Screenshot Saving Guidance Notice */}
-        <div className="bg-amber-50 border border-amber-200/90 rounded-2xl p-3.5 sm:p-4 text-left flex items-start gap-2.5 max-w-md mx-auto">
-          <Camera size={18} className="text-amber-600 shrink-0 mt-0.5" />
-          <p className="font-body text-xs font-semibold text-amber-900 leading-relaxed">
+        <div className="bg-amber-50 border border-amber-200/90 rounded-xl p-3 text-left flex items-start gap-2 max-w-sm mx-auto">
+          <Camera size={16} className="text-amber-600 shrink-0 mt-0.5" />
+          <p className="font-body text-[11px] sm:text-xs font-semibold text-amber-900 leading-relaxed">
             {t("savePaymentScreenshotNotice")}
           </p>
         </div>
       </div>
+
+      {/* QR Code Popup Modal */}
+      {showQrModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fade-in"
+          onClick={() => setShowQrModal(false)}
+        >
+          <div
+            className="bg-white rounded-[28px] max-w-sm w-full p-5 sm:p-6 shadow-2xl border border-slate-100 text-center relative animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2 text-left min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <QrCode size={18} />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="font-display font-bold text-sm text-slate-900 leading-tight truncate">
+                    {t("scanToPayTitle")}
+                  </h4>
+                  <p className="text-[11px] text-slate-500 font-medium truncate">{MERCHANT_NAME}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowQrModal(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* QR Code Image */}
+            <div className="bg-gradient-to-b from-orange-50/60 to-amber-50/40 border border-orange-100/90 rounded-2xl p-3.5 mb-3.5 shadow-inner">
+              <img
+                src="/payment-qr.png"
+                alt="Payment QR Code"
+                className="w-56 h-56 object-contain mx-auto rounded-xl bg-white p-2 shadow-xs border border-slate-200/80"
+              />
+              <p className="font-mono-custom text-xs font-bold text-slate-800 mt-2 break-all">
+                {UPI_ID}
+              </p>
+            </div>
+
+            {/* Copy Button inside Modal */}
+            <button
+              type="button"
+              onClick={handleCopyUpi}
+              className={`w-full font-bold text-xs sm:text-sm py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer mb-2.5 shadow-2xs active:scale-95 ${
+                copiedUpi
+                  ? "bg-emerald-600 text-white"
+                  : "bg-slate-900 hover:bg-slate-800 text-white"
+              }`}
+            >
+              {copiedUpi ? (
+                <>
+                  <Check size={15} />
+                  <span>{t("upiIdCopied")}</span>
+                </>
+              ) : (
+                <>
+                  <Copy size={15} />
+                  <span>{t("copyUpiIdBtn")}</span>
+                </>
+              )}
+            </button>
+
+            {/* Note */}
+            <p className="text-[11px] text-amber-800 font-medium bg-amber-50 rounded-lg p-2 leading-relaxed">
+              {t("savePaymentScreenshotNotice")}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Logiquel Banner */}
       <LogiquelAdCard variant="token" />
@@ -1020,6 +1154,10 @@ export default function PatientPortal() {
       setStep("form");
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
 
   // Fetch slot availability to check if ALL slots are full
   useEffect(() => {
@@ -1075,7 +1213,13 @@ export default function PatientPortal() {
     );
 
   const inProgress = patients.find((p) => p.status === "in-progress");
+  const waitingPatients = patients.filter((p) => p.status === "waiting");
+  const hasWaitingPatients = waitingPatients.length > 0;
+  const allPatientsDone =
+    patients.length > 0 &&
+    patients.every((p) => p.status === "done" || p.status === "skipped");
   const isDoctorVisitingToday = isDateToday(regWindow.date);
+  const isFutureDate = isDateInFuture(regWindow.date);
   const formattedVisitDate = formatVisitDate(regWindow.date, language);
 
   if (initialLoading) {
@@ -1088,7 +1232,15 @@ export default function PatientPortal() {
       className="min-h-screen relative overflow-x-hidden max-w-full bg-[#FAFAFA] flex flex-col justify-between"
     >
       {/* Top Header Bar */}
-      <PatientHeader onExit={() => router.push("/")} />
+      <PatientHeader
+        onExit={() => {
+          if (step !== "home") {
+            setStep("home");
+          } else {
+            router.push("/");
+          }
+        }}
+      />
 
       {/* Main Container */}
       <main className="relative z-10 max-w-md sm:max-w-xl w-full mx-auto px-4 sm:px-5 pb-12 flex-1">
@@ -1113,67 +1265,69 @@ export default function PatientPortal() {
             )}
 
               {/* CARD 1: Doctor Status Card */}
-              {isDoctorVisitingToday ? (
-                inProgress ? (
-                  /* IMAGE 4: When doctor HAS STARTED seeing patients */
-                  <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
-                    <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
-                      <h3 className="font-display text-base font-extrabold text-slate-900">
+              {inProgress ? (
+                /* When doctor HAS STARTED seeing patients */
+                <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
+                  <div className="flex items-center justify-between gap-3 sm:gap-4 mb-3.5">
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <DoctorAvatarSVG className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                      <h3 className="font-display text-base sm:text-lg font-extrabold text-slate-900">
                         {t("liveQueue")}
                       </h3>
-                      <a
-                        href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200 rounded-full px-2.5 sm:px-3 py-1 shadow-xs transition-all cursor-pointer shrink-0"
-                        title="Clinic Location on Google Maps"
-                      >
-                        <MapPin size={12} className="text-emerald-600 shrink-0" />
-                        <span>{t("googleMapLocation")}</span>
-                      </a>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
-                      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 rounded-2xl p-4 text-white shadow-md shadow-blue-500/20 flex-1 relative overflow-hidden">
-                        <p className="font-body text-[11px] font-bold text-blue-100 uppercase tracking-widest mb-1">
-                          {t("doctorSeeingTitle")}
-                        </p>
-                        <div className="flex items-baseline justify-between gap-2">
-                          <span className="font-mono-custom text-4xl sm:text-5xl font-black text-white leading-none">
-                            {inProgress.slot_token_number || inProgress.token_number}
+                    <a
+                      href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap ml-auto"
+                      title="Clinic Location on Google Maps"
+                    >
+                      <MapPin size={13} className="text-rose-600 shrink-0" />
+                      <span>{t("googleMapLocation")}</span>
+                    </a>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 rounded-2xl p-3.5 sm:p-4 text-white shadow-md shadow-blue-500/20 relative overflow-hidden">
+                    <p className="font-body text-[10px] sm:text-[11px] font-bold text-blue-100 uppercase tracking-widest mb-1">
+                      {t("doctorSeeingTitle")}
+                    </p>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="font-mono-custom text-3xl sm:text-4xl font-black text-white leading-none shrink-0">
+                          {inProgress.slot_token_number || inProgress.token_number}
+                        </span>
+                        <span className="font-body text-sm sm:text-base font-extrabold text-white truncate">
+                          {inProgress.name}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                          {t("inConsultation")}
+                        </span>
+                        {inProgress.time_slot && (
+                          <span className="bg-white/20 backdrop-blur-xs rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] font-mono-custom font-semibold text-white">
+                            {tTimeSlot(inProgress.time_slot)}
                           </span>
-                          <div className="flex flex-col items-end gap-1">
-                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
-                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                              {t("inConsultation")}
-                            </span>
-                            {inProgress.time_slot && (
-                              <span className="bg-white/20 backdrop-blur-xs rounded-md px-2 py-0.5 text-[11px] font-mono-custom font-semibold text-white">
-                                {tTimeSlot(inProgress.time_slot)}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="mt-2.5 pt-2 border-t border-white/20 flex items-center justify-between gap-2">
-                          <p className="font-body text-sm sm:text-base font-extrabold text-white truncate">
-                            {inProgress.name}
-                          </p>
-                        </div>
+                        )}
                       </div>
                     </div>
                   </div>
-                ) : (
-                  /* IMAGE 3: When today is appointment date, but doctor HAS NOT started seeing patients yet */
+                </div>
+              ) : allPatientsDone ? (
+                /* When doctor has finished seeing all patients — always show Registration will open soon */
+                (
                   <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
                     <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
                       <div className="flex items-start gap-4 min-w-0">
                         <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
                         <div>
                           <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
-                            {t("doctorWillVisitTitle")}
+                            {t("registrationOpenSoonTitle")}
                           </h3>
                           <p className="font-body text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-                            {t("doctorNotStartedMsg")}
+                            {t("registrationOpenSoonMsg")}
                           </p>
                         </div>
                       </div>
@@ -1181,20 +1335,12 @@ export default function PatientPortal() {
                         href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200 rounded-full px-2.5 sm:px-3 py-1 shadow-xs transition-all cursor-pointer shrink-0"
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap"
                         title="Clinic Location on Google Maps"
                       >
-                        <MapPin size={12} className="text-emerald-600 shrink-0" />
+                        <MapPin size={13} className="text-rose-600 shrink-0" />
                         <span>{t("googleMapLocation")}</span>
                       </a>
-                    </div>
-
-                    {/* Expected Time Pill Box */}
-                    <div className="bg-[#F0F5FF] border border-blue-100/80 rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-bold text-blue-900 mt-4">
-                      <Clock size={16} className="text-blue-600 shrink-0" />
-                      <span>
-                        {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)} – {tTime12Hour(regWindow.endTime)}
-                      </span>
                     </div>
 
                     {/* Clinic Address */}
@@ -1202,16 +1348,71 @@ export default function PatientPortal() {
                       href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="bg-slate-50 hover:bg-slate-100/90 border border-slate-200/80 rounded-xl px-3.5 py-2.5 flex items-center gap-2 text-xs text-slate-700 font-medium mt-2 transition-all group cursor-pointer"
+                      className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
                       title="Open Clinic Address on Google Maps"
                     >
-                      <MapPin size={14} className="text-rose-600 shrink-0 group-hover:scale-110 transition-transform" />
-                      <span className="font-semibold text-slate-800">{t("clinicAddress")}</span>
+                      <MapPin size={15} className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform" />
+                      <span className="font-extrabold text-emerald-950">{t("clinicAddress")}</span>
                     </a>
+
+                    {/* Expected Time Pill Box */}
+                    <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
+                      <Clock size={16} className="text-white shrink-0" />
+                      <span className="font-extrabold text-white">
+                        {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)} – {tTime12Hour(regWindow.endTime)}
+                      </span>
+                    </div>
                   </div>
                 )
-              ) : (
-                /* Doctor visit scheduled on a different date */
+              ) : hasWaitingPatients && isDoctorVisitingToday ? (
+                /* When today is appointment date with waiting patients, but doctor HAS NOT started seeing patients yet */
+                <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
+                  <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                    <div className="flex items-start gap-4 min-w-0">
+                      <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
+                      <div>
+                        <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
+                          {t("doctorWillVisitTitle")}
+                        </h3>
+                        <p className="font-body text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+                          {t("doctorNotStartedMsg")}
+                        </p>
+                      </div>
+                    </div>
+                    <a
+                      href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap"
+                      title="Clinic Location on Google Maps"
+                    >
+                      <MapPin size={13} className="text-rose-600 shrink-0" />
+                      <span>{t("googleMapLocation")}</span>
+                    </a>
+                  </div>
+
+                  {/* Clinic Address */}
+                  <a
+                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
+                    title="Open Clinic Address on Google Maps"
+                  >
+                    <MapPin size={15} className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform" />
+                    <span className="font-extrabold text-emerald-950">{t("clinicAddress")}</span>
+                  </a>
+
+                  {/* Expected Time Pill Box */}
+                  <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
+                    <Clock size={16} className="text-white shrink-0" />
+                    <span className="font-extrabold text-white">
+                      {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)} – {tTime12Hour(regWindow.endTime)}
+                    </span>
+                  </div>
+                </div>
+              ) : isFutureDate ? (
+                /* Doctor visit scheduled on a future date */
                 <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
                   <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
                     <div className="flex items-start gap-4 min-w-0">
@@ -1226,20 +1427,12 @@ export default function PatientPortal() {
                       href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200 rounded-full px-2.5 sm:px-3 py-1 shadow-xs transition-all cursor-pointer shrink-0"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap"
                       title="Clinic Location on Google Maps"
                     >
-                      <MapPin size={12} className="text-emerald-600 shrink-0" />
+                      <MapPin size={13} className="text-rose-600 shrink-0" />
                       <span>{t("googleMapLocation")}</span>
                     </a>
-                  </div>
-
-                  {/* Expected Time Pill Box */}
-                  <div className="bg-[#F0F5FF] border border-blue-100/80 rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-bold text-blue-900 mt-4">
-                    <Clock size={16} className="text-blue-600 shrink-0" />
-                    <span>
-                      {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)} – {tTime12Hour(regWindow.endTime)}
-                    </span>
                   </div>
 
                   {/* Clinic Address */}
@@ -1247,12 +1440,67 @@ export default function PatientPortal() {
                     href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-slate-50 hover:bg-slate-100/90 border border-slate-200/80 rounded-xl px-3.5 py-2.5 flex items-center gap-2 text-xs text-slate-700 font-medium mt-2 transition-all group cursor-pointer"
+                    className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
                     title="Open Clinic Address on Google Maps"
                   >
-                    <MapPin size={14} className="text-rose-600 shrink-0 group-hover:scale-110 transition-transform" />
-                    <span className="font-semibold text-slate-800">{t("clinicAddress")}</span>
+                    <MapPin size={15} className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform" />
+                    <span className="font-extrabold text-emerald-950">{t("clinicAddress")}</span>
                   </a>
+
+                  {/* Expected Time Pill Box */}
+                  <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
+                    <Clock size={16} className="text-white shrink-0" />
+                    <span className="font-extrabold text-white">
+                      {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)} – {tTime12Hour(regWindow.endTime)}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                /* Registration will open soon (past date or concluded session) */
+                <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
+                  <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                    <div className="flex items-start gap-4 min-w-0">
+                      <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
+                      <div>
+                        <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
+                          {t("registrationOpenSoonTitle")}
+                        </h3>
+                        <p className="font-body text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+                          {t("registrationOpenSoonMsg")}
+                        </p>
+                      </div>
+                    </div>
+                    <a
+                      href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap"
+                      title="Clinic Location on Google Maps"
+                    >
+                      <MapPin size={13} className="text-rose-600 shrink-0" />
+                      <span>{t("googleMapLocation")}</span>
+                    </a>
+                  </div>
+
+                  {/* Clinic Address */}
+                  <a
+                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
+                    title="Open Clinic Address on Google Maps"
+                  >
+                    <MapPin size={15} className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform" />
+                    <span className="font-extrabold text-emerald-950">{t("clinicAddress")}</span>
+                  </a>
+
+                  {/* Expected Time Pill Box */}
+                  <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
+                    <Clock size={16} className="text-white shrink-0" />
+                    <span className="font-extrabold text-white">
+                      {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)} – {tTime12Hour(regWindow.endTime)}
+                    </span>
+                  </div>
                 </div>
               )}
 
@@ -1311,7 +1559,6 @@ export default function PatientPortal() {
         {/* STEP: Registration Form (IMAGE 1) */}
         {step === "form" && (
           <RegistrationForm
-            onBack={() => setStep("home")}
             onSuccess={(p) => {
               setRegisteredPatient(p);
               setStep("success");

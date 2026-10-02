@@ -13,7 +13,7 @@ export const translations = {
     location: "Location",
     clickForGoogleMapLocation: "Get Google Map location",
     googleMapLocation: "Google Map Location",
-    clickToKnowGoogleMapLocation: "Click to know Google Map location",
+    clickToKnowGoogleMapLocation: "Open Google Map Location",
     clinicAddress: "610, Sector 10A, Gurugram, Haryana 122001",
     installApp: "Install App",
     open: "Open",
@@ -26,7 +26,7 @@ export const translations = {
     // Landing Page
     bookAppointmentTitle: "Book your\nappointment",
     bookAppointmentSubtitle: "Get your digital token and track your queue live.",
-    bookSlotBtn: "Book your slot",
+    bookSlotBtn: "Book Appointment",
     tokenBadge: "Token",
     liveBadge: "Live",
     digitalToken: "Digital Token",
@@ -46,7 +46,7 @@ export const translations = {
     liveTokenStatus: "Live Token Status",
     checkTokenTitle: "Check Your Token Number",
     checkTokenSubtitle: "Already registered? Forgot your token number? Just search with your mobile number.",
-    enterMobilePlaceholder: "Enter your 10-digit mobile number",
+    enterMobilePlaceholder: "Enter mobile number",
     inConsultation: "In Consultation",
     inConsultationMsg: "🎉 It's your turn right now! Please enter doctor's cabin.",
     waiting: "Waiting",
@@ -98,6 +98,8 @@ export const translations = {
     doctorWillVisitTitle: "Doctor will visit shortly",
     doctorNotStartedMsg: "The doctor has not started seeing patients yet. You will be able to see the live token number once the doctor starts the session.",
     doctorWillVisitDateTitle: "Doctor will visit on {date}",
+    registrationOpenSoonTitle: "Registration will open soon",
+    registrationOpenSoonMsg: "Today's OPD session has concluded. Registration for the next session will open soon.",
     expectedTimeLabel: "Expected time",
     doctorLateTitle: "Doctor Running Late Update",
     doctorLateDesc: "Doctor is running {delay} late today. All appointment booking slots and patient visit times have been automatically shifted forward by +{delay}.",
@@ -123,6 +125,9 @@ export const translations = {
     queueTrackingTip: "Keep this token for your reference",
     scanToPayTitle: "Scan & Pay via UPI",
     scanToPaySubtitle: "Scan using Google Pay, PhonePe, Paytm or any UPI app",
+    viewQrCodeBtn: "View QR Code",
+    copyUpiIdBtn: "Copy UPI ID",
+    upiIdCopied: "Copied!",
     savePaymentScreenshotNotice: "Please complete the payment and save a screenshot for future reference and clinic verification.",
 
     // Closed Window Step
@@ -188,7 +193,7 @@ export const translations = {
     gotIt: "Got it",
 
     // Treated Conditions Modal
-    viewTreatedConditionsBtn: "Problems Treated",
+    viewTreatedConditionsBtn: "What We Treat",
     treatedConditionsModalTitle: "Treatment & Care For Following Problems",
     treatedConditionsModalSubtitle: "Specialized consultation & treatment available for these medical conditions",
     tabAll: "All (61)",
@@ -233,7 +238,7 @@ export const translations = {
     // Landing Page
     bookAppointmentTitle: "अपना अपॉइंटमेंट\nबुक करें",
     bookAppointmentSubtitle: "अपना डिजिटल टोकन प्राप्त करें और लाइव कतार ट्रैक करें।",
-    bookSlotBtn: "अपना स्लॉट बुक करें",
+    bookSlotBtn: "अपना अपॉइंटमेंट बुक करें",
     tokenBadge: "टोकन",
     liveBadge: "लाइव",
     digitalToken: "डिजिटल टोकन",
@@ -279,7 +284,7 @@ export const translations = {
     // Form / Booking Step
     patientRegistration: "मरीज पंजीकरण",
     fillDetailsBelow: "तुरंत ओपीडी टोकन प्राप्त करने के लिए मरीज का विवरण भरें।",
-    backToHome: "मुख्य पृष्ठ पर जाएं",
+    backToHome: "वापस जाएं",
     fullNameLabel: "पूरा नाम",
     fullNamePlaceholder: "मरीज का पूरा नाम दर्ज करें",
     ageLabel: "उम्र (वर्ष)",
@@ -305,6 +310,8 @@ export const translations = {
     doctorWillVisitTitle: "डॉक्टर जल्द ही उपलब्ध होंगे",
     doctorNotStartedMsg: "डॉक्टर ने अभी मरीजों को देखना शुरू नहीं किया है। डॉक्टर के सत्र शुरू करते ही आप लाइव टोकन नंबर देख सकेंगे।",
     doctorWillVisitDateTitle: "डॉक्टर {date} को उपलब्ध होंगे",
+    registrationOpenSoonTitle: "पंजीकरण जल्द ही शुरू होगा",
+    registrationOpenSoonMsg: "आज का ओपीडी सत्र समाप्त हो गया है। अगले सत्र के लिए पंजीकरण जल्द ही खुलेगा।",
     expectedTimeLabel: "अनुमानित समय",
     doctorLateTitle: "डॉक्टर देरी से आने की सूचना",
     doctorLateDesc: "डॉक्टर आज {delay} की देरी से चल रहे हैं। सभी अपॉइंटमेंट स्लॉट और मिलने का समय +{delay} आगे बढ़ा दिया गया है।",
@@ -330,6 +337,9 @@ export const translations = {
     queueTrackingTip: "अपने संदर्भ के लिए यह टोकन सुरक्षित रखें",
     scanToPayTitle: "स्कैन करें और UPI से भुगतान करें",
     scanToPaySubtitle: "Google Pay, PhonePe, Paytm या किसी भी UPI ऐप से स्कैन करें",
+    viewQrCodeBtn: "QR कोड देखें",
+    copyUpiIdBtn: "UPI ID कॉपी करें",
+    upiIdCopied: "कॉपी हो गया!",
     savePaymentScreenshotNotice: "कृपया भुगतान पूरा करें और भविष्य के संदर्भ एवं क्लिनिक सत्यापन के लिए स्क्रीनशॉट सुरक्षित रखें।",
 
     // Closed Window Step

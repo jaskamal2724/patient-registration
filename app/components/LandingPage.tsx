@@ -42,7 +42,7 @@ export default function LandingPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowPortalLoading(false);
-    }, 2000);
+    }, 1000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -174,7 +174,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Action Buttons: Book Slot + Problems Treated (2-Col Grid) + Location Pill */}
+          {/* Action Buttons: Book Slot + What We Treat (2-Col Grid) + Location Pill */}
           <div className="flex flex-col items-start gap-2.5 mb-4 w-full">
             <div className="grid grid-cols-2 gap-2 sm:gap-2.5 w-full">
               <button

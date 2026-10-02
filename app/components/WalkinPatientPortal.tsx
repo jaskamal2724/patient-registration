@@ -69,6 +69,9 @@ export default function WalkinPatientPortal() {
   useEffect(() => {
     let cancelled = false;
     let channel: ReturnType<typeof supabase.channel> | null = null;
+    const timer = setTimeout(() => {
+      if (!cancelled) setInitialLoading(false);
+    }, 1000);
 
     const load = async () => {
       try {
@@ -112,6 +115,7 @@ export default function WalkinPatientPortal() {
 
     return () => {
       cancelled = true;
+      clearTimeout(timer);
       if (channel) {
         void supabase.removeChannel(channel);
       }
