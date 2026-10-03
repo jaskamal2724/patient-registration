@@ -15,6 +15,8 @@ import {
   Clock,
   MapPin,
   Activity,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
 import LogiquelAdCard from "./LogiquelAdCard";
@@ -35,6 +37,7 @@ export default function LandingPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -266,25 +269,36 @@ export default function LandingPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleDoctorLogin()}
-              className={`w-full rounded-2xl px-4 py-3 font-body text-sm mb-3 border focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all ${
+              className={`w-full rounded-2xl px-4 py-3 font-body text-sm sm:text-base font-semibold mb-3 border focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-400 placeholder:font-normal ${
                 loginError
-                  ? "border-red-300 bg-red-50 text-red-900"
-                  : "border-slate-200 bg-slate-50 text-slate-900 focus:bg-white"
+                  ? "border-red-300 bg-red-50 text-red-950"
+                  : "border-slate-300 bg-white text-slate-950 focus:bg-white focus:border-blue-500"
               }`}
               autoFocus
             />
-            <input
-              type="password"
-              placeholder={t("password")}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleDoctorLogin()}
-              className={`w-full rounded-2xl px-4 py-3 font-body text-sm mb-2 border focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all ${
-                loginError
-                  ? "border-red-300 bg-red-50 text-red-900 animate-pulse"
-                  : "border-slate-200 bg-slate-50 text-slate-900 focus:bg-white"
-              }`}
-            />
+            <div className="relative mb-2">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder={t("password")}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleDoctorLogin()}
+                className={`w-full rounded-2xl pl-4 pr-11 py-3 font-body text-sm sm:text-base font-semibold border focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-400 placeholder:font-normal ${
+                  loginError
+                    ? "border-red-300 bg-red-50 text-red-950 animate-pulse"
+                    : "border-slate-300 bg-white text-slate-950 focus:bg-white focus:border-blue-500"
+                }`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800 p-1 transition-colors cursor-pointer"
+                title={showPassword ? "Hide password" : "Show password"}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
             {loginError && (
               <p className="text-red-500 text-xs font-body font-medium text-center mb-3">
                 {error || t("invalidCredentials")}
@@ -307,6 +321,7 @@ export default function LandingPage() {
                 setShowPinModal(false);
                 setEmail("");
                 setPassword("");
+                setShowPassword(false);
               }}
               className="w-full text-slate-400 hover:text-slate-600 text-xs py-2 font-body font-semibold transition-colors cursor-pointer"
             >

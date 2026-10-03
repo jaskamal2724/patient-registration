@@ -1257,7 +1257,9 @@ export default function PatientPortal() {
         ).length >= capacity,
     );
 
-  const inProgress = patients.find((p) => p.status === "in-progress");
+  const inProgress = patients.find(
+    (p) => p.status === "in-progress" || (p.status as string) === "in_progress",
+  );
   const waitingPatients = patients.filter((p) => p.status === "waiting");
   const hasWaitingPatients = waitingPatients.length > 0;
   const allPatientsDone =
