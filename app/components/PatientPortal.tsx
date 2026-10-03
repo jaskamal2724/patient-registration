@@ -34,12 +34,18 @@ import {
   Camera,
   Copy,
   Check,
+  Loader2,
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
 import DocCareLogo from "./DocCareLogo";
 import LanguageSelector from "./LanguageSelector";
 import { useLanguage } from "@/lib/LanguageContext";
-import { getTimeSlots, formatDelayText, shiftSlotLabel, normalizeSlotLabel } from "../util/timeSlot";
+import {
+  getTimeSlots,
+  formatDelayText,
+  shiftSlotLabel,
+  normalizeSlotLabel,
+} from "../util/timeSlot";
 import {
   DoctorAvatarSVG,
   RegisterIllustrationSVG,
@@ -123,7 +129,10 @@ function isDateInFuture(dateStr: string | null | undefined): boolean {
   return target.getTime() > today.getTime();
 }
 
-function formatVisitDate(dateStr: string | null | undefined, lang: "en" | "hi" = "en"): string {
+function formatVisitDate(
+  dateStr: string | null | undefined,
+  lang: "en" | "hi" = "en",
+): string {
   if (!dateStr) return "";
   const d = parseDateOnly(dateStr);
   if (!d) return dateStr;
@@ -198,7 +207,9 @@ function SmartArrivalGuidance({ waitingBefore }: { waitingBefore: number }) {
   );
 }
 
-{/* Header Component */}
+{
+  /* Header Component */
+}
 function PatientHeader({ onExit }: { onExit: () => void }) {
   const { t } = useLanguage();
   return (
@@ -223,7 +234,9 @@ function PatientHeader({ onExit }: { onExit: () => void }) {
   );
 }
 
-{/* Search Component inside Token Search Card */}
+{
+  /* Search Component inside Token Search Card */
+}
 function CheckTokenSearchCard({
   patients,
   onSelectPatient,
@@ -247,9 +260,24 @@ function CheckTokenSearchCard({
       {/* Background Yellow Spark Lines Accent */}
       <div className="absolute top-4 right-4 pointer-events-none">
         <svg viewBox="0 0 40 40" className="w-8 h-8 opacity-70">
-          <path d="M20 5L20 0" stroke="#FFC629" strokeWidth="2.5" strokeLinecap="round" />
-          <path d="M30 10L35 6" stroke="#FFC629" strokeWidth="2.5" strokeLinecap="round" />
-          <path d="M35 20L40 20" stroke="#FFC629" strokeWidth="2.5" strokeLinecap="round" />
+          <path
+            d="M20 5L20 0"
+            stroke="#FFC629"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          />
+          <path
+            d="M30 10L35 6"
+            stroke="#FFC629"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          />
+          <path
+            d="M35 20L40 20"
+            stroke="#FFC629"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          />
         </svg>
       </div>
 
@@ -366,7 +394,11 @@ function CheckTokenSearchCard({
                           {patient.phone}{" "}
                           {patient.time_slot && (
                             <span className="ml-1 font-semibold text-blue-600">
-                              ({tTimeSlot(shiftSlotLabel(patient.time_slot, delayMinutes))})
+                              (
+                              {tTimeSlot(
+                                shiftSlotLabel(patient.time_slot, delayMinutes),
+                              )}
+                              )
                             </span>
                           )}
                         </p>
@@ -407,7 +439,9 @@ function CheckTokenSearchCard({
   );
 }
 
-{/* IMAGE 2: Appointments Full View */}
+{
+  /* IMAGE 2: Appointments Full View */
+}
 function AppointmentsFullView({
   patients,
   onSelectPatient,
@@ -418,28 +452,18 @@ function AppointmentsFullView({
   onBack?: () => void;
 }) {
   const { t } = useLanguage();
-  const [showWalkinNotice, setShowWalkinNotice] = useState(false);
 
   return (
     <div className="animate-slide-up text-center w-full max-w-md sm:max-w-xl mx-auto">
-      {/* Top Back Pill Button */}
-      {onBack && (
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1.5 text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 font-body text-xs font-bold mb-4 transition-colors px-3.5 py-1.5 rounded-full shadow-2xs cursor-pointer"
-        >
-          <ArrowLeft size={14} />
-          <span>{t("backToHome")}</span>
-        </button>
-      )}
+      
 
       {/* Main Full Slots Card */}
       <div className="bg-white rounded-[28px] border border-slate-100/90 p-6 sm:p-8 shadow-xl shadow-blue-900/5 mb-6 text-center">
         {/* Top Calendar Full Illustration */}
-        <AppointmentsFullIllustrationSVG className="w-44 h-36 mb-2" />
+        <AppointmentsFullIllustrationSVG className="w-44 h-36 mb-2 -mt-8" />
 
         {/* Title & Subtitle */}
-        <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-[#0D1B3E] mb-2 tracking-tight">
+        <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-[#0D1B3E] mb-2 tracking-tight -mt-6">
           {t("appointmentsFullTitle")}
         </h2>
         <p className="font-body text-xs sm:text-sm text-slate-600 font-medium max-w-md mx-auto leading-relaxed mb-6">
@@ -447,7 +471,7 @@ function AppointmentsFullView({
         </p>
 
         {/* Priority Info Pill Box */}
-        <div className="bg-[#F0F5FF] border border-blue-100/80 rounded-2xl p-4 text-left flex items-start gap-3 mb-6">
+        <div className="bg-[#F0F5FF] border border-blue-100/80 rounded-2xl p-4 text-left flex items-start gap-3 mb-6 -mt-5">
           <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
             <Info size={18} />
           </div>
@@ -457,51 +481,28 @@ function AppointmentsFullView({
           </p>
         </div>
 
-        {/* Section Heading */}
-        <h3 className="font-display text-sm sm:text-base font-extrabold text-slate-900 text-left mb-3">
-          {t("walkinGuidanceTitle")}
-        </h3>
-
-        {/* Walk-in Button Card */}
-        <div
-          onClick={() => setShowWalkinNotice(!showWalkinNotice)}
-          className="bg-[#FFF9EE] border border-amber-200/70 hover:border-amber-300 rounded-2xl p-4 text-left flex items-center justify-between transition-all cursor-pointer shadow-2xs hover:shadow-xs group"
-        >
-          <div className="flex items-center gap-3.5">
-            <WalkInIconSVG className="w-11 h-11" />
-            <div>
-              <h4 className="font-display font-extrabold text-slate-900 text-sm sm:text-base group-hover:text-blue-700 transition-colors">
-                {t("walkinGuidanceTitle")}
-              </h4>
-              <p className="font-body text-xs text-slate-500 font-medium">
-                {t("walkinGuidanceText")}
-              </p>
-            </div>
-          </div>
-          <ChevronRight size={18} className="text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-all" />
-        </div>
-
-        {showWalkinNotice && (
-          <div className="mt-3 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left text-xs font-semibold text-amber-900 animate-fade-in space-y-2">
-            <p className="font-bold">{t("walkinGuidanceTitle")}</p>
-            <p className="leading-relaxed text-amber-800">
-              {t("walkinGuidanceText")}
+        {/* Walk-in Guidance Card */}
+        <div className="bg-[#FFF9EE] border border-amber-200/70 rounded-2xl p-3.5 sm:p-4 text-left flex items-start gap-3 shadow-2xs">
+          <WalkInIconSVG className="w-7 h-7 sm:w-8 sm:h-8 shrink-0 mt-6" />
+          <div className="min-w-0 flex-1">
+            <h4 className="font-display font-extrabold text-slate-900 text-xs sm:text-sm mb-1">
+              {t("walkinGuidanceTitle")}
+            </h4>
+            <p className="font-body text-xs text-slate-600 font-medium leading-relaxed mb-2">
+              Please contact on this number regarding walk in appointment:
             </p>
             <a
-              href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow-xs transition-all cursor-pointer mt-1"
+              href="tel:9810807381"
+              className="inline-flex items-center gap-1.5 bg-[#1D68F3] hover:bg-[#1554C6] active:scale-95 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-xl shadow-xs transition-all cursor-pointer"
             >
-              <MapPin size={14} />
-              <span>{t("getDirectionsGoogleMaps")}</span>
-              <ExternalLink size={13} />
+              <Phone size={13} className="shrink-0" />
+              <span>Call 9810807381</span>
             </a>
           </div>
-        )}
+        </div>
 
         {/* Footer Heart Decoration inside card */}
-        <div className="flex items-center justify-center gap-3 mt-8 mb-4">
+        <div className="flex items-center justify-center gap-3 mb-4 mt-4">
           <div className="h-px w-20 bg-blue-100" />
           <Heart size={14} className="text-blue-500 fill-blue-500" />
           <div className="h-px w-20 bg-blue-100" />
@@ -512,13 +513,15 @@ function AppointmentsFullView({
         </p>
       </div>
 
-      {/* Check Ticket search bar for already registered patients */}
-      <CheckTokenSearchCard patients={patients} onSelectPatient={onSelectPatient} />
+      {/* Logiquel Branding Footer Banner */}
+      <LogiquelAdCard variant="landing" />
     </div>
   );
 }
 
-{/* IMAGE 1: OPD Registration Form */}
+{
+  /* IMAGE 1: OPD Registration Form */
+}
 function RegistrationForm({
   onSuccess,
   regWindow,
@@ -534,10 +537,10 @@ function RegistrationForm({
   const initialSlots = getTimeSlots(
     regWindow.startTime || "09:00",
     regWindow.endTime || "18:00",
-    "13:00",
     "14:00",
+    "15:00",
     60,
-    regWindow.delayMinutes || 0
+    regWindow.delayMinutes || 0,
   ).map((s: TimeSlot) => s.label);
 
   const [form, setForm] = useState({
@@ -561,9 +564,10 @@ function RegistrationForm({
     const cleanPhone = form.phone.replace(/\D/g, "");
     if (!cleanPhone || cleanPhone.length !== 10) {
       e.phone = "Enter a valid 10-digit mobile number";
-    } else if (patients.some((p) => p.phone.replace(/\D/g, "") === cleanPhone)) {
-      e.phone =
-        "This phone number is already registered for this session.";
+    } else if (
+      patients.some((p) => p.phone.replace(/\D/g, "") === cleanPhone)
+    ) {
+      e.phone = "This phone number is already registered for this session.";
     }
     if (!form.time_slot) e.time_slot = "Please select an OPD time slot";
     return e;
@@ -593,17 +597,28 @@ function RegistrationForm({
       if (result?.data?.[0]?.start_time && result?.data?.[0]?.end_time) {
         const startTime = result.data[0].start_time;
         const endTime = result.data[0].end_time;
-        const breakStart = "13:00";
-        const breakEnd = "14:00";
+        const breakStart = "14:00";
+        const breakEnd = "15:00";
 
-        const delayMins = result?.data?.[0]?.delay_minutes ?? regWindow.delayMinutes ?? 0;
-        const slots = getTimeSlots(startTime, endTime, breakStart, breakEnd, 60, delayMins);
+        const delayMins =
+          result?.data?.[0]?.delay_minutes ?? regWindow.delayMinutes ?? 0;
+        const slots = getTimeSlots(
+          startTime,
+          endTime,
+          breakStart,
+          breakEnd,
+          60,
+          delayMins,
+        );
         const slotLabels = slots.map((slot: TimeSlot) => slot.label);
         if (slotLabels.length > 0) {
           setTIME_SLOTS(slotLabels);
           setForm((f) => ({
             ...f,
-            time_slot: f.time_slot && slotLabels.includes(f.time_slot) ? f.time_slot : slotLabels[0],
+            time_slot:
+              f.time_slot && slotLabels.includes(f.time_slot)
+                ? f.time_slot
+                : slotLabels[0],
           }));
         }
       }
@@ -634,7 +649,8 @@ function RegistrationForm({
             <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
               <Clock size={14} className="text-slate-400" />
               <span>
-                {tTime12Hour(regWindow.startTime)} – {tTime12Hour(regWindow.endTime)}
+                {tTime12Hour(regWindow.startTime)} –{" "}
+                {tTime12Hour(regWindow.endTime)}
               </span>
             </div>
           </div>
@@ -693,12 +709,17 @@ function RegistrationForm({
                 placeholder={t("agePlaceholder")}
                 value={form.age}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, age: e.target.value.replace(/\D/g, "").slice(0, 3) }))
+                  setForm((f) => ({
+                    ...f,
+                    age: e.target.value.replace(/\D/g, "").slice(0, 3),
+                  }))
                 }
               />
             </div>
             {errors.age && (
-              <p className="mt-1 text-xs font-bold text-red-500">{errors.age}</p>
+              <p className="mt-1 text-xs font-bold text-red-500">
+                {errors.age}
+              </p>
             )}
           </div>
 
@@ -752,7 +773,9 @@ function RegistrationForm({
             />
           </div>
           {errors.phone && (
-            <p className="mt-1 text-xs font-bold text-red-500">{errors.phone}</p>
+            <p className="mt-1 text-xs font-bold text-red-500">
+              {errors.phone}
+            </p>
           )}
         </div>
 
@@ -761,7 +784,9 @@ function RegistrationForm({
           <label className="font-body text-xs font-bold text-slate-700 mb-2 flex items-center justify-between">
             <span className="flex items-center gap-1.5">
               <Clock size={15} className="text-blue-600" />
-              <span>{t("selectTimeSlot")} (Max {capacity})</span>
+              <span>
+                {t("selectTimeSlot")} (Max {capacity})
+              </span>
               <span className="text-red-500">*</span>
             </span>
             {regWindow.delayMinutes > 0 && (
@@ -771,13 +796,16 @@ function RegistrationForm({
             )}
           </label>
           {errors.time_slot && (
-            <p className="mb-2 text-xs font-bold text-red-500">{errors.time_slot}</p>
+            <p className="mb-2 text-xs font-bold text-red-500">
+              {errors.time_slot}
+            </p>
           )}
 
           <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
             {TIME_SLOTS.map((slot) => {
               const bookedCount = patients.filter(
-                (p) => normalizeSlotLabel(p.time_slot) === normalizeSlotLabel(slot),
+                (p) =>
+                  normalizeSlotLabel(p.time_slot) === normalizeSlotLabel(slot),
               ).length;
               const isFull = bookedCount >= capacity;
               const isSelected = form.time_slot === slot;
@@ -833,7 +861,9 @@ function RegistrationForm({
                           : "bg-slate-100 text-slate-500"
                     }`}
                   >
-                    {isFull ? `${t("fullSlotText")} (${capacity}/${capacity})` : `${bookedCount}/${capacity}`}
+                    {isFull
+                      ? `${t("fullSlotText")} (${capacity}/${capacity})`
+                      : `${bookedCount}/${capacity}`}
                   </span>
                 </button>
               );
@@ -870,7 +900,9 @@ function RegistrationForm({
   );
 }
 
-{/* Token Confirmation Screen */}
+{
+  /* Token Confirmation Screen */
+}
 function SuccessScreen({
   patient,
   patients,
@@ -1051,7 +1083,9 @@ function SuccessScreen({
                   <h4 className="font-display font-bold text-sm text-slate-900 leading-tight truncate">
                     {t("scanToPayTitle")}
                   </h4>
-                  <p className="text-[11px] text-slate-500 font-medium truncate">{MERCHANT_NAME}</p>
+                  <p className="text-[11px] text-slate-500 font-medium truncate">
+                    {MERCHANT_NAME}
+                  </p>
                 </div>
               </div>
               <button
@@ -1117,7 +1151,9 @@ function SuccessScreen({
           className="border-2 border-blue-600 hover:bg-blue-50 text-blue-600 font-bold text-xs sm:text-sm py-3 px-7 rounded-full flex items-center gap-2 transition-all shadow-xs hover:shadow-md cursor-pointer active:scale-95 disabled:opacity-60"
         >
           <Download size={16} />
-          <span>{downloading ? t("downloadingToken") : t("downloadTokenCard")}</span>
+          <span>
+            {downloading ? t("downloadingToken") : t("downloadTokenCard")}
+          </span>
         </button>
         <p className="text-xs text-slate-400 font-medium mt-2.5">
           {t("queueTrackingTip")}
@@ -1132,7 +1168,9 @@ function SuccessScreen({
   );
 }
 
-{/* Main Patient Portal Page */}
+{
+  /* Main Patient Portal Page */
+}
 export default function PatientPortal() {
   const {
     regWindow,
@@ -1142,14 +1180,17 @@ export default function PatientPortal() {
     toast,
     initialLoading,
   } = usePatientView();
-  const { t, tDelay, tDynamic, tTime12Hour, tTimeSlot, language } = useLanguage();
+  const { t, tDelay, tDynamic, tTime12Hour, tTimeSlot, language } =
+    useLanguage();
   const router = useRouter();
   const pageRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const isFormStep = searchParams?.get("step") === "form";
 
   const [step, setStep] = useState<Step>(isFormStep ? "form" : "home");
-  const [registeredPatient, setRegisteredPatient] = useState<Patient | null>(null);
+  const [registeredPatient, setRegisteredPatient] = useState<Patient | null>(
+    null,
+  );
   const [TIME_SLOTS, setTIME_SLOTS] = useState<string[]>([]);
 
   useEffect(() => {
@@ -1168,25 +1209,26 @@ export default function PatientPortal() {
       try {
         const res = await fetch("/api/time-slot");
         const json = await res.json();
-        const delayMins = json?.data?.[0]?.delay_minutes ?? regWindow.delayMinutes ?? 0;
+        const delayMins =
+          json?.data?.[0]?.delay_minutes ?? regWindow.delayMinutes ?? 0;
         if (json?.data?.[0]) {
           const slots = getTimeSlots(
             json.data[0].start_time,
             json.data[0].end_time,
-            "13:00",
             "14:00",
+            "15:00",
             60,
-            delayMins
+            delayMins,
           );
           setTIME_SLOTS(slots.map((s: TimeSlot) => s.label));
         } else {
           const slots = getTimeSlots(
             regWindow.startTime || "09:00",
             regWindow.endTime || "18:00",
-            "13:00",
             "14:00",
+            "15:00",
             60,
-            delayMins
+            delayMins,
           );
           setTIME_SLOTS(slots.map((s: TimeSlot) => s.label));
         }
@@ -1194,10 +1236,10 @@ export default function PatientPortal() {
         const slots = getTimeSlots(
           regWindow.startTime || "09:00",
           regWindow.endTime || "18:00",
-          "13:00",
           "14:00",
+          "15:00",
           60,
-          regWindow.delayMinutes || 0
+          regWindow.delayMinutes || 0,
         );
         setTIME_SLOTS(slots.map((s: TimeSlot) => s.label));
       }
@@ -1211,8 +1253,8 @@ export default function PatientPortal() {
     TIME_SLOTS.every(
       (slot) =>
         patients.filter(
-          (p) => normalizeSlotLabel(p.time_slot) === normalizeSlotLabel(slot)
-        ).length >= capacity
+          (p) => normalizeSlotLabel(p.time_slot) === normalizeSlotLabel(slot),
+        ).length >= capacity,
     );
 
   const inProgress = patients.find((p) => p.status === "in-progress");
@@ -1224,10 +1266,6 @@ export default function PatientPortal() {
   const isDoctorVisitingToday = isDateToday(regWindow.date);
   const isFutureDate = isDateInFuture(regWindow.date);
   const formattedVisitDate = formatVisitDate(regWindow.date, language);
-
-  if (initialLoading) {
-    return <LoadingScreen />;
-  }
 
   return (
     <div
@@ -1261,290 +1299,376 @@ export default function PatientPortal() {
                     {t("doctorLateTitle")} (+{tDelay(regWindow.delayMinutes)})
                   </span>
                   <p className="font-body text-xs font-semibold text-amber-800 mt-0.5 leading-relaxed">
-                    {t("doctorLateDesc", { delay: tDelay(regWindow.delayMinutes) })}
+                    {t("doctorLateDesc", {
+                      delay: tDelay(regWindow.delayMinutes),
+                    })}
                   </p>
                 </div>
               </div>
             )}
 
-              {/* CARD 1: Doctor Status Card */}
-              {inProgress ? (
-                /* When doctor HAS STARTED seeing patients */
-                <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
-                  <div className="flex items-center justify-between gap-3 sm:gap-4 mb-3.5">
-                    <div className="flex items-center gap-2.5 shrink-0">
-                      <DoctorAvatarSVG className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
-                      <h3 className="font-display text-base sm:text-lg font-extrabold text-slate-900">
-                        {t("liveQueue")}
-                      </h3>
+            {/* CARD 1: Doctor Status Card */}
+            {initialLoading ? (
+              /* Card Loader while deciding registration / doctor status */
+              <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left relative overflow-hidden">
+                <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
+                  <div className="flex items-start gap-4 min-w-0 flex-1">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100/80 flex items-center justify-center shrink-0 shadow-2xs">
+                      <Loader2 className="w-7 h-7 text-[#1D68F3] animate-spin" />
                     </div>
-                    <a
-                      href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap ml-auto"
-                      title="Clinic Location on Google Maps"
-                    >
-                      <MapPin size={13} className="text-rose-600 shrink-0" />
-                      <span>{t("googleMapLocation")}</span>
-                    </a>
-                  </div>
-
-                  <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 rounded-2xl p-3.5 sm:p-4 text-white shadow-md shadow-blue-500/20 relative overflow-hidden">
-                    <p className="font-body text-[10px] sm:text-[11px] font-bold text-blue-100 uppercase tracking-widest mb-1">
-                      {t("doctorSeeingTitle")}
-                    </p>
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <span className="font-mono-custom text-3xl sm:text-4xl font-black text-white leading-none shrink-0">
-                          {inProgress.slot_token_number || inProgress.token_number}
-                        </span>
-                        <span className="font-body text-sm sm:text-base font-extrabold text-white truncate">
-                          {inProgress.name}
-                        </span>
+                    <div className="space-y-2.5 py-1 flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="h-5 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full w-36 sm:w-48 animate-pulse block" />
+                        <span className="h-4 w-10 bg-slate-100 rounded-full animate-pulse block" />
                       </div>
-
-                      <div className="flex flex-col items-end gap-1 shrink-0">
-                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
-                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                          {t("inConsultation")}
-                        </span>
-                        {inProgress.time_slot && (
-                          <span className="bg-white/20 backdrop-blur-xs rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] font-mono-custom font-semibold text-white">
-                            {tTimeSlot(inProgress.time_slot)}
-                          </span>
-                        )}
-                      </div>
+                      <p className="h-3.5 bg-slate-100 rounded-md w-full max-w-[240px] animate-pulse block" />
+                      <p className="h-3 bg-slate-100/70 rounded-md w-3/4 max-w-[180px] animate-pulse block" />
                     </div>
                   </div>
+                  <a
+                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap ml-auto"
+                    title="Clinic Location on Google Maps"
+                  >
+                    <MapPin size={13} className="text-orange-600 shrink-0" />
+                    <span>{t("googleMapLocation")}</span>
+                  </a>
                 </div>
-              ) : allPatientsDone ? (
-                /* When doctor has finished seeing all patients — always show Registration will open soon */
-                (
-                  <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
-                    <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
-                      <div className="flex items-start gap-4 min-w-0">
-                        <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
-                        <div>
-                          <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
-                            {t("registrationOpenSoonTitle")}
-                          </h3>
-                          <p className="font-body text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-                            {t("registrationOpenSoonMsg")}
-                          </p>
-                        </div>
-                      </div>
-                      <a
-                        href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap"
-                        title="Clinic Location on Google Maps"
-                      >
-                        <MapPin size={13} className="text-rose-600 shrink-0" />
-                        <span>{t("googleMapLocation")}</span>
-                      </a>
-                    </div>
 
-                    {/* Clinic Address */}
-                    <a
-                      href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
-                      title="Open Clinic Address on Google Maps"
-                    >
-                      <MapPin size={15} className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform" />
-                      <span className="font-extrabold text-emerald-950">{t("clinicAddress")}</span>
-                    </a>
+                {/* Clinic Address Skeleton */}
+                <a
+                  href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs"
+                  title="Open Clinic Address on Google Maps"
+                >
+                  <MapPin size={15} className="text-emerald-600 shrink-0" />
+                  <span className="font-extrabold text-emerald-950">
+                    {t("clinicAddress")}
+                  </span>
+                </a>
 
-                    {/* Expected Time Pill Box */}
-                    <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
-                      <Clock size={16} className="text-white shrink-0" />
-                      <span className="font-extrabold text-white">
-                        {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)} – {tTime12Hour(regWindow.endTime)}
+                {/* Status Bar Loader */}
+                <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white rounded-xl px-4 py-2.5 flex items-center justify-between gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Loader2
+                      size={15}
+                      className="text-white shrink-0 animate-spin"
+                    />
+                    <span className="font-extrabold text-white truncate">
+                      {t("checkingOpdStatus")}
+                    </span>
+                  </div>
+                  <span className="bg-white/20 backdrop-blur-xs rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] font-mono-custom font-semibold text-white shrink-0 animate-pulse">
+                    {t("verifyingScheduleMsg")}
+                  </span>
+                </div>
+              </div>
+            ) : inProgress ? (
+              /* When doctor HAS STARTED seeing patients */
+              <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
+                <div className="flex items-center justify-between gap-3 sm:gap-4 mb-3.5">
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    <DoctorAvatarSVG className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                    <h3 className="font-display text-base sm:text-lg font-extrabold text-slate-900">
+                      {t("liveQueue")}
+                    </h3>
+                  </div>
+                  <a
+                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap ml-auto"
+                    title="Clinic Location on Google Maps"
+                  >
+                    <MapPin size={13} className="text-orange-600 shrink-0" />
+                    <span>{t("googleMapLocation")}</span>
+                  </a>
+                </div>
+
+                <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 rounded-2xl p-3.5 sm:p-4 text-white shadow-md shadow-blue-500/20 relative overflow-hidden">
+                  <p className="font-body text-[10px] sm:text-[11px] font-bold text-blue-100 uppercase tracking-widest mb-1">
+                    {t("doctorSeeingTitle")}
+                  </p>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="font-mono-custom text-3xl sm:text-4xl font-black text-white leading-none shrink-0">
+                        {inProgress.slot_token_number ||
+                          inProgress.token_number}
+                      </span>
+                      <span className="font-body text-sm sm:text-base font-extrabold text-white truncate">
+                        {inProgress.name}
                       </span>
                     </div>
-                  </div>
-                )
-              ) : hasWaitingPatients && isDoctorVisitingToday ? (
-                /* When today is appointment date with waiting patients, but doctor HAS NOT started seeing patients yet */
-                <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
-                  <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
-                    <div className="flex items-start gap-4 min-w-0">
-                      <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
-                      <div>
-                        <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
-                          {t("doctorWillVisitTitle")}
-                        </h3>
-                        <p className="font-body text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-                          {t("doctorNotStartedMsg")}
-                        </p>
-                      </div>
-                    </div>
-                    <a
-                      href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap"
-                      title="Clinic Location on Google Maps"
-                    >
-                      <MapPin size={13} className="text-rose-600 shrink-0" />
-                      <span>{t("googleMapLocation")}</span>
-                    </a>
-                  </div>
 
-                  {/* Clinic Address */}
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        {t("inConsultation")}
+                      </span>
+                      {inProgress.time_slot && (
+                        <span className="bg-white/20 backdrop-blur-xs rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] font-mono-custom font-semibold text-white">
+                          {tTimeSlot(inProgress.time_slot)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : allPatientsDone ? (
+              /* When doctor has finished seeing all patients — always show Registration will open soon */
+              <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
+                <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                  <div className="flex items-start gap-4 min-w-0">
+                    <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
+                    <div>
+                      <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
+                        {t("registrationOpenSoonTitle")}
+                      </h3>
+                      <p className="font-body text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+                        {t("registrationOpenSoonMsg")}
+                      </p>
+                    </div>
+                  </div>
                   <a
                     href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
-                    title="Open Clinic Address on Google Maps"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap"
+                    title="Clinic Location on Google Maps"
                   >
-                    <MapPin size={15} className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform" />
-                    <span className="font-extrabold text-emerald-950">{t("clinicAddress")}</span>
+                    <MapPin size={13} className="text-orange-600 shrink-0" />
+                    <span>{t("googleMapLocation")}</span>
                   </a>
-
-                  {/* Expected Time Pill Box */}
-                  <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
-                    <Clock size={16} className="text-white shrink-0" />
-                    <span className="font-extrabold text-white">
-                      {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)} – {tTime12Hour(regWindow.endTime)}
-                    </span>
-                  </div>
                 </div>
-              ) : isFutureDate ? (
-                /* Doctor visit scheduled on a future date */
-                <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
-                  <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
-                    <div className="flex items-start gap-4 min-w-0">
-                      <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
-                      <div>
-                        <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
-                          {t("doctorWillVisitDateTitle", { date: formattedVisitDate })}
-                        </h3>
-                      </div>
-                    </div>
-                    <a
-                      href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap"
-                      title="Clinic Location on Google Maps"
-                    >
-                      <MapPin size={13} className="text-rose-600 shrink-0" />
-                      <span>{t("googleMapLocation")}</span>
-                    </a>
-                  </div>
 
-                  {/* Clinic Address */}
-                  <a
-                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
-                    title="Open Clinic Address on Google Maps"
-                  >
-                    <MapPin size={15} className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform" />
-                    <span className="font-extrabold text-emerald-950">{t("clinicAddress")}</span>
-                  </a>
-
-                  {/* Expected Time Pill Box */}
-                  <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
-                    <Clock size={16} className="text-white shrink-0" />
-                    <span className="font-extrabold text-white">
-                      {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)} – {tTime12Hour(regWindow.endTime)}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                /* Registration will open soon (past date or concluded session) */
-                <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
-                  <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
-                    <div className="flex items-start gap-4 min-w-0">
-                      <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
-                      <div>
-                        <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
-                          {t("registrationOpenSoonTitle")}
-                        </h3>
-                        <p className="font-body text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-                          {t("registrationOpenSoonMsg")}
-                        </p>
-                      </div>
-                    </div>
-                    <a
-                      href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap"
-                      title="Clinic Location on Google Maps"
-                    >
-                      <MapPin size={13} className="text-rose-600 shrink-0" />
-                      <span>{t("googleMapLocation")}</span>
-                    </a>
-                  </div>
-
-                  {/* Clinic Address */}
-                  <a
-                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
-                    title="Open Clinic Address on Google Maps"
-                  >
-                    <MapPin size={15} className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform" />
-                    <span className="font-extrabold text-emerald-950">{t("clinicAddress")}</span>
-                  </a>
-
-                  {/* Expected Time Pill Box */}
-                  <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
-                    <Clock size={16} className="text-white shrink-0" />
-                    <span className="font-extrabold text-white">
-                      {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)} – {tTime12Hour(regWindow.endTime)}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* CARD 2: Check Your Token Number */}
-              <CheckTokenSearchCard
-                patients={patients}
-                onSelectPatient={(p) => {
-                  setRegisteredPatient(p);
-                  setStep("success");
-                }}
-                delayMinutes={regWindow.delayMinutes}
-              />
-
-              {/* CARD 3: Book an Appointment Card */}
-              <div className="bg-gradient-to-br from-[#FFFDF2] to-[#FFF9E6] rounded-[24px] sm:rounded-[28px] border border-amber-200/60 p-4 sm:p-5 text-left relative overflow-hidden shadow-xs mb-6 flex items-center justify-between gap-3 sm:gap-4">
-                <BookAppointmentIconSVG className="w-11 h-11 sm:w-12 sm:h-12 shrink-0" />
-
-                <button
-                  onClick={() => {
-                    if (allSlotsFull) {
-                      setStep("full");
-                    } else {
-                      setStep("form");
-                    }
-                  }}
-                  className="flex-1 bg-[#FFC629] hover:bg-[#F5B813] text-slate-900 font-display font-extrabold text-sm sm:text-base rounded-2xl py-3 px-4 flex items-center justify-center gap-2 shadow-md shadow-amber-400/20 cursor-pointer transition-all hover:scale-[1.01] active:scale-[0.99]"
+                {/* Clinic Address */}
+                <a
+                  href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
+                  title="Open Clinic Address on Google Maps"
                 >
-                  <span>{t("bookSlotBtn")}</span>
-                  <ChevronRight size={18} className="shrink-0" />
-                </button>
-              </div>
+                  <MapPin
+                    size={15}
+                    className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform"
+                  />
+                  <span className="font-extrabold text-emerald-950">
+                    {t("clinicAddress")}
+                  </span>
+                </a>
 
-              {/* Logiquel Branding Banner */}
-              <LogiquelAdCard variant="landing" />
-
-              {/* Footer Note */}
-              <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400 font-medium pt-2">
-                <Shield size={14} className="text-slate-400" />
-                <span>{t("privacyNotice")}</span>
+                {/* Expected Time Pill Box */}
+                <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
+                  <Clock size={16} className="text-white shrink-0" />
+                  <span className="font-extrabold text-white">
+                    {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)}{" "}
+                    – {tTime12Hour(regWindow.endTime)}
+                  </span>
+                </div>
               </div>
+            ) : hasWaitingPatients && isDoctorVisitingToday ? (
+              /* When today is appointment date with waiting patients, but doctor HAS NOT started seeing patients yet */
+              <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
+                <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                  <div className="flex items-start gap-4 min-w-0">
+                    <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
+                    <div>
+                      <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
+                        {t("doctorWillVisitTitle")}
+                      </h3>
+                      <p className="font-body text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+                        {t("doctorNotStartedMsg")}
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap"
+                    title="Clinic Location on Google Maps"
+                  >
+                    <MapPin size={13} className="text-orange-600 shrink-0" />
+                    <span>{t("googleMapLocation")}</span>
+                  </a>
+                </div>
+
+                {/* Clinic Address */}
+                <a
+                  href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
+                  title="Open Clinic Address on Google Maps"
+                >
+                  <MapPin
+                    size={15}
+                    className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform"
+                  />
+                  <span className="font-extrabold text-emerald-950">
+                    {t("clinicAddress")}
+                  </span>
+                </a>
+
+                {/* Expected Time Pill Box */}
+                <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
+                  <Clock size={16} className="text-white shrink-0" />
+                  <span className="font-extrabold text-white">
+                    {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)}{" "}
+                    – {tTime12Hour(regWindow.endTime)}
+                  </span>
+                </div>
+              </div>
+            ) : isFutureDate ? (
+              /* Doctor visit scheduled on a future date */
+              <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
+                <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                  <div className="flex items-start gap-4 min-w-0">
+                    <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
+                    <div>
+                      <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
+                        {t("doctorWillVisitDateTitle", {
+                          date: formattedVisitDate,
+                        })}
+                      </h3>
+                    </div>
+                  </div>
+                  <a
+                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap"
+                    title="Clinic Location on Google Maps"
+                  >
+                    <MapPin size={13} className="text-orange-600 shrink-0" />
+                    <span>{t("googleMapLocation")}</span>
+                  </a>
+                </div>
+
+                {/* Clinic Address */}
+                <a
+                  href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
+                  title="Open Clinic Address on Google Maps"
+                >
+                  <MapPin
+                    size={15}
+                    className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform"
+                  />
+                  <span className="font-extrabold text-emerald-950">
+                    {t("clinicAddress")}
+                  </span>
+                </a>
+
+                {/* Expected Time Pill Box */}
+                <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
+                  <Clock size={16} className="text-white shrink-0" />
+                  <span className="font-extrabold text-white">
+                    {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)}{" "}
+                    – {tTime12Hour(regWindow.endTime)}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              /* Registration will open soon (past date or concluded session) */
+              <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
+                <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                  <div className="flex items-start gap-4 min-w-0">
+                    <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
+                    <div>
+                      <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
+                        {t("registrationOpenSoonTitle")}
+                      </h3>
+                      <p className="font-body text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+                        {t("registrationOpenSoonMsg")}
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap"
+                    title="Clinic Location on Google Maps"
+                  >
+                    <MapPin size={13} className="text-orange-600 shrink-0" />
+                    <span>{t("googleMapLocation")}</span>
+                  </a>
+                </div>
+
+                {/* Clinic Address */}
+                <a
+                  href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
+                  title="Open Clinic Address on Google Maps"
+                >
+                  <MapPin
+                    size={15}
+                    className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform"
+                  />
+                  <span className="font-extrabold text-emerald-950">
+                    {t("clinicAddress")}
+                  </span>
+                </a>
+
+                {/* Expected Time Pill Box */}
+                <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
+                  <Clock size={16} className="text-white shrink-0" />
+                  <span className="font-extrabold text-white">
+                    {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)}{" "}
+                    – {tTime12Hour(regWindow.endTime)}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* CARD 2: Check Your Token Number */}
+            <CheckTokenSearchCard
+              patients={patients}
+              onSelectPatient={(p) => {
+                setRegisteredPatient(p);
+                setStep("success");
+              }}
+              delayMinutes={regWindow.delayMinutes}
+            />
+
+            {/* CARD 3: Book an Appointment Card */}
+            <div className="bg-gradient-to-br from-[#FFFDF2] to-[#FFF9E6] rounded-[24px] sm:rounded-[28px] border border-amber-200/60 p-4 sm:p-5 text-left relative overflow-hidden shadow-xs mb-6 flex items-center justify-between gap-3 sm:gap-4">
+              <BookAppointmentIconSVG className="w-11 h-11 sm:w-12 sm:h-12 shrink-0" />
+
+              <button
+                onClick={() => {
+                  if (allSlotsFull) {
+                    setStep("full");
+                  } else {
+                    setStep("form");
+                  }
+                }}
+                className="flex-1 bg-[#FFC629] hover:bg-[#F5B813] text-slate-900 font-display font-extrabold text-sm sm:text-base rounded-2xl py-3 px-4 flex items-center justify-center gap-2 shadow-md shadow-amber-400/20 cursor-pointer transition-all hover:scale-[1.01] active:scale-[0.99]"
+              >
+                <span>{t("bookSlotBtn")}</span>
+                <ChevronRight size={18} className="shrink-0" />
+              </button>
             </div>
+
+            {/* Logiquel Branding Banner */}
+            <LogiquelAdCard variant="landing" />
+
+            {/* Footer Note */}
+            <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400 font-medium pt-2">
+              <Shield size={14} className="text-slate-400" />
+              <span>{t("privacyNotice")}</span>
+            </div>
+          </div>
         )}
 
         {/* STEP: Appointments Full View (IMAGE 2) */}

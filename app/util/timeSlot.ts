@@ -30,8 +30,8 @@ function formatTime(minutes: number): string {
 export const getTimeSlots = (
   startTime: string = "09:00",
   endTime: string = "18:00",
-  breakStart: string = "13:00",
-  breakEnd: string = "14:00",
+  breakStart: string = "14:00",
+  breakEnd: string = "15:00",
   duration = 60,
   delayMinutes = 0,
 ) => {
@@ -45,8 +45,8 @@ export const getTimeSlots = (
     end += 12 * 60;
   }
 
-  let breakS = toMinutes(breakStart || "13:00") + delayMinutes;
-  let breakE = toMinutes(breakEnd || "14:00") + delayMinutes;
+  let breakS = toMinutes(breakStart || "14:00") + delayMinutes;
+  let breakE = toMinutes(breakEnd || "15:00") + delayMinutes;
 
   let current = start;
 

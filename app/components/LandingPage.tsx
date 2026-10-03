@@ -199,10 +199,10 @@ export default function LandingPage() {
               href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200/90 rounded-xl px-3 py-1.5 sm:py-2 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 sm:py-2 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer whitespace-nowrap"
               title="Clinic Location on Google Maps"
             >
-              <MapPin size={13} className="text-rose-600 shrink-0" />
+              <MapPin size={13} className="text-orange-600 shrink-0" />
               <span>{t("clickToKnowGoogleMapLocation")}</span>
             </a>
           </div>

@@ -261,16 +261,10 @@ export default function WalkinPatientPortal() {
 
               <div className="flex items-center justify-between gap-3 mb-4">
                 <div className="flex-1 min-w-0">
-                  <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full px-2.5 py-1 text-[11px] font-extrabold mb-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>{t("walkinBadge")}</span>
-                  </div>
-                  <h2 className="font-display text-2xl sm:text-3xl font-black text-[#0B1527] tracking-tight leading-snug mb-1.5 whitespace-pre-line">
+                  
+                  <h2 className="font-display text-2xl sm:text-3xl font-black text-[#0B1527] tracking-tight leading-snug mb-4 whitespace-pre-line">
                     {t("walkinTitle")}
                   </h2>
-                  <p className="font-body text-xs sm:text-sm text-slate-500 font-medium leading-relaxed mb-4">
-                    {t("walkinSubtitle")}
-                  </p>
 
                   <button
                     onClick={() => setStep("form")}
@@ -298,102 +292,6 @@ export default function WalkinPatientPortal() {
                 <AlertCircle size={15} className="text-blue-600 shrink-0" />
                 <span>{t("walkinTokenNotice")}</span>
               </div>
-            </div>
-
-            {/* Live Walkin Queue Status Card */}
-            <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5">
-              <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
-                <h3 className="font-display text-base font-extrabold text-slate-900 flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                  {t("liveQueue")}
-                </h3>
-                <span className="text-xs font-bold font-mono-custom text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-full">
-                  {waitingWalkinCount} {language === "hi" ? "प्रतीक्षारत" : "Waiting"}
-                </span>
-              </div>
-
-              <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 rounded-2xl p-4 text-white shadow-md shadow-blue-500/20">
-                <p className="font-body text-[11px] font-bold text-blue-100 uppercase tracking-widest mb-1">
-                  {t("doctorSeeingTitle")}
-                </p>
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="font-mono-custom text-3xl sm:text-4xl font-black text-white leading-none">
-                    {inProgressWalkin ? inProgressWalkin.walkin_token_display || inProgressWalkin.token_number : (language === "hi" ? "सत्र प्रारंभ..." : "Session In Progress")}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    {t("inConsultation")}
-                  </span>
-                </div>
-                {inProgressWalkin && (
-                  <div className="mt-2.5 pt-2 border-t border-white/20 flex items-center justify-between gap-2">
-                    <p className="font-body text-sm sm:text-base font-extrabold text-white truncate">
-                      {inProgressWalkin.name}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Search Walk-in Token Card */}
-            <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5">
-              <h3 className="font-display text-base font-extrabold text-slate-900 mb-1">
-                {t("searchWalkinTokenTitle")}
-              </h3>
-              <p className="font-body text-xs text-slate-500 font-medium mb-3">
-                {t("searchWalkinTokenSubtitle")}
-              </p>
-
-              <form onSubmit={handleSearchPhone} className="flex gap-2">
-                <input
-                  type="tel"
-                  placeholder={t("enterMobilePlaceholder")}
-                  value={searchPhone}
-                  onChange={(e) => setSearchPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-mono-custom"
-                />
-                <button
-                  type="submit"
-                  disabled={searchPhone.length < 10}
-                  className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-all cursor-pointer shrink-0"
-                >
-                  <Search size={14} />
-                </button>
-              </form>
-
-              {searchResult && (
-                <div
-                  onClick={() => {
-                    setRegisteredPatient(searchResult);
-                    setStep("success");
-                  }}
-                  className="mt-3 bg-blue-50 border border-blue-200 rounded-2xl p-3.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-blue-100/70 transition-all"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-mono-custom font-bold text-base shrink-0">
-                      {searchResult.walkin_token_display || searchResult.token_number}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-body text-sm font-extrabold text-slate-900 truncate">
-                        {searchResult.name}
-                      </p>
-                      <p className="font-body text-xs text-slate-500">
-                        {searchResult.age}y · {searchResult.gender}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-xs font-bold text-blue-600 flex items-center gap-1 shrink-0">
-                    {t("viewTicket")}
-                    <ChevronRight size={14} />
-                  </span>
-                </div>
-              )}
-
-              {searchNotFound && (
-                <div className="mt-3 bg-red-50 border border-red-100 rounded-xl p-3 text-xs text-red-600 font-medium">
-                  {t("noPatientFound")} {searchPhone}
-                </div>
-              )}
             </div>
 
             {/* Branding Card */}
@@ -504,33 +402,7 @@ export default function WalkinPatientPortal() {
                   </div>
                 </div>
 
-                {/* City / Village */}
-                <div>
-                  <label className="block font-body text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
-                    {t("cityVillageLabel")}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder={t("cityVillagePlaceholder")}
-                    value={cityVillage}
-                    onChange={(e) => setCityVillage(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-                  />
-                </div>
 
-                {/* Reason / Problem */}
-                <div>
-                  <label className="block font-body text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
-                    {t("reasonLabel")}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder={t("reasonPlaceholder")}
-                    value={reason}
-                    onChange={(e) => setReason(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-                  />
-                </div>
 
                 {/* Submit Button */}
                 <button
@@ -560,23 +432,7 @@ export default function WalkinPatientPortal() {
               ref={ticketRef}
               className="bg-gradient-to-br from-[#1E5BF6] via-[#2563EB] to-[#4F46E5] rounded-[28px] p-6 sm:p-8 text-white shadow-xl shadow-blue-500/25 relative overflow-hidden text-center mb-6"
             >
-              <div className="inline-flex items-center justify-center gap-2 text-white/90 text-xs sm:text-sm font-medium tracking-wide mb-2">
-                <Ticket size={16} className="text-blue-200" />
-                <span>{t("yourToken")}</span>
-              </div>
-
-              {/* Large Walkin Token Display */}
-              <p className="font-mono-custom text-6xl sm:text-7xl md:text-8xl font-black leading-none tracking-tight text-white drop-shadow-md my-2">
-                {registeredPatient.walkin_token_display || registeredPatient.token_number}
-              </p>
-
-              <div className="mt-3 inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/25 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-inner">
-                <MapPin size={14} className="text-white" />
-                <span>{t("walkinBadge")}</span>
-              </div>
-
-              <div className="w-12 h-1 bg-white/30 rounded-full mx-auto my-4" />
-
+             
               {/* Patient Details Inside Ticket */}
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 text-left space-y-2 border border-white/15 text-xs sm:text-sm font-medium">
                 <div className="flex justify-between">
@@ -608,38 +464,6 @@ export default function WalkinPatientPortal() {
               </div>
             </div>
 
-            {/* Payment QR Code Card */}
-            <div className="bg-white rounded-[28px] p-6 sm:p-7 border border-slate-100 shadow-xl shadow-blue-900/5 mb-5 text-center overflow-hidden relative">
-              <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200/80 rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wide mb-3">
-                <QrCode size={14} className="text-blue-600 shrink-0" />
-                <span>{t("scanToPayTitle")}</span>
-              </div>
-
-              <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
-                {t("scanToPayTitle")}
-              </h3>
-              <p className="font-body text-xs sm:text-sm text-slate-500 font-medium mb-4 max-w-xs mx-auto">
-                {t("scanToPaySubtitle")}
-              </p>
-
-              {/* QR Code Container */}
-              <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-4 sm:p-5 w-fit mx-auto mb-4 shadow-inner">
-                <img
-                  src="/payment-qr.png"
-                  alt="Payment QR Code"
-                  className="w-48 h-48 sm:w-56 sm:h-56 object-contain mx-auto rounded-xl bg-white p-2 shadow-xs"
-                />
-              </div>
-
-              {/* Screenshot Saving Guidance Notice */}
-              <div className="bg-amber-50 border border-amber-200/90 rounded-2xl p-3.5 sm:p-4 text-left flex items-start gap-2.5 max-w-md mx-auto">
-                <Camera size={18} className="text-amber-600 shrink-0 mt-0.5" />
-                <p className="font-body text-xs font-semibold text-amber-900 leading-relaxed">
-                  {t("savePaymentScreenshotNotice")}
-                </p>
-              </div>
-            </div>
-
             {/* Waiting Guidance Note */}
             <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-left mb-5 flex items-start gap-3">
               <CheckCircle2 size={20} className="text-emerald-600 shrink-0 mt-0.5" />
@@ -651,26 +475,6 @@ export default function WalkinPatientPortal() {
                   {t("walkinWaitLobbyMsg")}
                 </p>
               </div>
-            </div>
-
-            {/* Action Buttons: Download & WhatsApp */}
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <button
-                onClick={handleDownloadTicket}
-                disabled={downloading}
-                className="bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-bold text-xs sm:text-sm py-3 px-4 rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
-              >
-                <Download size={15} />
-                <span>{downloading ? t("downloadingToken") : t("downloadTokenCard")}</span>
-              </button>
-
-              <button
-                onClick={handleWhatsAppShare}
-                className="bg-[#25D366] hover:bg-[#20BE5C] text-white font-bold text-xs sm:text-sm py-3 px-4 rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
-              >
-                <Share2 size={15} />
-                <span>{t("shareOnWhatsApp")}</span>
-              </button>
             </div>
 
             <button
@@ -686,13 +490,7 @@ export default function WalkinPatientPortal() {
         )}
       </main>
 
-      {/* Global Footer Note */}
-      <footer className="relative z-10 py-4 text-center text-xs text-slate-400 font-medium">
-        <div className="flex items-center justify-center gap-1.5">
-          <Shield size={13} className="text-slate-400" />
-          <span>{t("securityNotice")}</span>
-        </div>
-      </footer>
+      
     </div>
   );
 }
