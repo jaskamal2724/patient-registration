@@ -1179,6 +1179,8 @@ export default function PatientPortal() {
     addPatient,
     toast,
     initialLoading,
+    initialLoadError,
+    retryInitialLoad,
   } = usePatientView();
   const { t, tDelay, tDynamic, tTime12Hour, tTimeSlot, language } =
     useLanguage();
@@ -1291,7 +1293,7 @@ export default function PatientPortal() {
           /* Patient Portal Home View */
           <div className="animate-slide-up text-left space-y-4">
             {/* Doctor Delay Alert Banner */}
-            {regWindow.delayMinutes > 0 && (
+            {!initialLoading && regWindow.delayMinutes > 0 && (
               <div className="bg-amber-500/10 border border-amber-300/80 rounded-[22px] p-4 text-left flex items-start gap-3 text-amber-950 shadow-xs">
                 <div className="p-2.5 bg-amber-100/90 rounded-xl shrink-0 text-amber-700 mt-0.5">
                   <Clock size={18} className="animate-pulse" />
@@ -1331,11 +1333,11 @@ export default function PatientPortal() {
                     href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap ml-auto"
+                    className="inline-flex max-w-full min-w-0 items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer ml-auto"
                     title="Clinic Location on Google Maps"
                   >
                     <MapPin size={13} className="text-orange-600 shrink-0" />
-                    <span>{t("googleMapLocation")}</span>
+                    <span className="min-w-0 truncate">{t("googleMapLocation")}</span>
                   </a>
                 </div>
 
@@ -1369,13 +1371,40 @@ export default function PatientPortal() {
                   </span>
                 </div>
               </div>
+            ) : initialLoadError ? (
+              <div
+                role="alert"
+                className="bg-white rounded-[24px] sm:rounded-[28px] border border-red-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left"
+              >
+                <div className="flex items-start gap-3">
+                  <AlertCircle
+                    size={22}
+                    className="mt-0.5 shrink-0 text-red-600"
+                  />
+                  <div>
+                    <h3 className="font-display text-base font-extrabold text-slate-900">
+                      {t("statusLoadErrorTitle")}
+                    </h3>
+                    <p className="mt-1 font-body text-sm text-slate-600">
+                      {t("statusLoadErrorMsg")}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={retryInitialLoad}
+                      className="mt-4 rounded-xl bg-[#1D68F3] px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-blue-700"
+                    >
+                      {t("retry")}
+                    </button>
+                  </div>
+                </div>
+              </div>
             ) : inProgress ? (
               /* When doctor HAS STARTED seeing patients */
               <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
-                <div className="flex items-center justify-between gap-3 sm:gap-4 mb-3.5">
-                  <div className="flex items-center gap-2.5 shrink-0">
+                <div className="flex flex-nowrap items-center justify-between gap-1.5 sm:gap-3 mb-3.5">
+                  <div className="flex min-w-0 items-center gap-1.5 sm:gap-2.5">
                     <DoctorAvatarSVG className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
-                    <h3 className="font-display text-base sm:text-lg font-extrabold text-slate-900">
+                    <h3 className="truncate font-display text-sm sm:text-lg font-extrabold text-slate-900">
                       {t("liveQueue")}
                     </h3>
                   </div>
@@ -1383,11 +1412,11 @@ export default function PatientPortal() {
                     href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap ml-auto"
+                    className="inline-flex min-w-0 shrink items-center gap-1 px-2 py-1.5 text-[10px] sm:gap-1.5 sm:px-3 sm:text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl shadow-2xs transition-all hover:scale-[1.02] cursor-pointer"
                     title="Clinic Location on Google Maps"
                   >
                     <MapPin size={13} className="text-orange-600 shrink-0" />
-                    <span>{t("googleMapLocation")}</span>
+                    <span className="min-w-0 truncate">{t("googleMapLocation")}</span>
                   </a>
                 </div>
 
@@ -1439,11 +1468,11 @@ export default function PatientPortal() {
                     href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap"
+                    className="inline-flex max-w-full min-w-0 items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer"
                     title="Clinic Location on Google Maps"
                   >
                     <MapPin size={13} className="text-orange-600 shrink-0" />
-                    <span>{t("googleMapLocation")}</span>
+                    <span className="min-w-0 truncate">{t("googleMapLocation")}</span>
                   </a>
                 </div>
 
@@ -1492,11 +1521,11 @@ export default function PatientPortal() {
                     href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap"
+                    className="inline-flex max-w-full min-w-0 items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer"
                     title="Clinic Location on Google Maps"
                   >
                     <MapPin size={13} className="text-orange-600 shrink-0" />
-                    <span>{t("googleMapLocation")}</span>
+                    <span className="min-w-0 truncate">{t("googleMapLocation")}</span>
                   </a>
                 </div>
 
@@ -1544,11 +1573,11 @@ export default function PatientPortal() {
                     href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap"
+                    className="inline-flex max-w-full min-w-0 items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer"
                     title="Clinic Location on Google Maps"
                   >
                     <MapPin size={13} className="text-orange-600 shrink-0" />
-                    <span>{t("googleMapLocation")}</span>
+                    <span className="min-w-0 truncate">{t("googleMapLocation")}</span>
                   </a>
                 </div>
 
@@ -1597,11 +1626,11 @@ export default function PatientPortal() {
                     href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer shrink-0 whitespace-nowrap"
+                    className="inline-flex max-w-full min-w-0 items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer"
                     title="Clinic Location on Google Maps"
                   >
                     <MapPin size={13} className="text-orange-600 shrink-0" />
-                    <span>{t("googleMapLocation")}</span>
+                    <span className="min-w-0 truncate">{t("googleMapLocation")}</span>
                   </a>
                 </div>
 

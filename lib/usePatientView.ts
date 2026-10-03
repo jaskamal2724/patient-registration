@@ -14,6 +14,8 @@ export function usePatientView() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [initialLoadError, setInitialLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   // Stable ref so the realtime callback always calls the latest version
   // of loadPatients WITHOUT recreating the channel on every render.
@@ -38,20 +40,26 @@ export function usePatientView() {
     delayMinutes: doctor?.delay_minutes ?? 0,
   };
 
-  // Load active doctor once on mount
+  // Load the active doctor before showing any registration or queue status.
   useEffect(() => {
     let cancelled = false;
-    const timer = setTimeout(() => {
-      if (!cancelled) setInitialLoading(false);
-    }, 1000);
 
     const load = async () => {
-      const { doctor: doc, open } = await api.fetchActiveDoctor();
-      if (cancelled) return;
-      setDoctor(doc);
-      setDoctorRegistrationOpen(open);
-      if (!doc && !cancelled) {
-        setPatients([]);
+      try {
+        const { doctor: doc, open } = await api.fetchActiveDoctor();
+        if (cancelled) return;
+        setDoctor(doc);
+        setDoctorRegistrationOpen(open);
+        if (!doc) {
+          setPatients([]);
+          setInitialLoading(false);
+        }
+      } catch (error) {
+        console.error("Unable to load the active doctor", error);
+        if (!cancelled) {
+          setInitialLoadError(true);
+          setInitialLoading(false);
+        }
       }
     };
 
@@ -59,9 +67,8 @@ export function usePatientView() {
 
     return () => {
       cancelled = true;
-      clearTimeout(timer);
     };
-  }, []);
+  }, [reloadKey]);
 
   // Use doctor.id (stable primitive string) as the effect dependency instead of
   // the full doctor object. This prevents the channel from being torn down and
@@ -74,20 +81,29 @@ export function usePatientView() {
 
     let cancelled = false;
 
-    const loadPatients = async () => {
-      const ps = await api.fetchAllPatients(doctorId);
-      if (!cancelled) {
-        setPatients(ps);
-        setInitialLoading(false);
+    const loadPatients = async (isInitialLoad = false) => {
+      try {
+        const ps = await api.fetchAllPatients(doctorId);
+        if (!cancelled) {
+          setPatients(ps);
+          setInitialLoadError(false);
+          setInitialLoading(false);
+        }
+      } catch (error) {
+        console.error("Unable to load patients for the patient portal", error);
+        if (isInitialLoad && !cancelled) {
+          setInitialLoadError(true);
+          setInitialLoading(false);
+        }
       }
     };
 
     // Always keep the ref pointing at the freshest loadPatients closure,
     // so the realtime handler never calls a stale version.
-    loadPatientsRef.current = loadPatients;
+    loadPatientsRef.current = () => loadPatients();
 
     // Initial data fetch
-    loadPatients();
+    loadPatients(true);
 
     const channel = supabase
       .channel(`patient-portal-realtime-${doctorId}`)
@@ -112,11 +128,15 @@ export function usePatientView() {
         },
         async (payload) => {
           console.log("Realtime: doctors change", payload);
-          const { doctor: doc, open } = await api.fetchActiveDoctor();
-          if (!cancelled) {
-            // Update doctor WITHOUT changing doctorId so the channel stays alive
-            setDoctor(doc);
-            setDoctorRegistrationOpen(open);
+          try {
+            const { doctor: doc, open } = await api.fetchActiveDoctor();
+            if (!cancelled) {
+              // Update doctor WITHOUT changing doctorId so the channel stays alive
+              setDoctor(doc);
+              setDoctorRegistrationOpen(open);
+            }
+          } catch (error) {
+            console.error("Unable to refresh the active doctor", error);
           }
         },
       )
@@ -136,7 +156,16 @@ export function usePatientView() {
       clearInterval(pollInterval);
       void supabase.removeChannel(channel);
     };
-  }, [doctorId]); // stable string primitive, NOT the full doctor object
+  }, [doctorId, reloadKey]); // stable primitives, NOT the full doctor object
+
+  const retryInitialLoad = useCallback(() => {
+    setInitialLoading(true);
+    setInitialLoadError(false);
+    setDoctor(null);
+    setDoctorRegistrationOpen(false);
+    setPatients([]);
+    setReloadKey((key) => key + 1);
+  }, []);
 
   const addPatient = useCallback(
     async (form: api.PatientForm): Promise<Patient> => {
@@ -162,6 +191,8 @@ export function usePatientView() {
     addPatient,
     loading,
     initialLoading,
+    initialLoadError,
+    retryInitialLoad,
     toast,
     showToast,
   };

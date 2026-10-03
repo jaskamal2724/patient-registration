@@ -46,7 +46,7 @@ export async function fetchDoctorProfile(): Promise<Doctor | null> {
 
 export async function fetchActiveDoctor(): Promise<{ doctor: Doctor | null; open: boolean }> {
   const res = await fetch("/api/doctors");
-  const json = await res.json();
+  const json = await jsonOrThrow(res);
   const doc = (json.doctor as Doctor | null) ?? null;
   return { doctor: doc, open: doc ? Boolean(doc.registration) : false };
 }
@@ -99,7 +99,7 @@ export async function updateSession(id: string, patch: Record<string, unknown>):
 
 export async function fetchAllPatients(doctorId: string): Promise<Patient[]> {
   const res = await fetch(`/api/patients?doctor_id=${doctorId}`);
-  const json = await res.json();
+  const json = await jsonOrThrow(res);
   const patients = (json.patients as Patient[]) ?? [];
   return patients.sort((a, b) => a.token_number - b.token_number);
 }
