@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import * as api from "@/lib/api";
 import { createBrowserClient } from "@/lib/supabase";
 import { useToast } from "@/lib/useToast";
@@ -16,10 +16,6 @@ export function usePatientView() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [initialLoadError, setInitialLoadError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
-
-  // Stable ref so the realtime callback always calls the latest version
-  // of loadPatients WITHOUT recreating the channel on every render.
-  const loadPatientsRef = useRef<(() => Promise<void>) | null>(null);
 
   const currentToken =
     patients.find(
@@ -98,10 +94,6 @@ export function usePatientView() {
       }
     };
 
-    // Always keep the ref pointing at the freshest loadPatients closure,
-    // so the realtime handler never calls a stale version.
-    loadPatientsRef.current = () => loadPatients();
-
     // Initial data fetch
     loadPatients(true);
 
@@ -116,7 +108,13 @@ export function usePatientView() {
         },
         (payload) => {
           console.log("Realtime: patients change", payload);
-          loadPatientsRef.current?.();
+          if (
+            payload.eventType === "UPDATE" &&
+            payload.new.status === "in-progress" &&
+            payload.old.status !== "in-progress"
+          ) {
+            window.location.reload();
+          }
         },
       )
       .on(
@@ -144,16 +142,8 @@ export function usePatientView() {
         console.log("Realtime channel status:", status);
       });
 
-    // ── Polling fallback every 5 s ─────────────────────────────────────────
-    // Catches any events that Realtime may have missed.
-    const pollInterval = setInterval(() => {
-      loadPatientsRef.current?.();
-    }, 5000);
-
     return () => {
       cancelled = true;
-      loadPatientsRef.current = null;
-      clearInterval(pollInterval);
       void supabase.removeChannel(channel);
     };
   }, [doctorId, reloadKey]); // stable primitives, NOT the full doctor object

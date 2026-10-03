@@ -131,11 +131,12 @@ export async function addPatient(doctorId: string, form: PatientForm): Promise<P
 }
 
 export async function updatePatientStatus(id: string, status: PatientStatus): Promise<void> {
-  await fetch(`/api/patients/${id}/status`, {
+  const res = await fetch(`/api/patients/${id}/status`, {
     method: "PATCH",
     headers: await authHeaders(),
     body: JSON.stringify({ status }),
   });
+  await jsonOrThrow(res);
 }
 
 export async function updateDoctorName(id: string, name: string): Promise<void> {
