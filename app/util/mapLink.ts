@@ -8,7 +8,7 @@ export const CLINIC_ADDRESS =
   "610, Sector 10A, Gurugram, Haryana 122001, India";
 
 export const CLINIC_MAP_URL =
-  "https://maps.app.goo.gl/DbY7HBzoYw1JTFGZ7";
+  "https://www.google.com/maps/search/?api=1&query=28.4428974,77.0055494&query_place_id=ChIJDRLPTosXDTkRS80Q53yAx2Y";
 
 /**
  * Handles clicking a map link reliably across all devices, specifically fixing iPhone & iOS PWA issues.
