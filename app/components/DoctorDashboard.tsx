@@ -126,7 +126,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
             </div>
             <div>
               <p className="font-display text-lg font-bold text-surface-900 leading-tight">
-                MediQueue
+                Doc Care
               </p>
               <p className="text-brand-600 text-xs font-body font-medium mb-1.5">
                 Doctor Panel
@@ -227,7 +227,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
             </div>
             <div className="flex flex-col items-start gap-0.5 min-w-0">
               <span className="font-display font-bold text-surface-900 leading-none text-sm">
-                MediQueue
+                Doc Care
               </span>
               <InstallPWA />
             </div>

@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'MediQueue — Smart Patient Registration',
-    short_name: 'MediQueue',
+    name: 'Doc Care',
+    short_name: 'Doc Care',
     description: 'Streamlined OPD patient registration and queue management',
     id: '/',
     start_url: '/',

@@ -4,12 +4,12 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { LanguageProvider } from "@/lib/LanguageContext";
 
 export const metadata: Metadata = {
-  title: "MediQueue — Smart Patient Registration",
+  title: "Doc Care — Smart Patient Registration",
   description: "Streamlined OPD patient registration and queue management",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "MediQueue",
+    title: "Doc Care",
     statusBarStyle: "black-translucent",
   },
 };
@@ -39,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="MediQueue" />
+        <meta name="apple-mobile-web-app-title" content="Doc Care" />
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
