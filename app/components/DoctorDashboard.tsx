@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDoctor } from "@/lib/useDoctor";
 import type { Doctor } from "@/lib/types";
@@ -22,6 +22,7 @@ import {
   QrCode,
   Footprints,
   ExternalLink,
+  Save,
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
 import LogiquelAdCard from "./LogiquelAdCard";
@@ -88,6 +89,58 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
   const [tempName, setTempName] = useState(doctorName);
   const [showCompletedModal, setShowCompletedModal] = useState(false);
   const [showWalkinCompletedModal, setShowWalkinCompletedModal] = useState(false);
+
+  // Local form state for Settings tab to ensure smooth editing and 100% DB synchronization
+  const [formDate, setFormDate] = useState(regWindow.date || "");
+  const [formStartTime, setFormStartTime] = useState(
+    regWindow.startTime || "10:00",
+  );
+  const [formEndTime, setFormEndTime] = useState(
+    regWindow.endTime || "19:00",
+  );
+  const [formMessage, setFormMessage] = useState(regWindow.message || "");
+  const [formPatientsPerHour, setFormPatientsPerHour] = useState(
+    regWindow.patientsPerHour ?? 10,
+  );
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+
+  // Keep form state in sync whenever regWindow changes from database/realtime
+  useEffect(() => {
+    setFormDate(regWindow.date || "");
+    setFormStartTime(regWindow.startTime || "10:00");
+    setFormEndTime(regWindow.endTime || "19:00");
+    setFormMessage(regWindow.message || "");
+    setFormPatientsPerHour(regWindow.patientsPerHour ?? 10);
+  }, [
+    regWindow.date,
+    regWindow.startTime,
+    regWindow.endTime,
+    regWindow.message,
+    regWindow.patientsPerHour,
+  ]);
+
+  const isSettingsDirty =
+    formDate !== (regWindow.date || "") ||
+    formStartTime !== (regWindow.startTime || "10:00") ||
+    formEndTime !== (regWindow.endTime || "19:00") ||
+    formMessage !== (regWindow.message || "") ||
+    formPatientsPerHour !== (regWindow.patientsPerHour ?? 10);
+
+  const handleSaveSettings = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsSavingSettings(true);
+    try {
+      await setRegWindow({
+        date: formDate,
+        startTime: formStartTime,
+        endTime: formEndTime,
+        message: formMessage,
+        patientsPerHour: formPatientsPerHour,
+      });
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -829,7 +882,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                         Settings
                       </h2>
                       <p className="font-body text-xs sm:text-sm text-surface-500 mt-0.5">
-                        Configure today's OPD registration window and rules
+                        Configure today&apos;s OPD registration window and rules
                       </p>
                     </div>
                   </div>
@@ -841,8 +894,8 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                       </label>
                       <input
                         type="date"
-                        value={regWindow.date || ""}
-                        onChange={(e) => setRegWindow({ date: e.target.value })}
+                        value={formDate}
+                        onChange={(e) => setFormDate(e.target.value)}
                         className="input-field w-full border border-surface-200 rounded-xl px-4 py-3 font-body text-sm bg-surface-50 focus:bg-white transition-all shadow-sm font-semibold"
                       />
                     </div>
@@ -852,10 +905,8 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                       </label>
                       <input
                         type="time"
-                        value={regWindow.startTime || ""}
-                        onChange={(e) =>
-                          setRegWindow({ startTime: e.target.value })
-                        }
+                        value={formStartTime}
+                        onChange={(e) => setFormStartTime(e.target.value)}
                         className="input-field w-full border border-surface-200 rounded-xl px-4 py-3 font-body text-sm bg-surface-50 focus:bg-white transition-all shadow-sm font-semibold"
                       />
                     </div>
@@ -865,10 +916,8 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                       </label>
                       <input
                         type="time"
-                        value={regWindow.endTime || ""}
-                        onChange={(e) =>
-                          setRegWindow({ endTime: e.target.value })
-                        }
+                        value={formEndTime}
+                        onChange={(e) => setFormEndTime(e.target.value)}
                         className="input-field w-full border border-surface-200 rounded-xl px-4 py-3 font-body text-sm bg-surface-50 focus:bg-white transition-all shadow-sm font-semibold"
                       />
                     </div>
@@ -878,10 +927,8 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                       </label>
                       <input
                         type="text"
-                        value={regWindow.message}
-                        onChange={(e) =>
-                          setRegWindow({ message: e.target.value })
-                        }
+                        value={formMessage}
+                        onChange={(e) => setFormMessage(e.target.value)}
                         placeholder="e.g. General OPD — Fever & Consultation"
                         className="input-field w-full border border-surface-200 rounded-xl px-4 py-3 font-body text-sm bg-surface-50 focus:bg-white transition-all shadow-sm font-medium"
                       />
@@ -896,11 +943,11 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                           type="number"
                           min={1}
                           max={50}
-                          value={regWindow.patientsPerHour ?? 10}
+                          value={formPatientsPerHour}
                           onChange={(e) =>
-                            setRegWindow({
-                              patientsPerHour: parseInt(e.target.value, 10) || 10,
-                            })
+                            setFormPatientsPerHour(
+                              parseInt(e.target.value, 10) || 10,
+                            )
                           }
                           className="input-field w-32 border border-surface-200 rounded-xl px-4 py-3 font-body text-sm bg-surface-50 focus:bg-white transition-all shadow-sm font-bold"
                         />
@@ -908,6 +955,38 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                           patients maximum allowed per 1-hour time slot
                         </span>
                       </div>
+                    </div>
+
+                    {/* Dedicated Save Settings Button */}
+                    <div className="sm:col-span-2 flex items-center justify-between border-t border-surface-200/60 pt-4">
+                      <div className="text-xs font-body font-medium text-surface-500">
+                        {isSettingsDirty ? (
+                          <span className="text-amber-600 font-semibold flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                            Unsaved schedule changes
+                          </span>
+                        ) : (
+                          <span>All settings are saved</span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleSaveSettings}
+                        disabled={isSavingSettings || loading}
+                        className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 active:scale-95 disabled:opacity-60 text-white font-body font-bold text-xs sm:text-sm px-6 py-2.5 rounded-xl transition-all shadow-md shadow-brand-500/20 cursor-pointer"
+                      >
+                        {isSavingSettings ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                            <span>Saving...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Save size={16} />
+                            <span>Save Settings</span>
+                          </>
+                        )}
+                      </button>
                     </div>
 
                     {/* Doctor Delay / Running Late Management Card */}

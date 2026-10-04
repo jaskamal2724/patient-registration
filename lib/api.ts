@@ -38,6 +38,7 @@ export async function fetchDoctorProfile(): Promise<Doctor | null> {
   const { data } = await supabase.auth.getSession();
   if (!data.session) return null;
   const res = await fetch("/api/auth/me", {
+    cache: "no-store",
     headers: { Authorization: `Bearer ${data.session.access_token}` },
   });
   const json = await res.json();
@@ -45,7 +46,7 @@ export async function fetchDoctorProfile(): Promise<Doctor | null> {
 }
 
 export async function fetchActiveDoctor(): Promise<{ doctor: Doctor | null; open: boolean }> {
-  const res = await fetch("/api/doctors");
+  const res = await fetch("/api/doctors", { cache: "no-store" });
   const json = await jsonOrThrow(res);
   const doc = (json.doctor as Doctor | null) ?? null;
   return { doctor: doc, open: doc ? Boolean(doc.registration) : false };

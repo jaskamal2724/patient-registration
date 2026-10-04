@@ -687,14 +687,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   };
 
   const tTime12Hour = (timeStr: string | null | undefined): string => {
-    if (!timeStr) return language === "hi" ? "सुबह 09:00" : "09:00 AM";
+    if (!timeStr) return language === "hi" ? "सुबह 10:00" : "10:00 AM";
     const clean = timeStr.trim();
     let isPM = clean.toLowerCase().includes("pm");
     let isAM = clean.toLowerCase().includes("am");
-    let timeWithoutPeriod = clean.replace(/(am|pm)/i, "").trim();
-    let parts = timeWithoutPeriod.split(":");
-    let hours = parseInt(parts[0], 10);
-    let minutes = parseInt(parts[1], 10) || 0;
+    const timeWithoutPeriod = clean.replace(/(am|pm)/i, "").trim();
+    const parts = timeWithoutPeriod.split(":");
+    const hours = parseInt(parts[0], 10);
+    const minutes = parseInt(parts[1], 10) || 0;
 
     if (isNaN(hours)) return clean;
 
@@ -703,14 +703,15 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       isAM = hours < 12;
     }
 
-    const period12 = isPM ? "PM" : "AM";
-    let displayHour = hours % 12;
+    const hour24 = isPM && hours < 12 ? hours + 12 : isAM && hours === 12 ? 0 : hours;
+    const period12 = hour24 >= 12 ? "PM" : "AM";
+    let displayHour = hour24 % 12;
     if (displayHour === 0) displayHour = 12;
     const minStr = minutes > 0 ? `:${String(minutes).padStart(2, "0")}` : ":00";
-    const hourStr = String(displayHour).padStart(2, "0");
+    const hourStr = String(displayHour);
 
     if (language === "hi") {
-      const timeOfDay = isAM ? "सुबह" : hours >= 16 ? "शाम" : "दोपहर";
+      const timeOfDay = hour24 < 12 ? "सुबह" : hour24 >= 16 ? "शाम" : "दोपहर";
       return `${timeOfDay} ${hourStr}${minStr}`;
     }
 

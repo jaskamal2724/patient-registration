@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(req: NextRequest) {
   try {
     const supabase = createServerClient();
@@ -21,11 +24,18 @@ export async function GET(req: NextRequest) {
 
     const doctor = data && data.length > 0 ? data[0] : null;
 
-    return NextResponse.json({
-      doctors: data || [],
-      doctor,
-      open: doctor ? Boolean(doctor.registration) : false,
-    });
+    return NextResponse.json(
+      {
+        doctors: data || [],
+        doctor,
+        open: doctor ? Boolean(doctor.registration) : false,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        },
+      }
+    );
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

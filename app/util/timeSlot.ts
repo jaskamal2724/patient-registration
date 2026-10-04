@@ -28,8 +28,8 @@ function formatTime(minutes: number): string {
 }
 
 export const getTimeSlots = (
-  startTime: string = "09:00",
-  endTime: string = "18:00",
+  startTime: string = "10:00",
+  endTime: string = "19:00",
   breakStart: string = "14:00",
   breakEnd: string = "15:00",
   duration = 60,
@@ -37,10 +37,10 @@ export const getTimeSlots = (
 ) => {
   const slots = [];
 
-  let start = toMinutes(startTime || "09:00") + delayMinutes;
-  let end = toMinutes(endTime || "18:00") + delayMinutes;
+  let start = toMinutes(startTime || "10:00") + delayMinutes;
+  let end = toMinutes(endTime || "19:00") + delayMinutes;
 
-  // If end time is before or equal to start time (e.g. start 9 AM [540 min], end 01:00 [60 min] representing 1 PM)
+  // If end time is before or equal to start time (e.g. start 10 AM [600 min], end 07:00 [420 min] representing 7 PM)
   if (end <= start && end < 12 * 60) {
     end += 12 * 60;
   }
@@ -66,13 +66,14 @@ export const getTimeSlots = (
   // Fallback if no slots generated
   if (slots.length === 0) {
     return [
-      { label: `${formatTime(9 * 60 + delayMinutes)} - ${formatTime(10 * 60 + delayMinutes)}` },
       { label: `${formatTime(10 * 60 + delayMinutes)} - ${formatTime(11 * 60 + delayMinutes)}` },
       { label: `${formatTime(11 * 60 + delayMinutes)} - ${formatTime(12 * 60 + delayMinutes)}` },
       { label: `${formatTime(12 * 60 + delayMinutes)} - ${formatTime(13 * 60 + delayMinutes)}` },
-      { label: `${formatTime(14 * 60 + delayMinutes)} - ${formatTime(15 * 60 + delayMinutes)}` },
+      { label: `${formatTime(13 * 60 + delayMinutes)} - ${formatTime(14 * 60 + delayMinutes)}` },
       { label: `${formatTime(15 * 60 + delayMinutes)} - ${formatTime(16 * 60 + delayMinutes)}` },
       { label: `${formatTime(16 * 60 + delayMinutes)} - ${formatTime(17 * 60 + delayMinutes)}` },
+      { label: `${formatTime(17 * 60 + delayMinutes)} - ${formatTime(18 * 60 + delayMinutes)}` },
+      { label: `${formatTime(18 * 60 + delayMinutes)} - ${formatTime(19 * 60 + delayMinutes)}` },
     ];
   }
 

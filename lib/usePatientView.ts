@@ -28,8 +28,8 @@ export function usePatientView() {
 
   const regWindow: RegistrationWindow = {
     isOpen,
-    startTime: doctor?.start_time || "09:00 AM",
-    endTime: doctor?.end_time || "09:00 PM",
+    startTime: doctor?.start_time || "10:00",
+    endTime: doctor?.end_time || "19:00",
     date: doctor?.session_date || null,
     message:
       doctor?.opd_message ||
@@ -218,11 +218,19 @@ export function usePatientView() {
     async (payload) => {
       console.log("Realtime doctors event:", payload);
 
+      if (payload.new && typeof payload.new === "object") {
+        const updatedDoc = payload.new as Doctor;
+        setDoctor(updatedDoc);
+        if ("registration" in updatedDoc) {
+          setDoctorRegistrationOpen(Boolean(updatedDoc.registration));
+        }
+      }
+
       try {
         const { doctor: doc, open } =
           await api.fetchActiveDoctor();
 
-        if (!cancelled) {
+        if (!cancelled && doc) {
           setDoctor(doc);
           setDoctorRegistrationOpen(open);
         }

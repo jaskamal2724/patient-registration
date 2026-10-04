@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 
   const { data: doctor, error: doctorError } = await supabase
     .from("doctors")
-    .select("id, name, email, registration, created_at")
+    .select("*")
     .eq("id", user.id)
     .single();
 

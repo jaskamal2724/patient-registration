@@ -35,13 +35,40 @@ export function useDoctor(initialDoctor: Doctor) {
 
   const regWindow: RegistrationWindow = {
     isOpen: Boolean(doctor.registration),
-    startTime: doctor.start_time || "09:00",
-    endTime: doctor.end_time || "21:00",
+    startTime: doctor.start_time || "10:00",
+    endTime: doctor.end_time || "19:00",
     date: doctor.session_date || new Date().toISOString().split("T")[0],
     message: doctor.opd_message || "",
     patientsPerHour: doctor.patients_per_hour ?? 10,
     delayMinutes: doctor.delay_minutes ?? 0,
   };
+
+  // Keep doctor state synchronized whenever initialDoctor updates
+  useEffect(() => {
+    if (initialDoctor) {
+      setDoctor(initialDoctor);
+    }
+  }, [initialDoctor]);
+
+  // Fetch the latest fresh doctor record directly from the database on mount
+  useEffect(() => {
+    let cancelled = false;
+    const fetchFreshDoctor = async () => {
+      try {
+        const res = await fetch(`/api/doctors/${doctor.id}`, { cache: "no-store" });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.doctor && !cancelled) {
+            setDoctor(json.doctor);
+          }
+        }
+      } catch {}
+    };
+    fetchFreshDoctor();
+    return () => {
+      cancelled = true;
+    };
+  }, [doctor.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -80,6 +107,20 @@ export function useDoctor(initialDoctor: Doctor) {
           table: "walkin_patients",
         },
         load,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "doctors",
+          filter: `id=eq.${doctor.id}`,
+        },
+        (payload) => {
+          if (payload.new && typeof payload.new === "object") {
+            setDoctor(payload.new as Doctor);
+          }
+        },
       )
       .subscribe();
 

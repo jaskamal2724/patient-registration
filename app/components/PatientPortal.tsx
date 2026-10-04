@@ -46,6 +46,7 @@ import {
   shiftSlotLabel,
   normalizeSlotLabel,
 } from "../util/timeSlot";
+import { CLINIC_MAP_URL, handleClinicMapClick } from "../util/mapLink";
 import {
   DoctorAvatarSVG,
   RegisterIllustrationSVG,
@@ -62,7 +63,7 @@ interface TimeSlot {
 }
 
 function formatTime12Hour(timeStr: string | null | undefined): string {
-  if (!timeStr) return "9:00 AM";
+  if (!timeStr) return "10:00 AM";
   const clean = timeStr.trim();
   if (
     clean.toLowerCase().includes("am") ||
@@ -533,8 +534,8 @@ function RegistrationForm({
 }) {
   const { t, tDynamic, tDelay, tTimeSlot, tTime12Hour } = useLanguage();
   const initialSlots = getTimeSlots(
-    regWindow.startTime || "09:00",
-    regWindow.endTime || "18:00",
+    regWindow.startTime || "10:00",
+    regWindow.endTime || "19:00",
     "14:00",
     "15:00",
     60,
@@ -590,7 +591,7 @@ function RegistrationForm({
 
   const fetchTimeSlot = async () => {
     try {
-      const response = await fetch("/api/time-slot");
+      const response = await fetch("/api/time-slot", { cache: "no-store" });
       const result = await response.json();
       if (result?.data?.[0]?.start_time && result?.data?.[0]?.end_time) {
         const startTime = result.data[0].start_time;
@@ -1208,7 +1209,7 @@ export default function PatientPortal() {
   useEffect(() => {
     const fetchSlots = async () => {
       try {
-        const res = await fetch("/api/time-slot");
+        const res = await fetch("/api/time-slot", { cache: "no-store" });
         const json = await res.json();
         const delayMins =
           json?.data?.[0]?.delay_minutes ?? regWindow.delayMinutes ?? 0;
@@ -1224,8 +1225,8 @@ export default function PatientPortal() {
           setTIME_SLOTS(slots.map((s: TimeSlot) => s.label));
         } else {
           const slots = getTimeSlots(
-            regWindow.startTime || "09:00",
-            regWindow.endTime || "18:00",
+            regWindow.startTime || "10:00",
+            regWindow.endTime || "19:00",
             "14:00",
             "15:00",
             60,
@@ -1235,8 +1236,8 @@ export default function PatientPortal() {
         }
       } catch {
         const slots = getTimeSlots(
-          regWindow.startTime || "09:00",
-          regWindow.endTime || "18:00",
+          regWindow.startTime || "10:00",
+          regWindow.endTime || "19:00",
           "14:00",
           "15:00",
           60,
@@ -1338,7 +1339,8 @@ export default function PatientPortal() {
                     </div>
                   </div>
                   <a
-                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                    href={CLINIC_MAP_URL}
+                    onClick={handleClinicMapClick}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex max-w-full min-w-0 items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer ml-auto"
@@ -1353,7 +1355,8 @@ export default function PatientPortal() {
 
                 {/* Clinic Address Skeleton */}
                 <a
-                  href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                  href={CLINIC_MAP_URL}
+                  onClick={handleClinicMapClick}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs"
@@ -1419,7 +1422,8 @@ export default function PatientPortal() {
                     </h3>
                   </div>
                   <a
-                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                    href={CLINIC_MAP_URL}
+                    onClick={handleClinicMapClick}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex min-w-0 shrink items-center gap-1 px-2 py-1.5 text-[10px] sm:gap-1.5 sm:px-3 sm:text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl shadow-2xs transition-all hover:scale-[1.02] cursor-pointer"
@@ -1463,7 +1467,8 @@ export default function PatientPortal() {
 
                 {/* Clinic Address */}
                 <a
-                  href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                  href={CLINIC_MAP_URL}
+                  onClick={handleClinicMapClick}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-3 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
@@ -1494,7 +1499,8 @@ export default function PatientPortal() {
                     </div>
                   </div>
                   <a
-                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                    href={CLINIC_MAP_URL}
+                    onClick={handleClinicMapClick}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex max-w-full min-w-0 items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer"
@@ -1509,7 +1515,8 @@ export default function PatientPortal() {
 
                 {/* Clinic Address */}
                 <a
-                  href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                  href={CLINIC_MAP_URL}
+                  onClick={handleClinicMapClick}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
@@ -1550,7 +1557,8 @@ export default function PatientPortal() {
                     </div>
                   </div>
                   <a
-                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                    href={CLINIC_MAP_URL}
+                    onClick={handleClinicMapClick}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex max-w-full min-w-0 items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer"
@@ -1565,7 +1573,8 @@ export default function PatientPortal() {
 
                 {/* Clinic Address */}
                 <a
-                  href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                  href={CLINIC_MAP_URL}
+                  onClick={handleClinicMapClick}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
@@ -1605,7 +1614,8 @@ export default function PatientPortal() {
                     </div>
                   </div>
                   <a
-                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                    href={CLINIC_MAP_URL}
+                    onClick={handleClinicMapClick}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex max-w-full min-w-0 items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer"
@@ -1620,7 +1630,8 @@ export default function PatientPortal() {
 
                 {/* Clinic Address */}
                 <a
-                  href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                  href={CLINIC_MAP_URL}
+                  onClick={handleClinicMapClick}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
@@ -1659,7 +1670,8 @@ export default function PatientPortal() {
                     </div>
                   </div>
                   <a
-                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                    href={CLINIC_MAP_URL}
+                    onClick={handleClinicMapClick}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex max-w-full min-w-0 items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer"
@@ -1674,7 +1686,8 @@ export default function PatientPortal() {
 
                 {/* Clinic Address */}
                 <a
-                  href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                  href={CLINIC_MAP_URL}
+                  onClick={handleClinicMapClick}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
@@ -1714,7 +1727,8 @@ export default function PatientPortal() {
                     </div>
                   </div>
                   <a
-                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                    href={CLINIC_MAP_URL}
+                    onClick={handleClinicMapClick}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex max-w-full min-w-0 items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer"
@@ -1729,7 +1743,8 @@ export default function PatientPortal() {
 
                 {/* Clinic Address */}
                 <a
-                  href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                  href={CLINIC_MAP_URL}
+                  onClick={handleClinicMapClick}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"

@@ -26,6 +26,7 @@ import LoadingScreen from "./LoadingScreen";
 import LanguageSelector from "./LanguageSelector";
 import TreatedConditionsModal from "./TreatedConditionsModal";
 import { useLanguage } from "@/lib/LanguageContext";
+import { CLINIC_MAP_URL, handleClinicMapClick } from "../util/mapLink";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -199,7 +200,8 @@ export default function LandingPage() {
             </div>
 
             <a
-              href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+              href={CLINIC_MAP_URL}
+              onClick={handleClinicMapClick}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 sm:py-2 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer whitespace-nowrap"
