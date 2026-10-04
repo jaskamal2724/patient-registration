@@ -97,8 +97,8 @@ export async function updateSession(id: string, patch: Record<string, unknown>):
   return json.session as Session;
 }
 
-export async function fetchAllPatients(doctorId: string): Promise<Patient[]> {
-  const res = await fetch(`/api/patients?doctor_id=${doctorId}`);
+export async function fetchAllPatients(doctorId?: string): Promise<Patient[]> {
+  const res = await fetch("/api/patients");
   const json = await jsonOrThrow(res);
   const patients = (json.patients as Patient[]) ?? [];
   return patients.sort((a, b) => a.token_number - b.token_number);
@@ -148,8 +148,7 @@ export async function updateDoctorName(id: string, name: string): Promise<void> 
 }
 
 export async function fetchWalkinPatients(doctorId?: string): Promise<import("./types").WalkinPatient[]> {
-  const url = doctorId ? `/api/walkin-patients?doctor_id=${doctorId}` : `/api/walkin-patients`;
-  const res = await fetch(url);
+  const res = await fetch("/api/walkin-patients");
   const json = await res.json();
   const patients = (json.walkin_patients as import("./types").WalkinPatient[]) ?? [];
   return patients.sort((a, b) => a.token_number - b.token_number);

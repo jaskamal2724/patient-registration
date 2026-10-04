@@ -80,7 +80,7 @@ export default function WalkinPatientPortal() {
         setDoctor(doc);
 
         if (doc?.id) {
-          const list = await api.fetchWalkinPatients(doc.id);
+          const list = await api.fetchWalkinPatients();
           if (!cancelled) {
             setWalkinPatients(list);
             setInitialLoading(false);
@@ -97,7 +97,7 @@ export default function WalkinPatientPortal() {
                   table: "walkin_patients",
                 },
                 async () => {
-                  const updated = await api.fetchWalkinPatients(doc.id).catch(() => []);
+                  const updated = await api.fetchWalkinPatients().catch(() => []);
                   if (!cancelled) setWalkinPatients(updated);
                 }
               )

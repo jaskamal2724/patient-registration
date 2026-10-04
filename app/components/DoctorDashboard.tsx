@@ -16,11 +16,9 @@ import {
   ChevronRight,
   Settings,
   Calendar,
-  UserCheck,
   TrendingUp,
   X,
   Edit3,
-  Check,
   QrCode,
   Footprints,
   ExternalLink,
@@ -77,9 +75,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
     patients,
     walkinPatients,
     callNext,
-    markDone,
     skipPatient,
-    markWalkinDone,
     skipWalkinPatient,
     callNextWalkin,
     currentToken,
@@ -462,14 +458,13 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                         )}
                       </div>
                       <div className="flex items-center gap-3 bg-white/10 p-3.5 sm:p-4 rounded-2xl backdrop-blur-md border border-white/20 shrink-0 w-full sm:w-auto">
-                        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                          <UserCheck size={20} className="text-white" />
-                        </div>
                         <button
-                          onClick={() => markDone(inProgress.id)}
-                          className="bg-white hover:bg-brand-50 active:scale-98 text-brand-700 border border-transparent rounded-xl px-5 py-2.5 font-body font-bold text-sm transition-all shadow-md flex-1 sm:flex-none text-center cursor-pointer"
+                          onClick={callNext}
+                          disabled={loading}
+                          className="bg-white hover:bg-brand-50 active:scale-98 text-brand-700 border border-transparent rounded-xl px-5 py-2.5 font-body font-bold text-sm transition-all shadow-md flex-1 sm:flex-none text-center cursor-pointer flex items-center justify-center gap-2"
                         >
-                          Mark as Done
+                          <span>Call Next Patient</span>
+                          <ChevronRight size={16} />
                         </button>
                       </div>
                     </div>
@@ -485,18 +480,10 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                         {waiting.length} waiting
                       </span>
                     </h2>
-                    {inProgress && (
-                      <p className="text-xs font-body text-amber-600 font-medium mt-0.5">
-                        Mark Token{" "}
-                        {inProgress.slot_token_number ||
-                          inProgress.token_number}{" "}
-                        as done to call next
-                      </p>
-                    )}
                   </div>
                   <button
                     onClick={callNext}
-                    disabled={waiting.length === 0 || !!inProgress || loading}
+                    disabled={(!inProgress && waiting.length === 0) || loading}
                     className="w-full sm:w-auto flex items-center justify-center gap-2 bg-surface-900 hover:bg-surface-800 disabled:bg-surface-100 disabled:text-surface-400 disabled:cursor-not-allowed text-white text-sm font-body font-bold px-6 py-3.5 rounded-xl transition-all shadow-md active:scale-98 whitespace-nowrap cursor-pointer"
                   >
                     <span>Call Next Patient</span>
@@ -582,26 +569,16 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                                   { hour: "2-digit", minute: "2-digit" },
                                 )}
                               </span>
-                              {(p.status === "waiting" || p.status === "skipped" || p.status === "in-progress") && (
+                              {p.status === "waiting" && (
                                 <div className="flex items-center gap-1.5 flex-wrap justify-end">
                                   <button
-                                    onClick={() => markDone(p.id)}
-                                    className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200/90 px-2.5 py-1 rounded-lg transition-all cursor-pointer shadow-2xs"
-                                    title="Mark patient as completed"
+                                    onClick={() => skipPatient(p.id)}
+                                    className="flex items-center gap-1 text-xs font-bold text-surface-600 hover:text-red-600 hover:bg-red-50 active:scale-95 px-2.5 py-1 rounded-lg transition-all border border-surface-200 cursor-pointer shadow-2xs"
+                                    title="Skip patient"
                                   >
-                                    <Check size={12} className="text-emerald-600 shrink-0" />
-                                    <span>Done</span>
+                                    <SkipForward size={12} className="shrink-0" />
+                                    <span>Skip</span>
                                   </button>
-                                  {p.status === "waiting" && (
-                                    <button
-                                      onClick={() => skipPatient(p.id)}
-                                      className="flex items-center gap-1 text-xs font-bold text-surface-600 hover:text-red-600 hover:bg-red-50 active:scale-95 px-2.5 py-1 rounded-lg transition-all border border-surface-200 cursor-pointer shadow-2xs"
-                                      title="Skip patient"
-                                    >
-                                      <SkipForward size={12} className="shrink-0" />
-                                      <span>Skip</span>
-                                    </button>
-                                  )}
                                 </div>
                               )}
                             </div>
@@ -701,14 +678,13 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                         )}
                       </div>
                       <div className="flex items-center gap-3 bg-white/10 p-3.5 sm:p-4 rounded-2xl backdrop-blur-md border border-white/20 shrink-0 w-full sm:w-auto">
-                        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                          <UserCheck size={20} className="text-white" />
-                        </div>
                         <button
-                          onClick={() => markWalkinDone(walkinInProgress.id)}
-                          className="bg-white hover:bg-amber-50 active:scale-98 text-amber-800 border border-transparent rounded-xl px-5 py-2.5 font-body font-bold text-sm transition-all shadow-md flex-1 sm:flex-none text-center cursor-pointer"
+                          onClick={callNextWalkin}
+                          disabled={loading}
+                          className="bg-white hover:bg-amber-50 active:scale-98 text-amber-800 border border-transparent rounded-xl px-5 py-2.5 font-body font-bold text-sm transition-all shadow-md flex-1 sm:flex-none text-center cursor-pointer flex items-center justify-center gap-2"
                         >
-                          Mark as Done
+                          <span>Call Next Patient</span>
+                          <ChevronRight size={16} />
                         </button>
                       </div>
                     </div>
@@ -724,18 +700,13 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                         {walkinWaiting.length} waiting
                       </span>
                     </h2>
-                    {walkinInProgress && (
-                      <p className="text-xs font-body text-amber-600 font-medium mt-0.5">
-                        Mark Token {walkinInProgress.walkin_token_display || `W-${walkinInProgress.token_number}`} as done to call next
-                      </p>
-                    )}
                   </div>
                   <button
                     onClick={callNextWalkin}
-                    disabled={walkinWaiting.length === 0 || !!walkinInProgress || loading}
+                    disabled={(!walkinInProgress && walkinWaiting.length === 0) || loading}
                     className="w-full sm:w-auto flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 disabled:bg-surface-100 disabled:text-surface-400 disabled:cursor-not-allowed text-white text-sm font-body font-bold px-6 py-3.5 rounded-xl transition-all shadow-md active:scale-98 whitespace-nowrap cursor-pointer"
                   >
-                    <span>Call Next Walk-in</span>
+                    <span>Call Next Patient</span>
                     <ChevronRight size={18} />
                   </button>
                 </div>
@@ -823,26 +794,16 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                                   { hour: "2-digit", minute: "2-digit" },
                                 )}
                               </span>
-                              {(p.status === "waiting" || p.status === "skipped" || p.status === "in-progress") && (
+                              {p.status === "waiting" && (
                                 <div className="flex items-center gap-1.5 flex-wrap justify-end">
                                   <button
-                                    onClick={() => markWalkinDone(p.id)}
-                                    className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:scale-95 border border-emerald-200/90 px-2.5 py-1 rounded-lg transition-all cursor-pointer shadow-2xs"
-                                    title="Mark walk-in patient as completed"
+                                    onClick={() => skipWalkinPatient(p.id)}
+                                    className="flex items-center gap-1 text-xs font-bold text-surface-600 hover:text-red-600 hover:bg-red-50 active:scale-95 px-2.5 py-1 rounded-lg transition-all border border-surface-200 cursor-pointer shadow-2xs"
+                                    title="Skip walk-in patient"
                                   >
-                                    <Check size={12} className="text-emerald-600 shrink-0" />
-                                    <span>Done</span>
+                                    <SkipForward size={12} className="shrink-0" />
+                                    <span>Skip</span>
                                   </button>
-                                  {p.status === "waiting" && (
-                                    <button
-                                      onClick={() => skipWalkinPatient(p.id)}
-                                      className="flex items-center gap-1 text-xs font-bold text-surface-600 hover:text-red-600 hover:bg-red-50 active:scale-95 px-2.5 py-1 rounded-lg transition-all border border-surface-200 cursor-pointer shadow-2xs"
-                                      title="Skip walk-in patient"
-                                    >
-                                      <SkipForward size={12} className="shrink-0" />
-                                      <span>Skip</span>
-                                    </button>
-                                  )}
                                 </div>
                               )}
                             </div>

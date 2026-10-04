@@ -455,8 +455,6 @@ function AppointmentsFullView({
 
   return (
     <div className="animate-slide-up text-center w-full max-w-md sm:max-w-xl mx-auto">
-      
-
       {/* Main Full Slots Card */}
       <div className="bg-white rounded-[28px] border border-slate-100/90 p-6 sm:p-8 shadow-xl shadow-blue-900/5 mb-6 text-center">
         {/* Top Calendar Full Illustration */}
@@ -1175,6 +1173,7 @@ export default function PatientPortal() {
   const {
     regWindow,
     patients,
+    walkinPatients,
     currentToken,
     addPatient,
     toast,
@@ -1267,6 +1266,15 @@ export default function PatientPortal() {
   const allPatientsDone =
     patients.length > 0 &&
     patients.every((p) => p.status === "done" || p.status === "skipped");
+  const isAppointmentListFinished =
+    allPatientsDone ||
+    (patients.length > 0 && !inProgress && !hasWaitingPatients);
+  const hasWaitingWalkin = (walkinPatients || []).some(
+    (p) =>
+      p.status === "waiting" ||
+      p.status === "in-progress" ||
+      (p.status as string) === "in_progress",
+  );
   const isDoctorVisitingToday = isDateToday(regWindow.date);
   const isFutureDate = isDateInFuture(regWindow.date);
   const formattedVisitDate = formatVisitDate(regWindow.date, language);
@@ -1337,7 +1345,9 @@ export default function PatientPortal() {
                     title="Clinic Location on Google Maps"
                   >
                     <MapPin size={13} className="text-orange-600 shrink-0" />
-                    <span className="min-w-0 truncate">{t("googleMapLocation")}</span>
+                    <span className="min-w-0 truncate">
+                      {t("googleMapLocation")}
+                    </span>
                   </a>
                 </div>
 
@@ -1403,7 +1413,7 @@ export default function PatientPortal() {
               <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
                 <div className="flex flex-nowrap items-center justify-between gap-1.5 sm:gap-3 mb-3.5">
                   <div className="flex min-w-0 items-center gap-1.5 sm:gap-2.5">
-                    <DoctorAvatarSVG className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+                    <DoctorAvatarSVG className="w-10 h-10 shrink-0" />
                     <h3 className="truncate font-display text-sm sm:text-lg font-extrabold text-slate-900">
                       {t("liveQueue")}
                     </h3>
@@ -1416,7 +1426,9 @@ export default function PatientPortal() {
                     title="Clinic Location on Google Maps"
                   >
                     <MapPin size={13} className="text-orange-600 shrink-0" />
-                    <span className="min-w-0 truncate">{t("googleMapLocation")}</span>
+                    <span className="min-w-0 truncate">
+                      {t("googleMapLocation")}
+                    </span>
                   </a>
                 </div>
 
@@ -1448,13 +1460,86 @@ export default function PatientPortal() {
                     </div>
                   </div>
                 </div>
+
+                {/* Clinic Address */}
+                <a
+                  href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-3 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
+                  title="Open Clinic Address on Google Maps"
+                >
+                  <MapPin
+                    size={15}
+                    className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform"
+                  />
+                  <span className="font-extrabold text-emerald-950">
+                    {t("clinicAddress")}
+                  </span>
+                </a>
               </div>
-            ) : allPatientsDone ? (
-              /* When doctor has finished seeing all patients — always show Registration will open soon */
+            ) : isAppointmentListFinished && hasWaitingWalkin ? (
+              /* When all appointment patients are finished, and there are walk-in patients waiting */
               <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
                 <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
                   <div className="flex items-start gap-4 min-w-0">
-                    <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
+                    <DoctorAvatarSVG className="w-10 h-10 shrink-0" />
+                    <div>
+                      <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
+                        {t("doctorSeeingWalkinTitle")}
+                      </h3>
+                      <p className="font-body text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+                        {t("doctorSeeingWalkinMsg")}
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex max-w-full min-w-0 items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer"
+                    title="Clinic Location on Google Maps"
+                  >
+                    <MapPin size={13} className="text-orange-600 shrink-0" />
+                    <span className="min-w-0 truncate">
+                      {t("googleMapLocation")}
+                    </span>
+                  </a>
+                </div>
+
+                {/* Clinic Address */}
+                <a
+                  href="https://maps.app.goo.gl/AwEAg9eNPWjiCwJj9?g_st=ic"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
+                  title="Open Clinic Address on Google Maps"
+                >
+                  <MapPin
+                    size={15}
+                    className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform"
+                  />
+                  <span className="font-extrabold text-emerald-950">
+                    {t("clinicAddress")}
+                  </span>
+                </a>
+
+                {/* Live Status Pill Box */}
+                <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                  <span className="font-extrabold text-white">
+                    {t("doctorSeeingWalkinTitle")}
+                  </span>
+                </div>
+              </div>
+            ) : isAppointmentListFinished &&
+              !hasWaitingWalkin &&
+              !isFutureDate ? (
+              /* When patient list is over, walkin list is over, and no future date of appointment is there */
+              <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
+                <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                  <div className="flex items-start gap-4 min-w-0">
+                    <DoctorAvatarSVG className="w-10 h-10 shrink-0" />
                     <div>
                       <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
                         {t("registrationOpenSoonTitle")}
@@ -1472,7 +1557,9 @@ export default function PatientPortal() {
                     title="Clinic Location on Google Maps"
                   >
                     <MapPin size={13} className="text-orange-600 shrink-0" />
-                    <span className="min-w-0 truncate">{t("googleMapLocation")}</span>
+                    <span className="min-w-0 truncate">
+                      {t("googleMapLocation")}
+                    </span>
                   </a>
                 </div>
 
@@ -1507,7 +1594,7 @@ export default function PatientPortal() {
               <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
                 <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
                   <div className="flex items-start gap-4 min-w-0">
-                    <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
+                    <DoctorAvatarSVG className="w-10 h-10 shrink-0" />
                     <div>
                       <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
                         {t("doctorWillVisitTitle")}
@@ -1525,7 +1612,9 @@ export default function PatientPortal() {
                     title="Clinic Location on Google Maps"
                   >
                     <MapPin size={13} className="text-orange-600 shrink-0" />
-                    <span className="min-w-0 truncate">{t("googleMapLocation")}</span>
+                    <span className="min-w-0 truncate">
+                      {t("googleMapLocation")}
+                    </span>
                   </a>
                 </div>
 
@@ -1560,7 +1649,7 @@ export default function PatientPortal() {
               <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
                 <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
                   <div className="flex items-start gap-4 min-w-0">
-                    <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
+                    <DoctorAvatarSVG className="w-10 h-10 shrink-0" />
                     <div>
                       <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
                         {t("doctorWillVisitDateTitle", {
@@ -1577,7 +1666,9 @@ export default function PatientPortal() {
                     title="Clinic Location on Google Maps"
                   >
                     <MapPin size={13} className="text-orange-600 shrink-0" />
-                    <span className="min-w-0 truncate">{t("googleMapLocation")}</span>
+                    <span className="min-w-0 truncate">
+                      {t("googleMapLocation")}
+                    </span>
                   </a>
                 </div>
 
@@ -1612,7 +1703,7 @@ export default function PatientPortal() {
               <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
                 <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
                   <div className="flex items-start gap-4 min-w-0">
-                    <DoctorAvatarSVG className="w-16 h-16 shrink-0" />
+                    <DoctorAvatarSVG className="w-10 h-10 shrink-0" />
                     <div>
                       <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
                         {t("registrationOpenSoonTitle")}
@@ -1630,7 +1721,9 @@ export default function PatientPortal() {
                     title="Clinic Location on Google Maps"
                   >
                     <MapPin size={13} className="text-orange-600 shrink-0" />
-                    <span className="min-w-0 truncate">{t("googleMapLocation")}</span>
+                    <span className="min-w-0 truncate">
+                      {t("googleMapLocation")}
+                    </span>
                   </a>
                 </div>
 
