@@ -19,9 +19,8 @@ import {
   TrendingUp,
   X,
   Edit3,
-  QrCode,
+  Filter,
   Footprints,
-  ExternalLink,
   Save,
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
@@ -89,6 +88,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
   const [tempName, setTempName] = useState(doctorName);
   const [showCompletedModal, setShowCompletedModal] = useState(false);
   const [showWalkinCompletedModal, setShowWalkinCompletedModal] = useState(false);
+  const [walkinFilter, setWalkinFilter] = useState<"all" | "pwd" | "senior" | "children">("all");
 
   // Local form state for Settings tab to ensure smooth editing and 100% DB synchronization
   const [formDate, setFormDate] = useState(regWindow.date || "");
@@ -154,6 +154,29 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
   const walkinWaiting = walkinPatients.filter((p) => p.status === "waiting");
   const walkinInProgress = walkinPatients.find((p) => p.status === "in-progress");
   const walkinDone = walkinPatients.filter((p) => p.status === "done");
+
+  const pwdWalkinsCount = walkinPatients.filter((p) => Boolean(p.pwd)).length;
+  const seniorWalkinsCount = walkinPatients.filter((p) => {
+    const age = parseInt(p.age, 10);
+    return !isNaN(age) && age >= 80;
+  }).length;
+  const childrenWalkinsCount = walkinPatients.filter((p) => {
+    const age = parseInt(p.age, 10);
+    return !isNaN(age) && age > 0 && age <= 10;
+  }).length;
+
+  const filteredWalkinPatients = walkinPatients.filter((p) => {
+    if (walkinFilter === "pwd") return Boolean(p.pwd);
+    if (walkinFilter === "senior") {
+      const age = parseInt(p.age, 10);
+      return !isNaN(age) && age >= 80;
+    }
+    if (walkinFilter === "children") {
+      const age = parseInt(p.age, 10);
+      return !isNaN(age) && age > 0 && age <= 10;
+    }
+    return true;
+  });
 
   const statusBadge = (status: string) => {
     const map: Record<string, string> = {
@@ -647,30 +670,174 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
             {/* Walk-in Queue Tab */}
             {tab === "walkin" && (
               <div className="space-y-6 animate-slide-up">
-                {/* Walkin Info & QR Link Banner */}
-                <div className="bg-linear-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-200/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20">
-                      <QrCode size={20} />
+                {/* Walk-in Priority Filters */}
+                <div className="bg-white border border-surface-200/80 rounded-2xl p-4 sm:p-5 shadow-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                        <Filter size={16} />
+                      </div>
+                      <div>
+                        <h3 className="font-display text-sm sm:text-base font-bold text-surface-900 leading-tight">
+                          Priority Filters
+                        </h3>
+                        <p className="font-body text-xs text-surface-500">
+                          Click any filter to view priority walk-in patients
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-display text-sm sm:text-base font-bold text-surface-900">
-                        Clinic Walk-in QR Code Portal
-                      </h3>
-                      <p className="font-body text-xs text-surface-600">
-                        Patients arriving in-person scan the QR code to register directly into the walk-in queue.
-                      </p>
-                    </div>
+                    {walkinFilter !== "all" && (
+                      <button
+                        onClick={() => setWalkinFilter("all")}
+                        className="inline-flex items-center gap-1.5 text-xs font-body font-bold text-amber-700 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg transition-all cursor-pointer self-start sm:self-auto border border-amber-200"
+                      >
+                        <X size={13} />
+                        <span>Show All ({walkinPatients.length})</span>
+                      </button>
+                    )}
                   </div>
-                  <a
-                    href="/walkin"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-sm active:scale-95 shrink-0"
-                  >
-                    <span>Open Walk-in Portal</span>
-                    <ExternalLink size={13} />
-                  </a>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {/* PWD Filter Button */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setWalkinFilter((prev) => (prev === "pwd" ? "all" : "pwd"))
+                      }
+                      className={`flex items-center justify-between p-3.5 rounded-xl border text-left transition-all cursor-pointer active:scale-98 ${
+                        walkinFilter === "pwd"
+                          ? "bg-amber-500 text-white border-amber-600 shadow-md shadow-amber-500/25 ring-2 ring-amber-400/50"
+                          : "bg-surface-50 hover:bg-amber-50/70 text-surface-800 border-surface-200 hover:border-amber-300"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="text-2xl shrink-0" role="img" aria-label="PWD">
+                          ♿
+                        </span>
+                        <div className="min-w-0">
+                          <p
+                            className={`font-display text-sm font-bold truncate ${
+                              walkinFilter === "pwd" ? "text-white" : "text-surface-900"
+                            }`}
+                          >
+                            PWD
+                          </p>
+                          <p
+                            className={`font-body text-[11px] truncate ${
+                              walkinFilter === "pwd" ? "text-amber-100" : "text-surface-500"
+                            }`}
+                          >
+                            Person with disability
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`text-xs font-bold px-2.5 py-1 rounded-full shrink-0 ml-2 ${
+                          walkinFilter === "pwd"
+                            ? "bg-white text-amber-700 font-extrabold"
+                            : "bg-amber-100/80 text-amber-800 border border-amber-200"
+                        }`}
+                      >
+                        {pwdWalkinsCount}
+                      </span>
+                    </button>
+
+                    {/* Senior Citizen Filter Button */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setWalkinFilter((prev) => (prev === "senior" ? "all" : "senior"))
+                      }
+                      className={`flex items-center justify-between p-3.5 rounded-xl border text-left transition-all cursor-pointer active:scale-98 ${
+                        walkinFilter === "senior"
+                          ? "bg-purple-600 text-white border-purple-700 shadow-md shadow-purple-600/25 ring-2 ring-purple-400/50"
+                          : "bg-surface-50 hover:bg-purple-50/70 text-surface-800 border-surface-200 hover:border-purple-300"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span
+                          className="text-2xl shrink-0"
+                          role="img"
+                          aria-label="Senior Citizen"
+                        >
+                          👴
+                        </span>
+                        <div className="min-w-0">
+                          <p
+                            className={`font-display text-sm font-bold truncate ${
+                              walkinFilter === "senior" ? "text-white" : "text-surface-900"
+                            }`}
+                          >
+                            Senior Citizen (80+)
+                          </p>
+                          <p
+                            className={`font-body text-[11px] truncate ${
+                              walkinFilter === "senior" ? "text-purple-100" : "text-surface-500"
+                            }`}
+                          >
+                            Age 80 years and above
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`text-xs font-bold px-2.5 py-1 rounded-full shrink-0 ml-2 ${
+                          walkinFilter === "senior"
+                            ? "bg-white text-purple-700 font-extrabold"
+                            : "bg-purple-100/80 text-purple-800 border border-purple-200"
+                        }`}
+                      >
+                        {seniorWalkinsCount}
+                      </span>
+                    </button>
+
+                    {/* Small Children Filter Button */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setWalkinFilter((prev) => (prev === "children" ? "all" : "children"))
+                      }
+                      className={`flex items-center justify-between p-3.5 rounded-xl border text-left transition-all cursor-pointer active:scale-98 ${
+                        walkinFilter === "children"
+                          ? "bg-sky-600 text-white border-sky-700 shadow-md shadow-sky-600/25 ring-2 ring-sky-400/50"
+                          : "bg-surface-50 hover:bg-sky-50/70 text-surface-800 border-surface-200 hover:border-sky-300"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span
+                          className="text-2xl shrink-0"
+                          role="img"
+                          aria-label="Small Children"
+                        >
+                          👶
+                        </span>
+                        <div className="min-w-0">
+                          <p
+                            className={`font-display text-sm font-bold truncate ${
+                              walkinFilter === "children" ? "text-white" : "text-surface-900"
+                            }`}
+                          >
+                            Small Children (upto 10)
+                          </p>
+                          <p
+                            className={`font-body text-[11px] truncate ${
+                              walkinFilter === "children" ? "text-sky-100" : "text-surface-500"
+                            }`}
+                          >
+                            Age 10 years or younger
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`text-xs font-bold px-2.5 py-1 rounded-full shrink-0 ml-2 ${
+                          walkinFilter === "children"
+                            ? "bg-white text-sky-700 font-extrabold"
+                            : "bg-sky-100/80 text-sky-800 border border-sky-200"
+                        }`}
+                      >
+                        {childrenWalkinsCount}
+                      </span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Walkin Stats */}
@@ -724,11 +891,28 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                         <p className="font-body text-white font-bold text-base sm:text-lg truncate">
                           {walkinInProgress.name} · {walkinInProgress.age}y · {walkinInProgress.gender}
                         </p>
-                        {walkinInProgress.city_village && (
-                          <p className="font-body text-amber-100 text-xs sm:text-sm mt-1 truncate font-medium">
-                            From: {walkinInProgress.city_village}
-                          </p>
-                        )}
+                        <div className="flex items-center gap-2 flex-wrap mt-1">
+                          {walkinInProgress.pwd && (
+                            <span className="inline-flex items-center gap-1 bg-white/20 text-white border border-white/30 text-[11px] font-bold px-2 py-0.5 rounded-md">
+                              ♿ PwD
+                            </span>
+                          )}
+                          {!isNaN(parseInt(walkinInProgress.age, 10)) && parseInt(walkinInProgress.age, 10) >= 80 && (
+                            <span className="inline-flex items-center gap-1 bg-white/20 text-white border border-white/30 text-[11px] font-bold px-2 py-0.5 rounded-md">
+                              👴 Senior (80+)
+                            </span>
+                          )}
+                          {!isNaN(parseInt(walkinInProgress.age, 10)) && parseInt(walkinInProgress.age, 10) > 0 && parseInt(walkinInProgress.age, 10) <= 10 && (
+                            <span className="inline-flex items-center gap-1 bg-white/20 text-white border border-white/30 text-[11px] font-bold px-2 py-0.5 rounded-md">
+                              👶 Child (≤10)
+                            </span>
+                          )}
+                          {walkinInProgress.city_village && (
+                            <p className="font-body text-amber-100 text-xs sm:text-sm truncate font-medium">
+                              From: {walkinInProgress.city_village}
+                            </p>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-3 bg-white/10 p-3.5 sm:p-4 rounded-2xl backdrop-blur-md border border-white/20 shrink-0 w-full sm:w-auto">
                         <button
@@ -747,11 +931,16 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                 {/* Call Next Walk-in Bar */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-surface-200 shadow-xs">
                   <div>
-                    <h2 className="font-display text-lg font-bold text-surface-900 flex items-center gap-2">
-                      Walk-in Patients
+                    <h2 className="font-display text-lg font-bold text-surface-900 flex items-center gap-2 flex-wrap">
+                      <span>Walk-in Patients</span>
                       <span className="font-body text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
                         {walkinWaiting.length} waiting
                       </span>
+                      {walkinFilter !== "all" && (
+                        <span className="font-body text-xs font-bold text-amber-800 bg-amber-100/90 border border-amber-300 px-2.5 py-0.5 rounded-full">
+                          Filtered: {filteredWalkinPatients.length} shown
+                        </span>
+                      )}
                     </h2>
                   </div>
                   <button
@@ -778,44 +967,83 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                         Patients registering through the clinic QR code will appear here instantly.
                       </p>
                     </div>
+                  ) : filteredWalkinPatients.length === 0 ? (
+                    <div className="text-center py-12 sm:py-16 px-4">
+                      <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-3 text-amber-600">
+                        <Filter size={20} />
+                      </div>
+                      <p className="font-display text-base font-bold text-surface-900 mb-1">
+                        No walk-in patients match this filter
+                      </p>
+                      <p className="font-body text-xs text-surface-500 max-w-xs mx-auto mb-4">
+                        {walkinFilter === "pwd" && "No walk-in patients marked as PWD (Person with Disability)."}
+                        {walkinFilter === "senior" && "No walk-in patients aged 80 or above."}
+                        {walkinFilter === "children" && "No walk-in patients aged 10 or younger."}
+                      </p>
+                      <button
+                        onClick={() => setWalkinFilter("all")}
+                        className="inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all cursor-pointer shadow-sm"
+                      >
+                        Show All ({walkinPatients.length})
+                      </button>
+                    </div>
                   ) : (
                     <div className="divide-y divide-surface-100">
-                      {walkinPatients.map((p) => (
-                        <div
-                          key={p.id}
-                          className={`p-4 transition-all hover:bg-surface-50 ${
-                            p.status === "done" || p.status === "skipped"
-                              ? "bg-surface-50/50 opacity-60"
-                              : ""
-                          }`}
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-start gap-3 min-w-0">
-                              <div
-                                className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center font-mono-custom font-extrabold text-sm sm:text-base shrink-0 shadow-xs ${
-                                  p.status === "in-progress"
-                                    ? "bg-amber-600 text-white shadow-md shadow-amber-500/20"
-                                    : p.status === "done"
-                                      ? "bg-surface-200 text-surface-500"
-                                      : p.status === "skipped"
-                                        ? "bg-red-100 text-red-500"
-                                        : "bg-amber-50 text-amber-800 border border-amber-200"
-                                }`}
-                              >
-                                {p.walkin_token_display || `W-${p.token_number}`}
-                              </div>
-
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap mb-1">
-                                  <p className="font-body font-bold text-surface-900 text-sm sm:text-base truncate">
-                                    {p.name}
-                                  </p>
-                                  <span
-                                    className={`text-[10px] px-2 py-0.5 rounded-full border font-body font-bold uppercase tracking-wider shrink-0 ${statusBadge(p.status)}`}
-                                  >
-                                    {p.status === "in-progress" ? "In Progress" : p.status}
-                                  </span>
+                      {filteredWalkinPatients.map((p) => {
+                        const ageNum = parseInt(p.age, 10);
+                        const isSenior = !isNaN(ageNum) && ageNum >= 80;
+                        const isChild = !isNaN(ageNum) && ageNum > 0 && ageNum <= 10;
+                        return (
+                          <div
+                            key={p.id}
+                            className={`p-4 transition-all hover:bg-surface-50 ${
+                              p.status === "done" || p.status === "skipped"
+                                ? "bg-surface-50/50 opacity-60"
+                                : ""
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex items-start gap-3 min-w-0">
+                                <div
+                                  className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center font-mono-custom font-extrabold text-sm sm:text-base shrink-0 shadow-xs ${
+                                    p.status === "in-progress"
+                                      ? "bg-amber-600 text-white shadow-md shadow-amber-500/20"
+                                      : p.status === "done"
+                                        ? "bg-surface-200 text-surface-500"
+                                        : p.status === "skipped"
+                                          ? "bg-red-100 text-red-500"
+                                          : "bg-amber-50 text-amber-800 border border-amber-200"
+                                  }`}
+                                >
+                                  {p.walkin_token_display || `W-${p.token_number}`}
                                 </div>
+
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                                    <p className="font-body font-bold text-surface-900 text-sm sm:text-base truncate">
+                                      {p.name}
+                                    </p>
+                                    {p.pwd && (
+                                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-amber-300 bg-amber-100 text-amber-800 font-body font-bold shrink-0">
+                                        ♿ PwD
+                                      </span>
+                                    )}
+                                    {isSenior && (
+                                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-purple-300 bg-purple-100 text-purple-800 font-body font-bold shrink-0">
+                                        👴 Senior (80+)
+                                      </span>
+                                    )}
+                                    {isChild && (
+                                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-sky-300 bg-sky-100 text-sky-800 font-body font-bold shrink-0">
+                                        👶 Child (≤10)
+                                      </span>
+                                    )}
+                                    <span
+                                      className={`text-[10px] px-2 py-0.5 rounded-full border font-body font-bold uppercase tracking-wider shrink-0 ${statusBadge(p.status)}`}
+                                    >
+                                      {p.status === "in-progress" ? "In Progress" : p.status}
+                                    </span>
+                                  </div>
                                 <p className="font-body text-xs text-surface-600 font-semibold mb-1">
                                   {p.age}y · {p.gender} ·{" "}
                                   <a
@@ -862,7 +1090,8 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                             </div>
                           </div>
                         </div>
-                      ))}
+                      );
+                    })}
                     </div>
                   )}
                 </div>

@@ -53,6 +53,7 @@ export default function WalkinPatientPortal() {
   const [phone, setPhone] = useState("");
   const [cityVillage, setCityVillage] = useState("");
   const [reason, setReason] = useState("");
+  const [pwd, setPwd] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   // Success / Registered Patient State
@@ -151,6 +152,7 @@ export default function WalkinPatientPortal() {
         phone: cleanPhone,
         city_village: cityVillage.trim(),
         reason: reason.trim(),
+        pwd,
       });
 
       setRegisteredPatient(newPatient);
@@ -162,6 +164,7 @@ export default function WalkinPatientPortal() {
       setPhone("");
       setCityVillage("");
       setReason("");
+      setPwd(false);
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Failed to register walk-in patient");
     } finally {
@@ -402,7 +405,48 @@ export default function WalkinPatientPortal() {
                   </div>
                 </div>
 
+                {/* Person with Disability (PwD) Question */}
+                <div>
+                  <label className="block font-body text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
+                    {t("areYouDisabled")} *
+                  </label>
+                  <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-3 sm:p-3.5">
+                    <p className="font-body text-[11px] text-slate-500 font-medium mb-2.5">
+                      {t("areYouDisabledDesc")}
+                    </p>
 
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => setPwd(false)}
+                        className={`py-2.5 px-4 rounded-xl font-body text-xs sm:text-sm font-extrabold transition-all border cursor-pointer flex items-center justify-center gap-1.5 ${
+                          !pwd
+                            ? "bg-slate-900 text-white border-slate-900 shadow-xs"
+                            : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
+                        }`}
+                      >
+                        <span>{t("no")}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setPwd(true)}
+                        className={`py-2.5 px-4 rounded-xl font-body text-xs sm:text-sm font-extrabold transition-all border cursor-pointer flex items-center justify-center gap-1.5 ${
+                          pwd
+                            ? "bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-500/25"
+                            : "bg-white text-slate-600 border-slate-200 hover:bg-purple-50 hover:text-purple-700"
+                        }`}
+                      >
+                        <span>{t("yes")}</span>
+                        {pwd && (
+                          <span className="text-[10px] bg-white/25 px-1.5 py-0.5 rounded-md font-mono-custom">
+                            PwD
+                          </span>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
 
                 {/* Submit Button */}
                 <button
@@ -459,6 +503,14 @@ export default function WalkinPatientPortal() {
                   <div className="flex justify-between">
                     <span className="text-blue-100">{t("reasonLabel")}:</span>
                     <span className="font-bold text-white">{registeredPatient.reason}</span>
+                  </div>
+                )}
+                {registeredPatient.pwd && (
+                  <div className="flex justify-between items-center pt-2 border-t border-white/15">
+                    <span className="text-amber-200 font-bold">{t("pwdBadge")}:</span>
+                    <span className="bg-amber-400 text-slate-900 font-extrabold text-[11px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                      {t("yes")} (Priority)
+                    </span>
                   </div>
                 )}
               </div>

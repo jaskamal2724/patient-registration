@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { doctor_id, name, age, gender, phone, city_village, reason } = body;
+    const { doctor_id, name, age, gender, phone, city_village, reason, pwd } = body;
 
     if (!name || !age || !gender || !phone) {
       return NextResponse.json({ error: "Name, age, gender, and phone number are required" }, { status: 400 });
@@ -113,6 +113,7 @@ export async function POST(req: Request) {
       city_village: (city_village || "").trim(),
       reason: (reason || "").trim(),
       status: "waiting",
+      pwd: Boolean(pwd),
     };
 
     const { data: walkinPatient, error: insertErr } = await supabase

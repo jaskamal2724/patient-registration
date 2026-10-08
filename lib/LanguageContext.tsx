@@ -111,6 +111,7 @@ export const translations = {
     doctorLateTitle: "Doctor Running Late Update",
     doctorLateDesc: "Doctor is running {delay} late today. All appointment booking slots and patient visit times have been automatically shifted forward by +{delay}.",
     delayApplied: "delay applied",
+    priorityQueueNotice: "Priority will be given to senior citizen, person with disability, small kids, so there might be few min. delay.",
 
     // Success / Ticket View
     registrationSuccessful: "You're registered successfully!",
@@ -222,7 +223,12 @@ export const translations = {
     walkinWaitLobbyMsg: "Please relax in the clinic waiting lobby.",
     searchWalkinTokenTitle: "Forgot Your Walk-in Token?",
     searchWalkinTokenSubtitle: "Enter your 10-digit mobile number to retrieve your walk-in token.",
-    walkinQueueTrackingTip: "Keep this walk-in token for reception reference"
+    walkinQueueTrackingTip: "Keep this walk-in token for reception reference",
+    areYouDisabled: "Are you disabled / person with disability?",
+    areYouDisabledDesc: "Priority is given to senior citizens and persons with disability (PwD).",
+    yes: "Yes",
+    no: "No",
+    pwdBadge: "PwD (Priority)",
   },
   hi: {
     // Header & Brand
@@ -330,6 +336,7 @@ export const translations = {
     doctorLateTitle: "डॉक्टर देरी से आने की सूचना",
     doctorLateDesc: "डॉक्टर आज {delay} की देरी से चल रहे हैं। सभी अपॉइंटमेंट स्लॉट और मिलने का समय +{delay} आगे बढ़ा दिया गया है।",
     delayApplied: "देरी लागू",
+    priorityQueueNotice: "वरिष्ठ नागरिकों, दिव्यांगजनों एवं छोटे बच्चों को प्राथमिकता दी जाएगी, इसलिए कुछ मिनट का विलंब हो सकता है।",
 
     // Success / Ticket View
     registrationSuccessful: "आपका पंजीकरण सफल रहा!",
@@ -442,7 +449,12 @@ export const translations = {
     walkinWaitLobbyMsg: "कृपया क्लिनिक प्रतीक्षालय में बैठें। आपका टोकन नंबर आने पर आपको बुलाया जाएगा।",
     searchWalkinTokenTitle: "अपना वॉक-इन टोकन जांचें",
     searchWalkinTokenSubtitle: "अपना 10 अंकों का मोबाइल नंबर दर्ज करके अपना टोकन नंबर देखें।",
-    walkinQueueTrackingTip: "रिसेप्शन संदर्भ के लिए यह वॉक-इन टोकन सुरक्षित रखें"
+    walkinQueueTrackingTip: "रिसेप्शन संदर्भ के लिए यह वॉक-इन टोकन सुरक्षित रखें",
+    areYouDisabled: "क्या आप दिव्यांग / विशेष योग्यजन हैं?",
+    areYouDisabledDesc: "वरिष्ठ नागरिकों और दिव्यांगजनों को प्राथमिकता दी जाती है।",
+    yes: "हाँ",
+    no: "नहीं",
+    pwdBadge: "दिव्यांग (प्राथमिकता)",
   }
 };
 

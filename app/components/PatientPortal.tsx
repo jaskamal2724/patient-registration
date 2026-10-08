@@ -235,6 +235,22 @@ function PatientHeader({ onExit }: { onExit: () => void }) {
   );
 }
 
+function PriorityQueueNotice({ className = "mt-3" }: { className?: string }) {
+  const { t } = useLanguage();
+  return (
+    <div
+      className={`bg-red-50/90 border border-red-200/90 rounded-2xl p-3 sm:p-3.5 text-left flex items-start gap-2.5 sm:gap-3 shadow-2xs ${className}`}
+    >
+      <div className="w-7 h-7 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+        <AlertCircle size={15} className="text-red-600 shrink-0" />
+      </div>
+      <p className="font-body text-xs sm:text-[13px] font-semibold text-red-900 leading-relaxed self-center">
+        {t("priorityQueueNotice")}
+      </p>
+    </div>
+  );
+}
+
 {
   /* Search Component inside Token Search Card */
 }
@@ -1262,6 +1278,9 @@ export default function PatientPortal() {
   const inProgress = patients.find(
     (p) => p.status === "in-progress" || (p.status as string) === "in_progress",
   );
+  const inProgressWalkin = (walkinPatients || []).find(
+    (p) => p.status === "in-progress" || (p.status as string) === "in_progress",
+  );
   const waitingPatients = patients.filter((p) => p.status === "waiting");
   const hasWaitingPatients = waitingPatients.length > 0;
   const allPatientsDone =
@@ -1465,6 +1484,9 @@ export default function PatientPortal() {
                   </div>
                 </div>
 
+                {/* Priority Notice in red shade */}
+                <PriorityQueueNotice className="mt-3" />
+
                 {/* Clinic Address */}
                 <a
                   href={CLINIC_MAP_URL}
@@ -1486,24 +1508,19 @@ export default function PatientPortal() {
             ) : isAppointmentListFinished && hasWaitingWalkin ? (
               /* When all appointment patients are finished, and there are walk-in patients waiting */
               <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-6 shadow-xl shadow-blue-900/5 mb-4 text-left">
-                <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
-                  <div className="flex items-start gap-4 min-w-0">
+                <div className="flex flex-nowrap items-center justify-between gap-1.5 sm:gap-3 mb-3.5">
+                  <div className="flex min-w-0 items-center gap-1.5 sm:gap-2.5">
                     <DoctorAvatarSVG className="w-10 h-10 shrink-0" />
-                    <div>
-                      <h3 className="font-display text-lg sm:text-xl font-extrabold text-slate-900 mb-1">
-                        {t("doctorSeeingWalkinTitle")}
-                      </h3>
-                      <p className="font-body text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-                        {t("doctorSeeingWalkinMsg")}
-                      </p>
-                    </div>
+                    <h3 className="truncate font-display text-sm sm:text-lg font-extrabold text-slate-900">
+                      {t("liveQueue")}
+                    </h3>
                   </div>
                   <a
                     href={CLINIC_MAP_URL}
                     onClick={handleClinicMapClick}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex max-w-full min-w-0 items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer"
+                    className="inline-flex min-w-0 shrink items-center gap-1 px-2 py-1.5 text-[10px] sm:gap-1.5 sm:px-3 sm:text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl shadow-2xs transition-all hover:scale-[1.02] cursor-pointer"
                     title="Clinic Location on Google Maps"
                   >
                     <MapPin size={13} className="text-orange-600 shrink-0" />
@@ -1513,13 +1530,53 @@ export default function PatientPortal() {
                   </a>
                 </div>
 
+                {/* Purple Live Queue Banner for Walk-in Patients */}
+                <div className="bg-gradient-to-r from-purple-700 via-purple-600 to-indigo-600 rounded-2xl p-3.5 sm:p-4 text-white shadow-md shadow-purple-500/25 relative overflow-hidden">
+                  <p className="font-body text-[10px] sm:text-[11px] font-bold text-purple-200 uppercase tracking-widest mb-1">
+                    {inProgressWalkin ? t("doctorSeeingTitle") : t("doctorSeeingWalkinTitle")}
+                  </p>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="font-mono-custom text-3xl sm:text-4xl font-black text-white leading-none shrink-0">
+                        {inProgressWalkin
+                          ? inProgressWalkin.walkin_token_display ||
+                            `W-${inProgressWalkin.token_number}`
+                          : "W-IN"}
+                      </span>
+                      <span className="font-body text-sm sm:text-base font-extrabold text-white truncate">
+                        {inProgressWalkin
+                          ? inProgressWalkin.name
+                          : t("doctorSeeingWalkinTitle")}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        {t("inConsultation")}
+                      </span>
+                      <span className="bg-white/20 backdrop-blur-xs rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] font-mono-custom font-semibold text-white">
+                        Walk-in
+                      </span>
+                    </div>
+                  </div>
+                  {!inProgressWalkin && (
+                    <p className="font-body text-xs text-purple-100 font-medium leading-relaxed mt-2.5 pt-2 border-t border-white/15">
+                      {t("doctorSeeingWalkinMsg")}
+                    </p>
+                  )}
+                </div>
+
+                {/* Priority notice in red shade */}
+                <PriorityQueueNotice className="mt-3" />
+
                 {/* Clinic Address */}
                 <a
                   href={CLINIC_MAP_URL}
                   onClick={handleClinicMapClick}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
+                  className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-3 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
                   title="Open Clinic Address on Google Maps"
                 >
                   <MapPin
@@ -1530,14 +1587,6 @@ export default function PatientPortal() {
                     {t("clinicAddress")}
                   </span>
                 </a>
-
-                {/* Live Status Pill Box */}
-                <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                  <span className="font-extrabold text-white">
-                    {t("doctorSeeingWalkinTitle")}
-                  </span>
-                </div>
               </div>
             ) : isAppointmentListFinished &&
               !hasWaitingWalkin &&
@@ -1654,6 +1703,9 @@ export default function PatientPortal() {
                     – {tTime12Hour(regWindow.endTime)}
                   </span>
                 </div>
+
+                {/* Priority notice in red shade */}
+                <PriorityQueueNotice className="mt-2.5" />
               </div>
             ) : isFutureDate ? (
               /* Doctor visit scheduled on a future date */
@@ -1710,6 +1762,9 @@ export default function PatientPortal() {
                     – {tTime12Hour(regWindow.endTime)}
                   </span>
                 </div>
+
+                {/* Priority notice in red shade */}
+                <PriorityQueueNotice className="mt-2.5" />
               </div>
             ) : (
               /* Registration will open soon (past date or concluded session) */

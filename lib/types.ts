@@ -29,6 +29,7 @@ export type WalkinPatient = {
   reason?: string | null;
   registered_at: string;
   status: PatientStatus;
+  pwd?: boolean;
 };
 
 export type WalkinPatientForm = {
@@ -38,6 +39,7 @@ export type WalkinPatientForm = {
   phone: string;
   city_village?: string;
   reason?: string;
+  pwd?: boolean;
 };
 
 export type Session = {
