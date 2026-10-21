@@ -8,7 +8,7 @@ export default function Toast({ toast }: { toast: Toast }) {
   const config = {
     success: { icon: CheckCircle2, bg: "bg-teal-700", border: "border-teal-500" },
     error: { icon: XCircle, bg: "bg-red-700", border: "border-red-500" },
-    info: { icon: Info, bg: "bg-slate-700", border: "border-slate-500" },
+    info: { icon: Info, bg: "bg-slate-700", border: "border-slate-500" } ,
   };
   const { icon: Icon, bg, border } = config[toast.type];
 
