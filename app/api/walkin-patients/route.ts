@@ -77,23 +77,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Registration is currently closed by the doctor" }, { status: 403 });
     }
 
-    // Prevent duplicate registration with the same phone number for walkin patients
-    const { data: existingWalkin } = await supabase
-      .from("walkin_patients")
-      .select("id, token_number, walkin_token_display")
-      .eq("phone", cleanPhone)
-      .maybeSingle();
-
-    if (existingWalkin) {
-      return NextResponse.json(
-        {
-          error: `This phone number (${cleanPhone}) is already registered for Walk-in with Token ${existingWalkin.walkin_token_display || existingWalkin.token_number}.`,
-          patient: existingWalkin,
-        },
-        { status: 400 }
-      );
-    }
-
     // Calculate sequential walk-in token number
     const { count: walkinCount } = await supabase
       .from("walkin_patients")

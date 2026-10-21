@@ -73,21 +73,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Registration is currently closed by the doctor" }, { status: 403 });
     }
 
-    // Prevent duplicate registration with the same phone number
-    const { data: existingPatient } = await supabase
-      .from("patients")
-      .select("id, token_number, slot_token_number")
-      .eq("phone", cleanPhone)
-      .maybeSingle();
-
-    if (existingPatient) {
-      const tokenDisplay = existingPatient.slot_token_number || existingPatient.token_number;
-      return NextResponse.json(
-        { error: `This phone number (${cleanPhone}) is already registered with Token #${tokenDisplay}. Duplicate registrations with the same phone number are not allowed.` },
-        { status: 400 }
-      );
-    }
-
     // Calculate sequential token number
     const { count: globalCount } = await supabase
       .from("patients")

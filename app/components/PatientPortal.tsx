@@ -579,10 +579,6 @@ function RegistrationForm({
     const cleanPhone = form.phone.replace(/\D/g, "");
     if (!cleanPhone || cleanPhone.length !== 10) {
       e.phone = "Enter a valid 10-digit mobile number";
-    } else if (
-      patients.some((p) => p.phone.replace(/\D/g, "") === cleanPhone)
-    ) {
-      e.phone = "This phone number is already registered for this session.";
     }
     if (!form.time_slot) e.time_slot = "Please select an OPD time slot";
     return e;

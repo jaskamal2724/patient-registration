@@ -407,6 +407,38 @@ export function useDoctor(initialDoctor: Doctor) {
     }
   }, [walkinPatients, showToast]);
 
+  const updatePatientTimeSlot = useCallback(
+    async (id: string, newTimeSlot: string, resetStatus?: boolean) => {
+      setLoading(true);
+      try {
+        const updated = await api.updatePatientTimeSlot(
+          id,
+          newTimeSlot,
+          resetStatus
+        );
+        setPatients((prev) =>
+          prev.map((p) => (p.id === id ? { ...p, ...updated } : p))
+        );
+        const tokenDisplay =
+          updated.slot_token_number || updated.token_number;
+        showToast(
+          `Slot updated to ${newTimeSlot} (Token #${tokenDisplay})`,
+          "success"
+        );
+        return updated;
+      } catch (err) {
+        showToast(
+          err instanceof Error ? err.message : "Failed to update time slot",
+          "error"
+        );
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [showToast]
+  );
+
   const logout = useCallback(async () => {
     await api.signOut();
     router.push("/");
@@ -426,6 +458,7 @@ export function useDoctor(initialDoctor: Doctor) {
     callNext,
     markDone,
     skipPatient,
+    updatePatientTimeSlot,
     markWalkinDone,
     skipWalkinPatient,
     callNextWalkin,

@@ -140,6 +140,20 @@ export async function updatePatientStatus(id: string, status: PatientStatus): Pr
   await jsonOrThrow(res);
 }
 
+export async function updatePatientTimeSlot(
+  id: string,
+  timeSlot: string,
+  resetStatus?: boolean
+): Promise<Patient> {
+  const res = await fetch(`/api/patients/${id}/time-slot`, {
+    method: "PATCH",
+    headers: await authHeaders(),
+    body: JSON.stringify({ time_slot: timeSlot, resetStatus }),
+  });
+  const json = await jsonOrThrow(res);
+  return json.patient as Patient;
+}
+
 export async function updateDoctorName(id: string, name: string): Promise<void> {
   await fetch(`/api/doctors/${id}`, {
     method: "PATCH",

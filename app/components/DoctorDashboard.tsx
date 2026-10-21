@@ -1,8 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useDoctor } from "@/lib/useDoctor";
-import type { Doctor } from "@/lib/types";
+import type { Doctor, Patient } from "@/lib/types";
 import Toast from "./Toast";
 import {
   Stethoscope,
@@ -22,10 +22,11 @@ import {
   Filter,
   Footprints,
   Save,
+  Check,
 } from "lucide-react";
 import InstallPWA from "./InstallPWA";
 import LogiquelAdCard from "./LogiquelAdCard";
-import { formatDelayText } from "../util/timeSlot";
+import { formatDelayText, getTimeSlots } from "../util/timeSlot";
 
 type Tab = "queue" | "walkin" | "settings";
 
@@ -76,6 +77,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
     walkinPatients,
     callNext,
     skipPatient,
+    updatePatientTimeSlot,
     skipWalkinPatient,
     callNextWalkin,
     currentToken,
@@ -89,6 +91,13 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
   const [showCompletedModal, setShowCompletedModal] = useState(false);
   const [showWalkinCompletedModal, setShowWalkinCompletedModal] = useState(false);
   const [walkinFilter, setWalkinFilter] = useState<"all" | "pwd" | "senior" | "children">("all");
+
+  // State for updating / rescheduling patient time slot
+  const [reschedulePatient, setReschedulePatient] = useState<Patient | null>(null);
+  const [selectedNewSlot, setSelectedNewSlot] = useState<string>("");
+  const [resetStatusToWaiting, setResetStatusToWaiting] = useState<boolean>(true);
+  const [isUpdatingSlot, setIsUpdatingSlot] = useState<boolean>(false);
+  const [slotFilter, setSlotFilter] = useState<string>("all");
 
   // Local form state for Settings tab to ensure smooth editing and 100% DB synchronization
   const [formDate, setFormDate] = useState(regWindow.date || "");
@@ -177,6 +186,51 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
     }
     return true;
   });
+
+  const availableSlots = useMemo(() => {
+    const generated = getTimeSlots(
+      regWindow.startTime || "10:00",
+      regWindow.endTime || "19:00",
+      "14:00",
+      "15:00",
+      60,
+      regWindow.delayMinutes || 0
+    ).map((s: { label: string }) => s.label);
+
+    const existingSlots = Array.from(
+      new Set(patients.map((p) => p.time_slot).filter(Boolean) as string[])
+    );
+
+    return Array.from(new Set([...generated, ...existingSlots]));
+  }, [regWindow.startTime, regWindow.endTime, regWindow.delayMinutes, patients]);
+
+  const filteredOnlinePatients = useMemo(() => {
+    if (slotFilter === "all") return patients;
+    return patients.filter((p) => p.time_slot === slotFilter);
+  }, [patients, slotFilter]);
+
+  const handleOpenReschedule = (p: Patient) => {
+    setReschedulePatient(p);
+    setSelectedNewSlot(p.time_slot || availableSlots[0] || "");
+    setResetStatusToWaiting(p.status === "skipped");
+  };
+
+  const handleConfirmReschedule = async () => {
+    if (!reschedulePatient || !selectedNewSlot) return;
+    setIsUpdatingSlot(true);
+    try {
+      await updatePatientTimeSlot(
+        reschedulePatient.id,
+        selectedNewSlot,
+        resetStatusToWaiting
+      );
+      setReschedulePatient(null);
+    } catch {
+      // Error toast triggered in useDoctor hook
+    } finally {
+      setIsUpdatingSlot(false);
+    }
+  };
 
   const statusBadge = (status: string) => {
     const map: Record<string, string> = {
@@ -528,9 +582,20 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                           {inProgress.gender}
                         </p>
                         {inProgress.time_slot && (
-                          <p className="font-body text-brand-100 text-xs sm:text-sm mt-1 truncate font-medium">
-                            Slot: {inProgress.time_slot}
-                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <p className="font-body text-brand-100 text-xs sm:text-sm truncate font-medium">
+                              Slot: {inProgress.time_slot}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenReschedule(inProgress)}
+                              className="text-[11px] font-bold text-white/90 hover:text-white bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md flex items-center gap-1 transition-all cursor-pointer"
+                              title="Reschedule current patient slot"
+                            >
+                              <Edit3 size={10} />
+                              <span>Change</span>
+                            </button>
+                          </div>
                         )}
                       </div>
                       <div className="flex items-center gap-3 bg-white/10 p-3.5 sm:p-4 rounded-2xl backdrop-blur-md border border-white/20 shrink-0 w-full sm:w-auto">
@@ -567,6 +632,56 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                   </button>
                 </div>
 
+                {/* Slot Filter Bar */}
+                {availableSlots.length > 0 && patients.length > 0 && (
+                  <div className="bg-white p-3 rounded-2xl border border-surface-200/80 shadow-2xs">
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
+                      <span className="font-body font-bold text-surface-500 whitespace-nowrap flex items-center gap-1.5 shrink-0 pl-1">
+                        <Filter size={13} className="text-brand-600" />
+                        <span>Filter Slot:</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setSlotFilter("all")}
+                        className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
+                          slotFilter === "all"
+                            ? "bg-surface-900 text-white shadow-xs"
+                            : "bg-surface-100 text-surface-600 hover:bg-surface-200"
+                        }`}
+                      >
+                        All Slots ({patients.length})
+                      </button>
+                      {availableSlots.map((slot) => {
+                        const countInSlot = patients.filter((p) => p.time_slot === slot).length;
+                        if (countInSlot === 0 && slotFilter !== slot) return null;
+                        return (
+                          <button
+                            key={slot}
+                            type="button"
+                            onClick={() => setSlotFilter(slot)}
+                            className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
+                              slotFilter === slot
+                                ? "bg-brand-600 text-white shadow-xs"
+                                : "bg-surface-100 text-surface-600 hover:bg-surface-200"
+                            }`}
+                          >
+                            <span>{slot}</span>
+                            <span
+                              className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono-custom ${
+                                slotFilter === slot
+                                  ? "bg-white/20 text-white"
+                                  : "bg-surface-200 text-surface-700"
+                              }`}
+                            >
+                              {countInSlot}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* Patient List */}
                 <div className="bg-white rounded-2xl border border-surface-200 shadow-sm overflow-hidden">
                   {patients.length === 0 ? (
@@ -581,9 +696,28 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                         No online patients registered for today yet.
                       </p>
                     </div>
+                  ) : filteredOnlinePatients.length === 0 ? (
+                    <div className="text-center py-12 px-4">
+                      <div className="w-12 h-12 bg-surface-100 rounded-2xl flex items-center justify-center mx-auto mb-2">
+                        <Clock size={22} className="text-surface-400" />
+                      </div>
+                      <p className="font-display text-sm font-bold text-surface-900 mb-1">
+                        No patients in this slot
+                      </p>
+                      <p className="font-body text-xs text-surface-500 mb-3">
+                        No patients found for slot &ldquo;{slotFilter}&rdquo;.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setSlotFilter("all")}
+                        className="text-xs font-bold text-brand-600 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-xl border border-brand-200 transition-colors cursor-pointer"
+                      >
+                        Show All Slots
+                      </button>
+                    </div>
                   ) : (
                     <div className="divide-y divide-surface-100">
-                      {patients.map((p) => (
+                      {filteredOnlinePatients.map((p) => (
                         <div
                           key={p.id}
                           className={`p-4 transition-all hover:bg-surface-50 ${
@@ -631,9 +765,16 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                                   </a>
                                 </p>
                                 {p.time_slot && (
-                                  <span className="inline-block text-[11px] font-mono-custom font-semibold text-brand-700 bg-brand-50 px-2.5 py-0.5 rounded-md border border-brand-100">
-                                    {p.time_slot}
-                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenReschedule(p)}
+                                    className="inline-flex items-center gap-1 text-[11px] font-mono-custom font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 hover:border-brand-300 px-2.5 py-0.5 rounded-md border border-brand-100 transition-all cursor-pointer group shadow-2xs"
+                                    title="Click to update patient time slot"
+                                  >
+                                    <Clock size={11} className="text-brand-600 group-hover:scale-110 transition-transform" />
+                                    <span>{p.time_slot}</span>
+                                    <Edit3 size={10} className="text-brand-400 group-hover:text-brand-700 ml-0.5 transition-colors" />
+                                  </button>
                                 )}
                               </div>
                             </div>
@@ -645,18 +786,41 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                                   { hour: "2-digit", minute: "2-digit" },
                                 )}
                               </span>
-                              {p.status === "waiting" && (
-                                <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                              <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                                {p.status === "waiting" && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenReschedule(p)}
+                                      className="flex items-center gap-1 text-xs font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 hover:text-brand-800 active:scale-95 px-2.5 py-1 rounded-lg transition-all border border-brand-200 cursor-pointer shadow-2xs"
+                                      title="Update patient's time slot"
+                                    >
+                                      <Clock size={12} className="shrink-0 text-brand-600" />
+                                      <span>Change Slot</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => skipPatient(p.id)}
+                                      className="flex items-center gap-1 text-xs font-bold text-surface-600 hover:text-red-600 hover:bg-red-50 active:scale-95 px-2.5 py-1 rounded-lg transition-all border border-surface-200 cursor-pointer shadow-2xs"
+                                      title="Skip patient"
+                                    >
+                                      <SkipForward size={12} className="shrink-0" />
+                                      <span>Skip</span>
+                                    </button>
+                                  </>
+                                )}
+                                {p.status === "skipped" && (
                                   <button
-                                    onClick={() => skipPatient(p.id)}
-                                    className="flex items-center gap-1 text-xs font-bold text-surface-600 hover:text-red-600 hover:bg-red-50 active:scale-95 px-2.5 py-1 rounded-lg transition-all border border-surface-200 cursor-pointer shadow-2xs"
-                                    title="Skip patient"
+                                    type="button"
+                                    onClick={() => handleOpenReschedule(p)}
+                                    className="flex items-center gap-1 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 active:scale-95 px-2.5 py-1 rounded-lg transition-all border border-amber-300 cursor-pointer shadow-2xs"
+                                    title="Reschedule skipped patient to a new time slot"
                                   >
-                                    <SkipForward size={12} className="shrink-0" />
-                                    <span>Skip</span>
+                                    <Clock size={12} className="shrink-0 text-amber-600" />
+                                    <span>Reschedule Slot</span>
                                   </button>
-                                </div>
-                              )}
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -1442,6 +1606,192 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reschedule Patient Time Slot Modal */}
+      {reschedulePatient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-surface-200 flex flex-col max-h-[90vh] animate-slide-up overflow-hidden">
+            {/* Modal Header */}
+            <div className="p-5 sm:p-6 border-b border-surface-100 flex items-start justify-between bg-linear-to-r from-brand-50/70 via-surface-50 to-white">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-brand-100 text-brand-700 flex items-center justify-center shrink-0 shadow-xs">
+                  <Clock size={20} />
+                </div>
+                <div>
+                  <h2 className="font-display text-lg sm:text-xl font-bold text-surface-900 leading-tight">
+                    Update Patient Time Slot
+                  </h2>
+                  <p className="font-body text-xs text-surface-500 mt-0.5">
+                    Reschedule patient to an alternate OPD slot
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReschedulePatient(null)}
+                disabled={isUpdatingSlot}
+                className="p-2 hover:bg-surface-200/60 rounded-xl transition-colors text-surface-400 hover:text-surface-700 cursor-pointer disabled:opacity-50"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 sm:p-6 overflow-y-auto space-y-5">
+              {/* Patient Snapshot Card */}
+              <div className="bg-surface-50 rounded-2xl p-4 border border-surface-200/80 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-11 h-11 rounded-xl bg-brand-600 text-white flex items-center justify-center font-mono-custom font-extrabold text-base shrink-0 shadow-sm">
+                    {reschedulePatient.slot_token_number || reschedulePatient.token_number}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-body font-bold text-surface-900 text-sm sm:text-base truncate">
+                      {reschedulePatient.name}
+                    </p>
+                    <p className="font-body text-xs text-surface-600 font-medium">
+                      {reschedulePatient.age}y · {reschedulePatient.gender} · {reschedulePatient.phone}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full border bg-white text-surface-700 border-surface-200 font-body font-bold uppercase tracking-wider block mb-1">
+                    {reschedulePatient.status}
+                  </span>
+                  {reschedulePatient.time_slot && (
+                    <span className="text-[10px] font-mono-custom text-surface-500">
+                      Current: {reschedulePatient.time_slot}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Slots List */}
+              <div>
+                <label className="block font-body text-xs font-bold text-surface-700 uppercase tracking-wider mb-2.5">
+                  Select New Time Slot
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-60 overflow-y-auto pr-1">
+                  {availableSlots.map((slot) => {
+                    const isCurrent = reschedulePatient.time_slot === slot;
+                    const isSelected = selectedNewSlot === slot;
+                    const inSlotCount = patients.filter(
+                      (p) => p.time_slot === slot && p.id !== reschedulePatient.id
+                    ).length;
+                    const capacity = regWindow.patientsPerHour || 10;
+                    const isFull = inSlotCount >= capacity;
+
+                    return (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => setSelectedNewSlot(slot)}
+                        className={`p-3 rounded-2xl border text-left transition-all cursor-pointer relative flex flex-col justify-between gap-2 active:scale-98 ${
+                          isSelected
+                            ? "bg-brand-50 border-brand-500 shadow-sm ring-2 ring-brand-500/20"
+                            : "bg-white hover:bg-surface-50 border-surface-200 hover:border-surface-300"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <span
+                            className={`font-mono-custom text-xs font-bold leading-tight ${
+                              isSelected ? "text-brand-900" : "text-surface-900"
+                            }`}
+                          >
+                            {slot}
+                          </span>
+                          {isSelected && (
+                            <span className="w-4 h-4 rounded-full bg-brand-600 text-white flex items-center justify-center shrink-0">
+                              <Check size={11} strokeWidth={3} />
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] gap-2">
+                          <span
+                            className={`font-body font-medium ${
+                              isFull ? "text-amber-600 font-bold" : "text-surface-500"
+                            }`}
+                          >
+                            {inSlotCount}/{capacity} booked
+                          </span>
+                          {isCurrent ? (
+                            <span className="text-[10px] bg-surface-100 text-surface-600 font-bold px-1.5 py-0.5 rounded-md">
+                              Current
+                            </span>
+                          ) : isFull ? (
+                            <span className="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 font-bold px-1.5 py-0.5 rounded-md">
+                              Full
+                            </span>
+                          ) : (
+                            <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-1.5 py-0.5 rounded-md">
+                              Available
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Skipped Status Option */}
+              {reschedulePatient.status === "skipped" && (
+                <label className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50/70 border border-amber-200/80 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={resetStatusToWaiting}
+                    onChange={(e) => setResetStatusToWaiting(e.target.checked)}
+                    className="mt-0.5 rounded border-amber-300 text-brand-600 focus:ring-brand-500"
+                  />
+                  <div className="text-xs">
+                    <p className="font-bold text-amber-900">
+                      Reset patient status to &ldquo;Waiting&rdquo;
+                    </p>
+                    <p className="text-amber-700 font-medium">
+                      Patient will be re-added to the active queue for the selected slot.
+                    </p>
+                  </div>
+                </label>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 sm:p-5 border-t border-surface-100 flex items-center justify-end gap-3 bg-surface-50/60">
+              <button
+                type="button"
+                onClick={() => setReschedulePatient(null)}
+                disabled={isUpdatingSlot}
+                className="px-4 py-2.5 rounded-xl font-body font-bold text-xs sm:text-sm text-surface-600 hover:text-surface-900 hover:bg-surface-200/70 transition-all cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmReschedule}
+                disabled={
+                  isUpdatingSlot ||
+                  !selectedNewSlot ||
+                  (selectedNewSlot === reschedulePatient.time_slot &&
+                    !(reschedulePatient.status === "skipped" && resetStatusToWaiting))
+                }
+                className="px-5 py-2.5 rounded-xl font-body font-bold text-xs sm:text-sm bg-brand-600 hover:bg-brand-700 active:scale-98 text-white transition-all shadow-md shadow-brand-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+              >
+                {isUpdatingSlot ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    <span>Updating...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check size={16} />
+                    <span>Confirm New Slot</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
