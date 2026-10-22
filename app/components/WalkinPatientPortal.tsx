@@ -411,10 +411,6 @@ export default function WalkinPatientPortal() {
                     {t("areYouDisabled")} *
                   </label>
                   <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-3 sm:p-3.5">
-                    <p className="font-body text-[11px] text-slate-500 font-medium mb-2.5">
-                      {t("areYouDisabledDesc")}
-                    </p>
-
                     <div className="grid grid-cols-2 gap-2.5">
                       <button
                         type="button"
@@ -445,6 +441,14 @@ export default function WalkinPatientPortal() {
                         )}
                       </button>
                     </div>
+                  </div>
+
+                  {/* Priority Note Box with subtle red accent */}
+                  <div className="mt-2.5 bg-red-50/90 border border-red-200/90 rounded-xl p-3 flex items-start gap-2.5">
+                    <AlertCircle size={15} className="text-red-500 shrink-0 mt-0.5" />
+                    <p className="font-body text-xs text-red-700 font-semibold leading-relaxed">
+                      {t("areYouDisabledDesc")}
+                    </p>
                   </div>
                 </div>
 
