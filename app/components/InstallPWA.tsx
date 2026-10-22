@@ -120,7 +120,7 @@ export default function InstallPWA() {
     <>
       <button
         onClick={handleInstallClick}
-        className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 border border-blue-500 rounded-full px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-xs transition-all cursor-pointer shrink-0 w-fit"
+        className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 border border-blue-500 rounded-full px-2 sm:px-3 py-0.5 sm:py-1 shadow-xs transition-all cursor-pointer shrink-0 w-fit"
         title={t("installPwaBtn")}
       >
         <Download size={12} className="text-white shrink-0" />

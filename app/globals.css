@@ -140,6 +140,16 @@ body {
 ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 6px; }
 ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+
 /* =========================================
    GLASS CARD
    ========================================= */
