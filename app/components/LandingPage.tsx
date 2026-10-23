@@ -91,9 +91,9 @@ export default function LandingPage() {
       <header className="relative z-10 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
         <div className="flex flex-col gap-1.5">
           <DocCareLogo variant="full" subtitle={t("appSubtitle")} />
-          <div className="flex items-center gap-2 flex-wrap">
+          {/* <div className="flex items-center gap-2 flex-wrap">
             <InstallPWA />
-          </div>
+          </div> */}
         </div>
 
         <div className="flex items-center gap-2 flex-wrap justify-end">

@@ -180,9 +180,10 @@ export async function addWalkinPatient(doctorId: string, form: import("./types")
 }
 
 export async function updateWalkinPatientStatus(id: string, status: PatientStatus): Promise<void> {
-  await fetch(`/api/walkin-patients/${id}/status`, {
+  const res = await fetch(`/api/walkin-patients/${id}/status`, {
     method: "PATCH",
     headers: await authHeaders(),
     body: JSON.stringify({ status }),
   });
+  await jsonOrThrow(res);
 }

@@ -78,6 +78,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
     callNext,
     skipPatient,
     updatePatientTimeSlot,
+    markWalkinDone,
     skipWalkinPatient,
     callNextWalkin,
     currentToken,
@@ -1270,16 +1271,29 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                                     { hour: "2-digit", minute: "2-digit" },
                                   )}
                                 </span>
-                                {p.status === "waiting" && (
+                                {p.status !== "done" && p.status !== "skipped" && (
                                   <div className="flex items-center gap-1.5 flex-wrap justify-end w-full sm:w-auto">
                                     <button
-                                      onClick={() => skipWalkinPatient(p.id)}
-                                      className="w-full sm:w-auto flex items-center justify-center gap-1 text-xs font-bold text-surface-600 hover:text-red-600 hover:bg-red-50 active:scale-95 px-3 py-1.5 rounded-lg transition-all border border-surface-200 cursor-pointer shadow-2xs whitespace-nowrap"
-                                      title="Skip walk-in patient"
+                                      type="button"
+                                      onClick={() => markWalkinDone(p.id)}
+                                      disabled={loading}
+                                      className="w-full sm:w-auto flex items-center justify-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-all border border-emerald-200 cursor-pointer shadow-2xs whitespace-nowrap"
+                                      title="Mark walk-in patient as done"
                                     >
-                                      <SkipForward size={12} className="shrink-0" />
-                                      <span>Skip</span>
+                                      <CheckCircle2 size={12} className="shrink-0" />
+                                      <span>Mark Done</span>
                                     </button>
+                                    {p.status === "waiting" && (
+                                      <button
+                                        onClick={() => skipWalkinPatient(p.id)}
+                                        disabled={loading}
+                                        className="w-full sm:w-auto flex items-center justify-center gap-1 text-xs font-bold text-surface-600 hover:text-red-600 hover:bg-red-50 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-all border border-surface-200 cursor-pointer shadow-2xs whitespace-nowrap"
+                                        title="Skip walk-in patient"
+                                      >
+                                        <SkipForward size={12} className="shrink-0" />
+                                        <span>Skip</span>
+                                      </button>
+                                    )}
                                   </div>
                                 )}
                               </div>
