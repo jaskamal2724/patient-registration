@@ -18,7 +18,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import InstallPWA from "./InstallPWA";
+// import InstallPWA from "./InstallPWA";
 import LogiquelAdCard from "./LogiquelAdCard";
 import LogiquelLogo from "./LogiquelLogo";
 import DocCareLogo from "./DocCareLogo";

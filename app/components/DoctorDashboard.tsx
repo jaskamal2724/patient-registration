@@ -24,7 +24,7 @@ import {
   Save,
   Check,
 } from "lucide-react";
-import InstallPWA from "./InstallPWA";
+// import InstallPWA from "./InstallPWA";
 import LogiquelAdCard from "./LogiquelAdCard";
 import { formatDelayText, getTimeSlots } from "../util/timeSlot";
 
@@ -262,7 +262,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
               <p className="text-brand-600 text-xs font-body font-medium mb-1.5">
                 Doctor Panel
               </p>
-              <InstallPWA />
+              {/* <InstallPWA /> */}
             </div>
           </div>
 
@@ -366,7 +366,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
             </div>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            <InstallPWA />
+            {/* <InstallPWA /> */}
             <div
               className={`flex items-center gap-1.5 text-[10px] font-body font-semibold px-2 sm:px-2.5 py-1 rounded-full border ${regWindow.isOpen ? "bg-brand-50 text-brand-700 border-brand-200" : "bg-surface-100 text-surface-500 border-surface-200"}`}
             >

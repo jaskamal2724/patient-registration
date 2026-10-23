@@ -29,7 +29,7 @@ import { createBrowserClient } from "@/lib/supabase";
 import type { Doctor, WalkinPatient } from "@/lib/types";
 import { useLanguage } from "@/lib/LanguageContext";
 import DocCareLogo from "./DocCareLogo";
-import InstallPWA from "./InstallPWA";
+// import InstallPWA from "./InstallPWA";
 import LanguageSelector from "./LanguageSelector";
 import LogiquelAdCard from "./LogiquelAdCard";
 import LoadingScreen from "./LoadingScreen";
@@ -230,9 +230,9 @@ export default function WalkinPatientPortal() {
       <header className="relative z-10 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
         <div className="flex flex-col gap-1.5">
           <DocCareLogo variant="header" subtitle={t("walkinPortal")} />
-          <div className="flex items-center gap-2 flex-wrap">
+          {/* <div className="flex items-center gap-2 flex-wrap">
             <InstallPWA />
-          </div>
+          </div> */}
         </div>
 
         <div className="flex flex-col items-end gap-1.5 shrink-0">

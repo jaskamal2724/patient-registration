@@ -36,7 +36,7 @@ import {
   Check,
   Loader2,
 } from "lucide-react";
-import InstallPWA from "./InstallPWA";
+// import InstallPWA from "./InstallPWA";
 import DocCareLogo from "./DocCareLogo";
 import LanguageSelector from "./LanguageSelector";
 import { useLanguage } from "@/lib/LanguageContext";
@@ -146,8 +146,16 @@ function formatVisitDate(
   });
 }
 
-function SmartArrivalGuidance({ waitingBefore }: { waitingBefore: number }) {
+function SmartArrivalGuidance({
+  waitingBefore,
+  doctorHasStarted,
+}: {
+  waitingBefore: number;
+  doctorHasStarted: boolean;
+}) {
   const { t } = useLanguage();
+  if (!doctorHasStarted) return null;
+
   if (waitingBefore <= 2) {
     return (
       <div className="bg-emerald-50/90 border border-emerald-200/80 rounded-2xl p-4 text-left flex items-start gap-3 shadow-xs">
@@ -217,9 +225,9 @@ function PatientHeader({ onExit }: { onExit: () => void }) {
     <header className="relative z-10 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
       <div className="flex flex-col gap-1.5">
         <DocCareLogo variant="header" subtitle={t("patientPortal")} />
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* <div className="flex items-center gap-2 flex-wrap">
           <InstallPWA />
-        </div>
+        </div> */}
       </div>
 
       <div className="flex flex-col items-end gap-1.5 shrink-0">
@@ -258,10 +266,12 @@ function CheckTokenSearchCard({
   patients,
   onSelectPatient,
   delayMinutes = 0,
+  doctorHasStarted,
 }: {
   patients: Patient[];
   onSelectPatient: (p: Patient) => void;
   delayMinutes?: number;
+  doctorHasStarted: boolean;
 }) {
   const { t, tTimeSlot } = useLanguage();
   const [searchPhone, setSearchPhone] = useState("");
@@ -431,7 +441,10 @@ function CheckTokenSearchCard({
                   </div>
                   {patient.status === "waiting" && (
                     <div className="mt-1">
-                      <SmartArrivalGuidance waitingBefore={waitingAhead} />
+                      <SmartArrivalGuidance
+                        waitingBefore={waitingAhead}
+                        doctorHasStarted={doctorHasStarted}
+                      />
                     </div>
                   )}
                 </div>
@@ -1829,6 +1842,7 @@ export default function PatientPortal() {
                 setStep("success");
               }}
               delayMinutes={regWindow.delayMinutes}
+              doctorHasStarted={Boolean(inProgress || inProgressWalkin)}
             />
 
             {/* CARD 3: Book an Appointment Card */}
