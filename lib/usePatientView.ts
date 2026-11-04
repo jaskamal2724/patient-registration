@@ -4,7 +4,6 @@ import * as api from "@/lib/api";
 import { createBrowserClient } from "@/lib/supabase";
 import { useToast } from "@/lib/useToast";
 import { formatDelayText, sortPatientsBySlot } from "@/app/util/timeSlot";
-import { notifyDoctorDelay } from "@/lib/browserNotification";
 import type { Doctor, Patient, RegistrationWindow, WalkinPatient } from "@/lib/types";
 
 const supabase = createBrowserClient();
@@ -240,7 +239,6 @@ export function usePatientView() {
               "warning",
               6000
             );
-            void notifyDoctorDelay(newDelay);
           } else {
             showToast("ℹ️ Doctor delay cleared. Schedule is back on time.", "info", 4000);
           }
