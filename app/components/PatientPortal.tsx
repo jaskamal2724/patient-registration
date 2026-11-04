@@ -8,8 +8,6 @@ import type { Patient, RegistrationWindow, WalkinPatient } from "@/lib/types";
 import type { PatientForm } from "@/lib/api";
 import Toast from "./Toast";
 import DoctorDelayBanner from "./DoctorDelayBanner";
-import NotificationPermissionCard from "./NotificationPermissionCard";
-import { notifyPatientTurn } from "@/lib/browserNotification";
 import LogiquelAdCard from "./LogiquelAdCard";
 import LoadingScreen from "./LoadingScreen";
 import {
@@ -984,50 +982,12 @@ export function SuccessScreen({
   const [downloadError, setDownloadError] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [copiedUpi, setCopiedUpi] = useState(false);
-  const lastNotifiedAheadRef = useRef<number | null>(null);
-  const wasInConsultationRef = useRef<boolean>(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   const displayToken = patient.slot_token_number || patient.token_number;
-
-  // Track turn milestones and fire native browser notifications when turn advances
-  useEffect(() => {
-    const livePatient = patients.find((p) => p.id === patient.id) || patient;
-    const isNowInConsultation =
-      livePatient.status === "in-progress" ||
-      (livePatient.status as string) === "in_progress";
-
-    if (isNowInConsultation && !wasInConsultationRef.current) {
-      wasInConsultationRef.current = true;
-      void notifyPatientTurn(displayToken, "called", 0);
-      return;
-    }
-
-    if (livePatient.status === "waiting") {
-      const waitingQueue = patients.filter((p) => p.status === "waiting");
-      const idx = waitingQueue.findIndex((p) => p.id === livePatient.id);
-      const ahead = idx >= 0 ? idx : 0;
-      const prevAhead = lastNotifiedAheadRef.current;
-
-      if (prevAhead === null) {
-        lastNotifiedAheadRef.current = ahead;
-        return;
-      }
-
-      if (ahead === 0 && prevAhead > 0) {
-        void notifyPatientTurn(displayToken, "next", 0);
-      } else if (ahead <= 5 && prevAhead > 5) {
-        void notifyPatientTurn(displayToken, "approaching_5", ahead);
-      } else if (ahead <= 10 && prevAhead > 10) {
-        void notifyPatientTurn(displayToken, "approaching_10", ahead);
-      }
-
-      lastNotifiedAheadRef.current = ahead;
-    }
-  }, [patients, patient, displayToken]);
 
   const UPI_ID = "sriji70007849@barodampay";
   const MERCHANT_NAME = "SRI JI SEVA SANSTHAN";
@@ -1225,9 +1185,6 @@ export function SuccessScreen({
           </div>
         );
       })()}
-
-      {/* Browser Push Notifications Opt-In Card */}
-      <NotificationPermissionCard className="mb-4" />
 
       {/* Payment Flexibility Notice: Online or Clinic Counter */}
       <div className="bg-emerald-50/90 border border-emerald-200/90 rounded-2xl p-3.5 sm:p-4 text-left flex items-start gap-3 mb-4 shadow-2xs">

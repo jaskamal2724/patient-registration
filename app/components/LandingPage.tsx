@@ -22,7 +22,6 @@ import DocCareLogo from "./DocCareLogo";
 import LoadingScreen from "./LoadingScreen";
 import LanguageSelector from "./LanguageSelector";
 import TreatedConditionsModal from "./TreatedConditionsModal";
-import NotificationToggle from "./NotificationToggle";
 import { useLanguage } from "@/lib/LanguageContext";
 
 export default function LandingPage() {
@@ -117,16 +116,10 @@ export default function LandingPage() {
       <main className="relative z-10 max-w-md sm:max-w-xl w-full mx-auto px-4 sm:px-5 pb-28 sm:pb-32 flex-1">
         {/* Top OPD Booking Card (Image 2 Top Card) */}
         <div className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-7 border border-slate-100 shadow-xl shadow-blue-900/5 relative overflow-hidden mb-6 text-left">
-          {/* Header Pill Row: Doctor Pill + Notification Toggle */}
-          <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
-            {/* Top Pill Tag */}
-            <div className="inline-flex items-center gap-1 bg-[#EBF3FF] border border-[#D0E2FF] text-[#1D68F3] rounded-full px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wide shadow-2xs">
-              <Calendar size={12} className="text-[#1D68F3] shrink-0" />
-              <span>{t("doctorName")}</span>
-            </div>
-
-            {/* Notification Enable / Disable Toggle */}
-            <NotificationToggle />
+          {/* Top Pill Tag */}
+          <div className="inline-flex items-center gap-1 bg-[#EBF3FF] border border-[#D0E2FF] text-[#1D68F3] rounded-full px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wide mb-3 shadow-2xs">
+            <Calendar size={12} className="text-[#1D68F3] shrink-0" />
+            <span>{t("doctorName")}</span>
           </div>
 
           {/* Top Row: Title/Subtitle on Left + OPD Illustration on Right */}

@@ -28,7 +28,6 @@ import {
 import LogiquelAdCard from "./LogiquelAdCard";
 import ConsultationTimer from "./ConsultationTimer";
 import LanguageSelector from "./LanguageSelector";
-import NotificationToggle from "./NotificationToggle";
 import { useLanguage } from "@/lib/LanguageContext";
 import { formatDelayText, getTimeSlots, sortPatientsBySlot } from "../util/timeSlot";
 
@@ -510,8 +509,6 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
 
               {/* Action Buttons & Quick Controls */}
               <div className="flex flex-wrap items-center gap-2">
-                <NotificationToggle />
-
                 {/* Doctor Delay Quick Selector */}
                 <div className={`relative flex items-center gap-1.5 border rounded-xl px-3 py-2 transition-all shadow-xs w-fit ${
                   regWindow.delayMinutes > 0
@@ -1798,7 +1795,6 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                             </p>
                           </div>
                         </div>
-                        <NotificationToggle />
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2 mt-4">

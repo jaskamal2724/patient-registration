@@ -31,9 +31,6 @@ import { useLanguage } from "@/lib/LanguageContext";
 import { useToast } from "@/lib/useToast";
 import Toast from "./Toast";
 import DoctorDelayBanner from "./DoctorDelayBanner";
-import NotificationPermissionCard from "./NotificationPermissionCard";
-import NotificationToggle from "./NotificationToggle";
-import { notifyDoctorDelay } from "@/lib/browserNotification";
 import { formatDelayText } from "../util/timeSlot";
 import DocCareLogo from "./DocCareLogo";
 // import InstallPWA from "./InstallPWA";
@@ -143,7 +140,6 @@ export default function WalkinPatientPortal() {
                           "warning",
                           6000
                         );
-                        void notifyDoctorDelay(newDelay);
                       } else {
                         showToast("ℹ️ Doctor delay cleared. Schedule is back on time.", "info", 4000);
                       }
@@ -326,16 +322,10 @@ export default function WalkinPatientPortal() {
           <div className="animate-fade-in space-y-5 text-left">
             {/* Top Walk-in Hero Card */}
             <div className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-7 border border-slate-100 shadow-xl shadow-blue-900/5 relative overflow-hidden">
-              {/* Header Pill Row: Doctor Tag + Notification Toggle */}
-              <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
-                {/* Doctor Tag */}
-                <div className="inline-flex items-center gap-1 bg-[#EBF3FF] border border-[#D0E2FF] text-[#1D68F3] rounded-full px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wide shadow-2xs">
-                  <Calendar size={12} className="text-[#1D68F3] shrink-0" />
-                  <span>{t("doctorName")}</span>
-                </div>
-
-                {/* Notification Toggle */}
-                <NotificationToggle />
+              {/* Doctor Tag */}
+              <div className="inline-flex items-center gap-1 bg-[#EBF3FF] border border-[#D0E2FF] text-[#1D68F3] rounded-full px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wide mb-3 shadow-2xs">
+                <Calendar size={12} className="text-[#1D68F3] shrink-0" />
+                <span>{t("doctorName")}</span>
               </div>
 
               <div className="flex items-center justify-between gap-3 mb-4">
@@ -618,9 +608,6 @@ export default function WalkinPatientPortal() {
                 className="mb-4 text-left"
               />
             )}
-
-            {/* Browser Push Notifications Opt-In Card */}
-            <NotificationPermissionCard className="mb-4 text-left" />
 
             {/* Waiting Guidance Note */}
             <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-left mb-5 flex items-start gap-3">

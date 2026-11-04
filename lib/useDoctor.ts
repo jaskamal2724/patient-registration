@@ -5,7 +5,6 @@ import * as api from "@/lib/api";
 import { createBrowserClient } from "@/lib/supabase";
 import { useToast } from "@/lib/useToast";
 import { sortPatientsBySlot, formatDelayText } from "@/app/util/timeSlot";
-import { notifyDoctorDelay } from "@/lib/browserNotification";
 import type {
   Doctor,
   Patient,
@@ -170,9 +169,8 @@ export function useDoctor(initialDoctor: Doctor) {
         setDoctor(updatedDoc);
 
         if (w.delayMinutes !== undefined && w.delayMinutes > 0) {
-          void notifyDoctorDelay(w.delayMinutes);
           showToast(
-            `Doctor delay set to +${formatDelayText(w.delayMinutes)}. Notification alert broadcasted!`,
+            `Doctor delay set to +${formatDelayText(w.delayMinutes)}`,
             "warning",
           );
         } else if (w.delayMinutes === 0) {
