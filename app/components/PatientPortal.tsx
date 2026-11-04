@@ -4,9 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toPng } from "html-to-image";
 import { usePatientView } from "@/lib/usePatientView";
-import type { Patient, RegistrationWindow } from "@/lib/types";
+import type { Patient, RegistrationWindow, WalkinPatient } from "@/lib/types";
 import type { PatientForm } from "@/lib/api";
 import Toast from "./Toast";
+import DoctorDelayBanner from "./DoctorDelayBanner";
+import NotificationPermissionCard from "./NotificationPermissionCard";
+import { notifyPatientTurn } from "@/lib/browserNotification";
 import LogiquelAdCard from "./LogiquelAdCard";
 import LoadingScreen from "./LoadingScreen";
 import {
@@ -35,15 +38,16 @@ import {
   Copy,
   Check,
   Loader2,
+  Radio,
 } from "lucide-react";
 // import InstallPWA from "./InstallPWA";
 import DocCareLogo from "./DocCareLogo";
 import LanguageSelector from "./LanguageSelector";
+import RegistrationSuccessAnimation from "./RegistrationSuccessAnimation";
 import { useLanguage } from "@/lib/LanguageContext";
 import {
   getTimeSlots,
   formatDelayText,
-  shiftSlotLabel,
   normalizeSlotLabel,
 } from "../util/timeSlot";
 import { CLINIC_MAP_URL, handleClinicMapClick } from "../util/mapLink";
@@ -219,12 +223,18 @@ function SmartArrivalGuidance({
 {
   /* Header Component */
 }
-function PatientHeader({ onExit }: { onExit: () => void }) {
+export function PatientHeader({
+  onExit,
+  subtitle,
+}: {
+  onExit: () => void;
+  subtitle?: string;
+}) {
   const { t } = useLanguage();
   return (
     <header className="relative z-10 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
       <div className="flex flex-col gap-1.5">
-        <DocCareLogo variant="header" subtitle={t("patientPortal")} />
+        <DocCareLogo variant="header" subtitle={subtitle || t("patientPortal")} />
         {/* <div className="flex items-center gap-2 flex-wrap">
           <InstallPWA />
         </div> */}
@@ -273,7 +283,7 @@ function CheckTokenSearchCard({
   delayMinutes?: number;
   doctorHasStarted: boolean;
 }) {
-  const { t, tTimeSlot } = useLanguage();
+  const { t, tTimeSlot, tWaitTime } = useLanguage();
   const [searchPhone, setSearchPhone] = useState("");
   const cleanQuery = searchPhone.replace(/\D/g, "");
 
@@ -354,11 +364,10 @@ function CheckTokenSearchCard({
         <div className="mt-4 space-y-2.5 animate-fade-in">
           {searchResults.length > 0 ? (
             searchResults.map((patient) => {
-              const waitingAhead = patients.filter(
-                (p) =>
-                  p.status === "waiting" &&
-                  p.token_number < patient.token_number,
-              ).length;
+              const waitingQueue = patients.filter((p) => p.status === "waiting");
+              const patientIdx = waitingQueue.findIndex((p) => p.id === patient.id);
+              const waitingAhead = patientIdx >= 0 ? patientIdx : 0;
+              const estWaitMins = Math.max(0, Math.round(waitingAhead * 3.5));
 
               let statusBadge;
               let statusMessage;
@@ -422,9 +431,7 @@ function CheckTokenSearchCard({
                           {patient.time_slot && (
                             <span className="ml-1 font-semibold text-blue-600">
                               (
-                              {tTimeSlot(
-                                shiftSlotLabel(patient.time_slot, delayMinutes),
-                              )}
+                              {tTimeSlot(patient.time_slot)}
                               )
                             </span>
                           )}
@@ -434,7 +441,14 @@ function CheckTokenSearchCard({
                     <div>{statusBadge}</div>
                   </div>
                   <div className="text-xs font-body font-semibold text-slate-600 bg-slate-50 rounded-xl px-3 py-2 border border-slate-100 flex items-center justify-between gap-2">
-                    <span>{statusMessage}</span>
+                    <span>
+                      {statusMessage}{" "}
+                      {doctorHasStarted && patient.status === "waiting" && (
+                        <span className="font-mono-custom font-extrabold text-blue-700 ml-1">
+                          ({tWaitTime(estWaitMins)})
+                        </span>
+                      )}
+                    </span>
                     <span className="text-[11px] font-bold text-blue-600 hover:underline shrink-0">
                       {t("viewTicket")} &rarr;
                     </span>
@@ -472,7 +486,7 @@ function CheckTokenSearchCard({
 {
   /* IMAGE 2: Appointments Full View */
 }
-function AppointmentsFullView({
+export function AppointmentsFullView({
   patients,
   onSelectPatient,
   onBack,
@@ -550,25 +564,27 @@ function AppointmentsFullView({
 {
   /* IMAGE 1: OPD Registration Form */
 }
-function RegistrationForm({
+export function RegistrationForm({
   onSuccess,
   regWindow,
   addPatient,
   patients,
+  onCancel,
 }: {
   onSuccess: (p: Patient) => void;
   regWindow: RegistrationWindow;
   addPatient: (form: PatientForm) => Promise<Patient>;
   patients: Patient[];
+  onCancel?: () => void;
 }) {
   const { t, tDynamic, tDelay, tTimeSlot, tTime12Hour } = useLanguage();
   const initialSlots = getTimeSlots(
     regWindow.startTime || "10:00",
     regWindow.endTime || "19:00",
-    "14:00",
     "15:00",
+    "16:00",
     60,
-    regWindow.delayMinutes || 0,
+    0,
   ).map((s: TimeSlot) => s.label);
 
   const [form, setForm] = useState({
@@ -621,18 +637,16 @@ function RegistrationForm({
       if (result?.data?.[0]?.start_time && result?.data?.[0]?.end_time) {
         const startTime = result.data[0].start_time;
         const endTime = result.data[0].end_time;
-        const breakStart = "14:00";
-        const breakEnd = "15:00";
+        const breakStart = "15:00";
+        const breakEnd = "16:00";
 
-        const delayMins =
-          result?.data?.[0]?.delay_minutes ?? regWindow.delayMinutes ?? 0;
         const slots = getTimeSlots(
           startTime,
           endTime,
           breakStart,
           breakEnd,
           60,
-          delayMins,
+          0,
         );
         const slotLabels = slots.map((slot: TimeSlot) => slot.label);
         if (slotLabels.length > 0) {
@@ -680,8 +694,19 @@ function RegistrationForm({
           </div>
         </div>
 
-        {/* Right Illustration Card */}
-        <RegisterIllustrationSVG className="w-24 h-24 hidden xs:flex shrink-0" />
+        {/* Right Illustration Card & Optional Cancel */}
+        <div className="flex flex-col items-end gap-2">
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="text-xs font-bold text-slate-500 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-full px-3 py-1 shadow-2xs transition-all cursor-pointer"
+            >
+              {t("cancel")}
+            </button>
+          )}
+          <RegisterIllustrationSVG className="w-24 h-24 hidden xs:flex shrink-0" />
+        </div>
       </div>
 
       {/* Form Card Container */}
@@ -815,10 +840,16 @@ function RegistrationForm({
             </span>
             {regWindow.delayMinutes > 0 && (
               <span className="text-[11px] font-extrabold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-0.5">
-                +{tDelay(regWindow.delayMinutes)} {t("delayApplied")}
+                ⚠️ +{tDelay(regWindow.delayMinutes)} {t("delayApplied")}
               </span>
             )}
           </label>
+          {regWindow.delayMinutes > 0 && (
+            <p className="mb-2 text-[11px] font-medium text-amber-800 bg-amber-50/90 border border-amber-200/90 rounded-xl px-3 py-2 flex items-center gap-1.5">
+              <Clock size={13} className="shrink-0 text-amber-600" />
+              <span>{t("doctorLateDesc", { delay: tDelay(regWindow.delayMinutes) })}</span>
+            </p>
+          )}
           {errors.time_slot && (
             <p className="mb-2 text-xs font-bold text-red-500">
               {errors.time_slot}
@@ -927,26 +958,76 @@ function RegistrationForm({
 {
   /* Token Confirmation Screen */
 }
-function SuccessScreen({
+export function SuccessScreen({
   patient,
   patients,
+  walkinPatients = [],
   pageRef,
   delayMinutes = 0,
+  doctorIsSeeingPatient,
+  onBookAnother,
+  onBackToHome,
+  onViewQueue,
 }: {
   patient: Patient;
   patients: Patient[];
+  walkinPatients?: WalkinPatient[];
   pageRef: React.RefObject<HTMLDivElement | null>;
   delayMinutes?: number;
+  doctorIsSeeingPatient?: boolean;
+  onBookAnother?: () => void;
+  onBackToHome?: () => void;
+  onViewQueue?: () => void;
 }) {
-  const { t, tDelay, tTimeSlot } = useLanguage();
+  const { t, tDelay, tTimeSlot, tWaitTime } = useLanguage();
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [copiedUpi, setCopiedUpi] = useState(false);
+  const lastNotifiedAheadRef = useRef<number | null>(null);
+  const wasInConsultationRef = useRef<boolean>(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const displayToken = patient.slot_token_number || patient.token_number;
+
+  // Track turn milestones and fire native browser notifications when turn advances
+  useEffect(() => {
+    const livePatient = patients.find((p) => p.id === patient.id) || patient;
+    const isNowInConsultation =
+      livePatient.status === "in-progress" ||
+      (livePatient.status as string) === "in_progress";
+
+    if (isNowInConsultation && !wasInConsultationRef.current) {
+      wasInConsultationRef.current = true;
+      void notifyPatientTurn(displayToken, "called", 0);
+      return;
+    }
+
+    if (livePatient.status === "waiting") {
+      const waitingQueue = patients.filter((p) => p.status === "waiting");
+      const idx = waitingQueue.findIndex((p) => p.id === livePatient.id);
+      const ahead = idx >= 0 ? idx : 0;
+      const prevAhead = lastNotifiedAheadRef.current;
+
+      if (prevAhead === null) {
+        lastNotifiedAheadRef.current = ahead;
+        return;
+      }
+
+      if (ahead === 0 && prevAhead > 0) {
+        void notifyPatientTurn(displayToken, "next", 0);
+      } else if (ahead <= 5 && prevAhead > 5) {
+        void notifyPatientTurn(displayToken, "approaching_5", ahead);
+      } else if (ahead <= 10 && prevAhead > 10) {
+        void notifyPatientTurn(displayToken, "approaching_10", ahead);
+      }
+
+      lastNotifiedAheadRef.current = ahead;
+    }
+  }, [patients, patient, displayToken]);
 
   const UPI_ID = "sriji70007849@barodampay";
   const MERCHANT_NAME = "SRI JI SEVA SANSTHAN";
@@ -971,8 +1052,6 @@ function SuccessScreen({
       console.error("Failed to copy UPI ID:", err);
     }
   };
-
-  const displayToken = patient.slot_token_number || patient.token_number;
 
   const handleDownload = async () => {
     if (!pageRef.current || downloading) return;
@@ -1015,15 +1094,155 @@ function SuccessScreen({
         <div className="mt-2.5 inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-xs border border-white/25 rounded-full px-3 py-1 text-xs font-semibold text-white">
           <Clock size={13} className="shrink-0" />
           <span>
-            {tTimeSlot(shiftSlotLabel(patient.time_slot, delayMinutes))}
-            {delayMinutes > 0 ? ` (+${tDelay(delayMinutes)})` : ""}
+            {tTimeSlot(patient.time_slot)}
           </span>
         </div>
+
+        {delayMinutes > 0 && (
+          <div className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold bg-amber-400/25 border border-amber-300/40 rounded-full px-3 py-1 text-amber-100">
+            <Clock size={12} className="shrink-0 animate-pulse text-amber-200" />
+            <span>⚠️ {t("doctorLateTitle")}: +{tDelay(delayMinutes)}</span>
+          </div>
+        )}
 
         {/* Success message at last */}
         <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold text-emerald-200 mt-2.5">
           <CheckCircle2 size={15} className="text-emerald-300 shrink-0" />
           <span>{t("registrationSuccessful")}</span>
+        </div>
+      </div>
+
+      {delayMinutes > 0 && (
+        <DoctorDelayBanner
+          delayMinutes={delayMinutes}
+          variant="ticket"
+          className="mb-4 text-center sm:text-left"
+        />
+      )}
+
+      {/* Live Turn & Milestone Queue Guidance Card */}
+      {(() => {
+        const waitingQueue = patients.filter((p) => p.status === "waiting");
+        const patientIdx = waitingQueue.findIndex((p) => p.id === patient.id);
+        const isInConsultation =
+          patient.status === "in-progress" ||
+          (patient.status as string) === "in_progress";
+        const isDone = patient.status === "done";
+        const isSkipped = patient.status === "skipped";
+        const waitingAhead = patientIdx >= 0 ? patientIdx : 0;
+        const estWaitMins = Math.max(0, Math.round(waitingAhead * 3.5));
+        const isDoctorSeeing =
+          doctorIsSeeingPatient !== undefined
+            ? doctorIsSeeingPatient
+            : patients.some(
+                (p) =>
+                  p.status === "in-progress" ||
+                  (p.status as string) === "in_progress",
+              ) ||
+              walkinPatients.some(
+                (p) =>
+                  p.status === "in-progress" ||
+                  (p.status as string) === "in_progress",
+              );
+
+        return (
+          <div className="bg-white rounded-[22px] p-4 sm:p-5 border border-slate-200/90 shadow-sm mb-4 text-left">
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
+                <span className="font-display text-xs sm:text-sm font-extrabold text-slate-900">
+                  {t("liveTokenStatus")}
+                </span>
+              </div>
+              <span className="text-xs font-bold text-slate-500">
+                {t("patientsAhead")}:{" "}
+                <strong className="text-slate-900 font-mono-custom text-sm">
+                  {isInConsultation ? 0 : waitingAhead}
+                </strong>
+              </span>
+            </div>
+
+            {/* Estimated Wait Time Row - Width equal to content */}
+            {isDoctorSeeing && patient.status === "waiting" && (
+              <div className="w-fit max-w-full inline-flex items-center gap-2 sm:gap-2.5 bg-blue-50/70 border border-blue-100 rounded-xl px-3.5 py-2 mb-3 shadow-2xs">
+                <div className="flex items-center gap-1.5 text-blue-900 text-xs font-bold shrink-0">
+                  <Clock size={15} className="text-blue-600 shrink-0" />
+                  <span>{t("estimatedWaitTimeLabel")}:</span>
+                </div>
+                <span className="font-mono-custom font-extrabold text-blue-700 text-xs sm:text-sm shrink-0">
+                  {waitingAhead === 0 ? t("nextInLineMsg") : tWaitTime(estWaitMins)}
+                </span>
+              </div>
+            )}
+
+            {/* Milestone Advice Banner */}
+            <div
+              className={`rounded-xl p-3 text-xs font-bold flex items-start gap-2.5 leading-relaxed ${
+                isInConsultation
+                  ? "bg-emerald-50 text-emerald-900 border border-emerald-200"
+                  : isDone
+                    ? "bg-blue-50 text-blue-900 border border-blue-200"
+                    : isSkipped
+                      ? "bg-red-50 text-red-900 border border-red-200"
+                      : waitingAhead === 0
+                        ? "bg-emerald-50 text-emerald-900 border border-emerald-200"
+                        : waitingAhead === 1
+                          ? "bg-amber-50 text-amber-900 border border-amber-200"
+                          : waitingAhead <= 5
+                            ? "bg-orange-50 text-orange-900 border border-orange-200"
+                            : waitingAhead <= 10
+                              ? "bg-indigo-50 text-indigo-900 border border-indigo-200"
+                              : waitingAhead <= 15
+                                ? "bg-blue-50 text-blue-900 border border-blue-200"
+                                : waitingAhead <= 20
+                                  ? "bg-slate-100 text-slate-800 border border-slate-200"
+                                  : "bg-slate-50 text-slate-700 border border-slate-200"
+              }`}
+            >
+              <Info size={16} className="shrink-0 mt-0.5 text-blue-600" />
+              <span>
+                {isInConsultation
+                  ? t("inConsultationMsg")
+                  : isDone
+                    ? t("completedMsg")
+                    : isSkipped
+                      ? t("skippedMsg")
+                      : waitingAhead === 0
+                        ? t("milestoneNextUp")
+                        : waitingAhead === 1
+                          ? t("milestone1Ahead")
+                          : waitingAhead <= 5
+                            ? t("milestone5Ahead")
+                            : waitingAhead <= 10
+                              ? t("milestone10Ahead")
+                              : waitingAhead <= 15
+                                ? t("milestone15Ahead")
+                                : waitingAhead <= 20
+                                  ? t("milestone20Ahead")
+                                  : t("milestone25Ahead")}
+              </span>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Browser Push Notifications Opt-In Card */}
+      <NotificationPermissionCard className="mb-4" />
+
+      {/* Payment Flexibility Notice: Online or Clinic Counter */}
+      <div className="bg-emerald-50/90 border border-emerald-200/90 rounded-2xl p-3.5 sm:p-4 text-left flex items-start gap-3 mb-4 shadow-2xs">
+        <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
+          <Info size={17} className="text-emerald-700" />
+        </div>
+        <div>
+          <p className="font-body text-xs sm:text-[13px] font-extrabold text-emerald-950 leading-snug">
+            {t("paymentFlexibilityNotice")}
+          </p>
+          <div className="mt-1.5 flex items-center gap-1.5">
+            <span className="inline-block bg-white border border-emerald-200 text-emerald-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-2xs">
+              ✓ {t("paymentAtCounterNote")}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -1187,6 +1406,44 @@ function SuccessScreen({
             Could not download the confirmation. Please try again.
           </p>
         )}
+
+        {/* Action Buttons Row */}
+        {(onViewQueue || onBookAnother || onBackToHome) && (
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 w-full max-w-sm mx-auto mt-1">
+            {onViewQueue && (
+              <button
+                type="button"
+                onClick={onViewQueue}
+                className="w-full sm:w-auto flex-1 bg-blue-50 hover:bg-blue-100 active:scale-95 text-blue-700 font-bold text-xs sm:text-sm py-2.5 px-3.5 rounded-xl border border-blue-200/80 transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
+              >
+                <Radio size={14} className="text-blue-600 shrink-0" />
+                <span>{t("liveQueue")}</span>
+              </button>
+            )}
+
+            {onBookAnother && (
+              <button
+                type="button"
+                onClick={onBookAnother}
+                className="w-full sm:w-auto flex-1 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-bold text-xs sm:text-sm py-2.5 px-3.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
+              >
+                <UserPlus size={14} className="shrink-0" />
+                <span>{t("bookAnother")}</span>
+              </button>
+            )}
+
+            {onBackToHome && (
+              <button
+                type="button"
+                onClick={onBackToHome}
+                className="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold text-xs sm:text-sm py-2.5 px-3.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
+              >
+                <Home size={14} className="shrink-0" />
+                <span>{t("backToHome")}</span>
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1218,13 +1475,14 @@ export default function PatientPortal() {
   const [registeredPatient, setRegisteredPatient] = useState<Patient | null>(
     null,
   );
+  const [showCelebration, setShowCelebration] = useState(false);
   const [TIME_SLOTS, setTIME_SLOTS] = useState<string[]>([]);
 
   useEffect(() => {
     if (searchParams?.get("step") === "form") {
-      setStep("form");
+      router.replace("/patient-registration");
     }
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -1236,26 +1494,24 @@ export default function PatientPortal() {
       try {
         const res = await fetch("/api/time-slot", { cache: "no-store" });
         const json = await res.json();
-        const delayMins =
-          json?.data?.[0]?.delay_minutes ?? regWindow.delayMinutes ?? 0;
         if (json?.data?.[0]) {
           const slots = getTimeSlots(
             json.data[0].start_time,
             json.data[0].end_time,
-            "14:00",
             "15:00",
+            "16:00",
             60,
-            delayMins,
+            0,
           );
           setTIME_SLOTS(slots.map((s: TimeSlot) => s.label));
         } else {
           const slots = getTimeSlots(
             regWindow.startTime || "10:00",
             regWindow.endTime || "19:00",
-            "14:00",
             "15:00",
+            "16:00",
             60,
-            delayMins,
+            0,
           );
           setTIME_SLOTS(slots.map((s: TimeSlot) => s.label));
         }
@@ -1263,10 +1519,10 @@ export default function PatientPortal() {
         const slots = getTimeSlots(
           regWindow.startTime || "10:00",
           regWindow.endTime || "19:00",
-          "14:00",
           "15:00",
+          "16:00",
           60,
-          regWindow.delayMinutes || 0,
+          0,
         );
         setTIME_SLOTS(slots.map((s: TimeSlot) => s.label));
       }
@@ -1291,6 +1547,9 @@ export default function PatientPortal() {
     (p) => p.status === "in-progress" || (p.status as string) === "in_progress",
   );
   const waitingPatients = patients.filter((p) => p.status === "waiting");
+  const nextPatient = waitingPatients[0] || null;
+  const nextWalkinPatient =
+    (walkinPatients || []).find((p) => p.status === "waiting") || null;
   const hasWaitingPatients = waitingPatients.length > 0;
   const allPatientsDone =
     patients.length > 0 &&
@@ -1325,28 +1584,20 @@ export default function PatientPortal() {
       />
 
       {/* Main Container */}
-      <main className="relative z-10 max-w-md sm:max-w-xl w-full mx-auto px-4 sm:px-5 pb-12 flex-1">
+      <main className="relative z-10 max-w-md sm:max-w-xl w-full mx-auto px-4 sm:px-5 pb-28 sm:pb-32 flex-1">
+        {/* Doctor Delay Alert Banner across all patient portal steps */}
+        {!initialLoading && regWindow.delayMinutes > 0 && (
+          <div className="mb-4">
+            <DoctorDelayBanner
+              delayMinutes={regWindow.delayMinutes}
+              variant={step === "home" ? "card" : "banner"}
+            />
+          </div>
+        )}
+
         {step === "home" && (
           /* Patient Portal Home View */
           <div className="animate-slide-up text-left space-y-4">
-            {/* Doctor Delay Alert Banner */}
-            {!initialLoading && regWindow.delayMinutes > 0 && (
-              <div className="bg-amber-500/10 border border-amber-300/80 rounded-[22px] p-4 text-left flex items-start gap-3 text-amber-950 shadow-xs">
-                <div className="p-2.5 bg-amber-100/90 rounded-xl shrink-0 text-amber-700 mt-0.5">
-                  <Clock size={18} className="animate-pulse" />
-                </div>
-                <div>
-                  <span className="font-display text-sm font-extrabold text-amber-950 block">
-                    {t("doctorLateTitle")} (+{tDelay(regWindow.delayMinutes)})
-                  </span>
-                  <p className="font-body text-xs font-semibold text-amber-800 mt-0.5 leading-relaxed">
-                    {t("doctorLateDesc", {
-                      delay: tDelay(regWindow.delayMinutes),
-                    })}
-                  </p>
-                </div>
-              </div>
-            )}
 
             {/* CARD 1: Doctor Status Card */}
             {initialLoading ? (
@@ -1380,21 +1631,6 @@ export default function PatientPortal() {
                     </span>
                   </a>
                 </div>
-
-                {/* Clinic Address Skeleton */}
-                <a
-                  href={CLINIC_MAP_URL}
-                  onClick={handleClinicMapClick}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs"
-                  title="Open Clinic Address on Google Maps"
-                >
-                  <MapPin size={15} className="text-emerald-600 shrink-0" />
-                  <span className="font-extrabold text-emerald-950">
-                    {t("clinicAddress")}
-                  </span>
-                </a>
 
                 {/* Status Bar Loader */}
                 <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white rounded-xl px-4 py-2.5 flex items-center justify-between gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
@@ -1474,9 +1710,6 @@ export default function PatientPortal() {
                         {inProgress.slot_token_number ||
                           inProgress.token_number}
                       </span>
-                      <span className="font-body text-sm sm:text-base font-extrabold text-white truncate">
-                        {inProgress.name}
-                      </span>
                     </div>
 
                     <div className="flex flex-col items-end gap-1 shrink-0">
@@ -1491,28 +1724,33 @@ export default function PatientPortal() {
                       )}
                     </div>
                   </div>
+
+                  {/* Next in Line Display */}
+                  <div className="mt-3 pt-2.5 border-t border-white/20 flex items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-[11px] font-bold text-blue-100 uppercase tracking-wider shrink-0">
+                        ⚡ {t("nextPatientInLine")}:
+                      </span>
+                      {nextPatient ? (
+                        <span className="font-mono-custom text-xs font-black bg-white/25 border border-white/30 rounded-md px-2 py-0.5 text-white">
+                          #{nextPatient.slot_token_number || nextPatient.token_number}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-blue-200 italic font-medium">
+                          {t("noPatientWaiting")}
+                        </span>
+                      )}
+                    </div>
+                    {nextPatient && nextPatient.time_slot && (
+                      <span className="text-[10px] font-mono-custom font-semibold text-blue-100 bg-white/15 rounded px-1.5 py-0.5 shrink-0">
+                        {tTimeSlot(nextPatient.time_slot)}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Priority Notice in red shade */}
                 <PriorityQueueNotice className="mt-3" />
-
-                {/* Clinic Address */}
-                <a
-                  href={CLINIC_MAP_URL}
-                  onClick={handleClinicMapClick}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-3 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
-                  title="Open Clinic Address on Google Maps"
-                >
-                  <MapPin
-                    size={15}
-                    className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform"
-                  />
-                  <span className="font-extrabold text-emerald-950">
-                    {t("clinicAddress")}
-                  </span>
-                </a>
               </div>
             ) : isAppointmentListFinished && hasWaitingWalkin ? (
               /* When all appointment patients are finished, and there are walk-in patients waiting */
@@ -1552,11 +1790,6 @@ export default function PatientPortal() {
                             `W-${inProgressWalkin.token_number}`
                           : "W-IN"}
                       </span>
-                      <span className="font-body text-sm sm:text-base font-extrabold text-white truncate">
-                        {inProgressWalkin
-                          ? inProgressWalkin.name
-                          : t("doctorSeeingWalkinTitle")}
-                      </span>
                     </div>
 
                     <div className="flex flex-col items-end gap-1 shrink-0">
@@ -1574,28 +1807,29 @@ export default function PatientPortal() {
                       {t("doctorSeeingWalkinMsg")}
                     </p>
                   )}
+
+                  {/* Next in Line Display */}
+                  <div className="mt-3 pt-2.5 border-t border-white/20 flex items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-[11px] font-bold text-purple-200 uppercase tracking-wider shrink-0">
+                        ⚡ {t("nextPatientInLine")}:
+                      </span>
+                      {nextWalkinPatient ? (
+                        <span className="font-mono-custom text-xs font-black bg-white/25 border border-white/30 rounded-md px-2 py-0.5 text-white shrink-0">
+                          {nextWalkinPatient.walkin_token_display ||
+                            `W-${nextWalkinPatient.token_number}`}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-purple-200 italic font-medium">
+                          {t("noPatientWaiting")}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Priority notice in red shade */}
                 <PriorityQueueNotice className="mt-3" />
-
-                {/* Clinic Address */}
-                <a
-                  href={CLINIC_MAP_URL}
-                  onClick={handleClinicMapClick}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-3 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
-                  title="Open Clinic Address on Google Maps"
-                >
-                  <MapPin
-                    size={15}
-                    className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform"
-                  />
-                  <span className="font-extrabold text-emerald-950">
-                    {t("clinicAddress")}
-                  </span>
-                </a>
               </div>
             ) : isAppointmentListFinished &&
               !hasWaitingWalkin &&
@@ -1629,26 +1863,8 @@ export default function PatientPortal() {
                   </a>
                 </div>
 
-                {/* Clinic Address */}
-                <a
-                  href={CLINIC_MAP_URL}
-                  onClick={handleClinicMapClick}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
-                  title="Open Clinic Address on Google Maps"
-                >
-                  <MapPin
-                    size={15}
-                    className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform"
-                  />
-                  <span className="font-extrabold text-emerald-950">
-                    {t("clinicAddress")}
-                  </span>
-                </a>
-
                 {/* Expected Time Pill Box */}
-                <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
+                <div className="w-fit max-w-full inline-flex items-center gap-2 bg-[#1D68F3] text-white rounded-xl px-3.5 py-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
                   <Clock size={16} className="text-white shrink-0" />
                   <span className="font-extrabold text-white">
                     {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)}{" "}
@@ -1686,26 +1902,8 @@ export default function PatientPortal() {
                   </a>
                 </div>
 
-                {/* Clinic Address */}
-                <a
-                  href={CLINIC_MAP_URL}
-                  onClick={handleClinicMapClick}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
-                  title="Open Clinic Address on Google Maps"
-                >
-                  <MapPin
-                    size={15}
-                    className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform"
-                  />
-                  <span className="font-extrabold text-emerald-950">
-                    {t("clinicAddress")}
-                  </span>
-                </a>
-
                 {/* Expected Time Pill Box */}
-                <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
+                <div className="w-fit max-w-full inline-flex items-center gap-2 bg-[#1D68F3] text-white rounded-xl px-3.5 py-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
                   <Clock size={16} className="text-white shrink-0" />
                   <span className="font-extrabold text-white">
                     {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)}{" "}
@@ -1745,26 +1943,8 @@ export default function PatientPortal() {
                   </a>
                 </div>
 
-                {/* Clinic Address */}
-                <a
-                  href={CLINIC_MAP_URL}
-                  onClick={handleClinicMapClick}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
-                  title="Open Clinic Address on Google Maps"
-                >
-                  <MapPin
-                    size={15}
-                    className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform"
-                  />
-                  <span className="font-extrabold text-emerald-950">
-                    {t("clinicAddress")}
-                  </span>
-                </a>
-
                 {/* Expected Time Pill Box */}
-                <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
+                <div className="w-fit max-w-full inline-flex items-center gap-2 bg-[#1D68F3] text-white rounded-xl px-3.5 py-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
                   <Clock size={16} className="text-white shrink-0" />
                   <span className="font-extrabold text-white">
                     {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)}{" "}
@@ -1805,26 +1985,8 @@ export default function PatientPortal() {
                   </a>
                 </div>
 
-                {/* Clinic Address */}
-                <a
-                  href={CLINIC_MAP_URL}
-                  onClick={handleClinicMapClick}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-200/90 rounded-xl px-3.5 py-2.5 flex items-center gap-2.5 text-xs font-bold text-emerald-800 mt-4 transition-all group cursor-pointer shadow-2xs hover:scale-[1.01] active:scale-[0.99]"
-                  title="Open Clinic Address on Google Maps"
-                >
-                  <MapPin
-                    size={15}
-                    className="text-emerald-600 shrink-0 group-hover:scale-110 transition-transform"
-                  />
-                  <span className="font-extrabold text-emerald-950">
-                    {t("clinicAddress")}
-                  </span>
-                </a>
-
                 {/* Expected Time Pill Box */}
-                <div className="bg-[#1D68F3] text-white rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
+                <div className="w-fit max-w-full inline-flex items-center gap-2 bg-[#1D68F3] text-white rounded-xl px-3.5 py-2 text-xs font-extrabold shadow-md shadow-blue-500/25 mt-2.5 transition-all">
                   <Clock size={16} className="text-white shrink-0" />
                   <span className="font-extrabold text-white">
                     {t("expectedTimeLabel")}: {tTime12Hour(regWindow.startTime)}{" "}
@@ -1851,11 +2013,7 @@ export default function PatientPortal() {
 
               <button
                 onClick={() => {
-                  if (allSlotsFull) {
-                    setStep("full");
-                  } else {
-                    setStep("form");
-                  }
+                  router.push("/patient-registration");
                 }}
                 className="flex-1 bg-[#FFC629] hover:bg-[#F5B813] text-slate-900 font-display font-extrabold text-sm sm:text-base rounded-2xl py-3 px-4 flex items-center justify-center gap-2 shadow-md shadow-amber-400/20 cursor-pointer transition-all hover:scale-[1.01] active:scale-[0.99]"
               >
@@ -1892,6 +2050,7 @@ export default function PatientPortal() {
           <RegistrationForm
             onSuccess={(p) => {
               setRegisteredPatient(p);
+              setShowCelebration(true);
               setStep("success");
             }}
             regWindow={regWindow}
@@ -1905,11 +2064,20 @@ export default function PatientPortal() {
           <SuccessScreen
             patient={registeredPatient}
             patients={patients}
+            walkinPatients={walkinPatients}
+            doctorIsSeeingPatient={Boolean(inProgress || inProgressWalkin)}
             pageRef={pageRef}
             delayMinutes={regWindow.delayMinutes}
           />
         )}
       </main>
+
+      {/* Celebration Animation (Party Bursters + Green Tick) */}
+      <RegistrationSuccessAnimation
+        isOpen={showCelebration}
+        onComplete={() => setShowCelebration(false)}
+        tokenNumber={registeredPatient?.slot_token_number || registeredPatient?.token_number}
+      />
 
       <Toast toast={toast} />
     </div>

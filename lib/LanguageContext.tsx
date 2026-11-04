@@ -24,9 +24,9 @@ export const translations = {
     langNameHi: "हिंदी",
 
     // Landing Page
-    bookAppointmentTitle: "Book your\nappointment",
+    bookAppointmentTitle: "Book your appointment",
     bookAppointmentSubtitle: "Get your digital token and track your queue live.",
-    bookSlotBtn: "Book Appointment",
+    bookSlotBtn: "Book Now",
     tokenBadge: "Token",
     liveBadge: "Live",
     digitalToken: "Digital Token",
@@ -108,9 +108,9 @@ export const translations = {
     statusLoadErrorMsg: "Please check your connection and try again.",
     retry: "Try again",
     expectedTimeLabel: "Expected time",
-    doctorLateTitle: "Doctor Running Late Update",
-    doctorLateDesc: "Doctor is running {delay} late today. All appointment booking slots and patient visit times have been automatically shifted forward by +{delay}.",
-    delayApplied: "delay applied",
+    doctorLateTitle: "Doctor Running Late Alert",
+    doctorLateDesc: "Doctor is running {delay} late today. Appointment slot timings remain unchanged, but consultations may experience an estimated {delay} delay.",
+    delayApplied: "Doctor running late",
     priorityQueueNotice: "Priority will be given to senior citizen, person with disability, small kids, so there might be few min. delay.",
 
     // Success / Ticket View
@@ -137,6 +137,28 @@ export const translations = {
     copyUpiIdBtn: "Copy UPI ID",
     upiIdCopied: "Copied!",
     savePaymentScreenshotNotice: "Please complete the payment and save a screenshot for future reference and clinic verification.",
+    paymentFlexibilityNotice: "Payment is flexible: You can pay online now via UPI or pay cash / UPI at the clinic reception counter.",
+    paymentAtCounterNote: "Pay online now or at reception desk",
+    alreadyRegisteredPrompt: "Already registered for today?",
+    checkLiveQueueOrToken: "Track live queue or check your token status",
+    appointmentConfirmedTitle: "Appointment Confirmed!",
+    generatingTokenSubtitle: "Generating your OPD token...",
+    viewTokenNow: "View Token",
+
+    // Live Queue & Turn Milestones
+    nextPatientInLine: "Next in Line",
+    noPatientWaiting: "No patients waiting in queue",
+    estimatedWaitTimeLabel: "Estimated Wait Time",
+    approxMins: "~{count} mins",
+    doctorIsFree: "Doctor is ready for consultation",
+    milestoneDoctorReady: "Doctor is ready! Please enter the cabin.",
+    milestoneNextUp: "You are next! Please wait right outside doctor's cabin.",
+    milestone1Ahead: "Only 1 patient ahead. Please stay right outside cabin.",
+    milestone5Ahead: "5 patients ahead: Please reach clinic waiting lobby now.",
+    milestone10Ahead: "10 patients ahead: Please start heading towards the clinic.",
+    milestone15Ahead: "15 patients ahead: Approx 45 mins wait. Prepare to leave.",
+    milestone20Ahead: "20 patients ahead: Plenty of time. Monitor live queue.",
+    milestone25Ahead: "25+ patients ahead: Relax at home and check status periodically.",
 
     // Closed Window Step
     opdClosedTitle: "OPD Registration Currently Closed",
@@ -200,6 +222,29 @@ export const translations = {
     androidStep2Suffix: ".",
     gotIt: "Got it",
 
+    // Bottom Navigation
+    navHome: "Home",
+    navBookNow: "Book Now",
+    navWhatWeTreat: "What We Treat",
+    navLocation: "Location",
+    navCheckStatus: "Check Status",
+
+    // Location Page
+    locationPageTitle: "Clinic Location",
+    locationPageSubtitle: "Visit Dr. Sarvesh OPD in Gurugram. Easy to reach with ample parking.",
+    verifiedClinic: "Verified Clinic",
+    openInGoogleMaps: "Open in Google Maps",
+    copyAddress: "Copy Address",
+    addressCopied: "Address copied to clipboard!",
+    opdTimings: "OPD Timings",
+    locationMorningTime: "Morning: 09:30 AM - 01:30 PM",
+    locationEveningTime: "Evening: 05:30 PM - 08:30 PM",
+    daysOpen: "Monday to Saturday",
+    landmarkDirections: "Landmark & Directions",
+    landmarkDesc: "Located in Sector 10A, near Main Market, Gurugram. Direct road access with easy parking outside.",
+    bookVisitCTA: "Visiting the clinic today?",
+    bookVisitCTASub: "Book your digital token in advance to skip the waiting line.",
+
     // Treated Conditions Modal
     viewTreatedConditionsBtn: "What We Treat",
     treatedConditionsModalTitle: "Treatment & Care For Following Problems",
@@ -229,6 +274,60 @@ export const translations = {
     yes: "Yes",
     no: "No",
     pwdBadge: "PwD (Priority)",
+    walkinClosedTitle: "Walkin Registration Closed",
+    walkinClosedMsg: "Walk-in registration is currently closed by the doctor. Please check with reception or try again later.",
+
+    // Doctor Dashboard & Front-Desk
+    doctorPanel: "Doctor & Reception Panel",
+    onlineQueue: "Online Queue",
+    walkinQueue: "Walk-in Queue",
+    settingsTab: "Settings",
+    currentlyConsulting: "Currently Consulting",
+    callNextPatient: "Call Next Patient",
+    markDone: "Mark Done",
+    changeSlot: "Change Slot",
+    skipPatient: "Skip",
+    rescheduleSlot: "Reschedule Slot",
+    onlineOpen: "Online: Open",
+    onlineClose: "Online: Close",
+    walkinOpen: "Walk-in: Open",
+    walkinClose: "Walk-in: Close",
+    lateStatus: "Late Status",
+    onTime: "On Time (0m)",
+    searchPatientPlaceholder: "Search patient by name, mobile, or token...",
+    waitingCountText: "waiting",
+    foundCountText: "Found",
+    completedPatientsTitle: "Completed Patients Today",
+    noCompletedPatients: "No completed patients recorded for today yet.",
+    viewCompletedList: "View List",
+    consultTimer: "Consult Timer",
+    overtime: "Overtime",
+    signOut: "Sign Out",
+    generalPhysician: "General Physician",
+
+    // Patient Portal Enhancements
+    nextInQueue: "Next in Line",
+    currentlySeeing: "Currently Seeing",
+    doctorFree: "Doctor is Free (No active consultation)",
+    estimatedWaitTime: "Est. wait time",
+    approxWaitMins: "approx. {mins} mins",
+    turnMilestone25: "25 patients ahead. Please be prepared.",
+    turnMilestone20: "20 patients ahead. You may start planning to visit.",
+    turnMilestone15: "15 patients ahead. Please start heading towards the clinic.",
+    turnMilestone10: "10 patients ahead. Please reach the clinic waiting lobby.",
+    turnMilestone5: "5 patients ahead! Please be present in the clinic waiting area.",
+    turnMilestone1: "You are NEXT in line! Please wait right outside the consultation room.",
+
+    // Browser Push Notifications
+    enableNotifications: "Enable Notifications",
+    notificationsEnabled: "Alerts Active",
+    enableTurnAlerts: "Get Turn & Delay Alerts",
+    notificationPromptMsg: "Get native phone & browser notifications when your turn approaches or if doctor is running late.",
+    notificationsEnabledToast: "Notifications enabled! You will receive live alerts for your turn and doctor delays.",
+    notificationToggleOn: "Alerts ON",
+    notificationToggleOff: "Alerts OFF",
+    notificationBlocked: "Alerts Blocked",
+    notificationBlockedHelp: "Notifications are blocked in your browser settings. Please click the site settings / lock icon in your browser address bar to allow notifications.",
   },
   hi: {
     // Header & Brand
@@ -333,9 +432,9 @@ export const translations = {
     statusLoadErrorMsg: "कृपया अपना इंटरनेट कनेक्शन जांचें और फिर कोशिश करें।",
     retry: "फिर कोशिश करें",
     expectedTimeLabel: "अनुमानित समय",
-    doctorLateTitle: "डॉक्टर देरी से आने की सूचना",
-    doctorLateDesc: "डॉक्टर आज {delay} की देरी से चल रहे हैं। सभी अपॉइंटमेंट स्लॉट और मिलने का समय +{delay} आगे बढ़ा दिया गया है।",
-    delayApplied: "देरी लागू",
+    doctorLateTitle: "डॉक्टर देरी से आने की सूचना (अलर्ट)",
+    doctorLateDesc: "डॉक्टर आज {delay} की देरी से चल रहे हैं। अपॉइंटमेंट स्लॉट का समय वही रहेगा, लेकिन परामर्श में लगभग {delay} का विलंब हो सकता है।",
+    delayApplied: "डॉक्टर देरी से",
     priorityQueueNotice: "वरिष्ठ नागरिकों, दिव्यांगजनों एवं छोटे बच्चों को प्राथमिकता दी जाएगी, इसलिए कुछ मिनट का विलंब हो सकता है।",
 
     // Success / Ticket View
@@ -362,6 +461,28 @@ export const translations = {
     copyUpiIdBtn: "UPI ID कॉपी करें",
     upiIdCopied: "कॉपी हो गया!",
     savePaymentScreenshotNotice: "कृपया भुगतान पूरा करें और भविष्य के संदर्भ एवं क्लिनिक सत्यापन के लिए स्क्रीनशॉट सुरक्षित रखें।",
+    paymentFlexibilityNotice: "भुगतान लचीला है: आप अभी UPI द्वारा ऑनलाइन भुगतान कर सकते हैं या क्लिनिक रिसेप्शन काउंटर पर नकद / UPI दे सकते हैं।",
+    paymentAtCounterNote: "ऑनलाइन या रिसेप्शन काउंटर पर भुगतान करें",
+    alreadyRegisteredPrompt: "क्या आपने पहले ही पंजीकरण कर लिया है?",
+    checkLiveQueueOrToken: "लाइव कतार देखें या अपना टोकन नंबर जांचें",
+    appointmentConfirmedTitle: "अपॉइंटमेंट कन्फर्म हो गया!",
+    generatingTokenSubtitle: "आपका ओपीडी टोकन तैयार किया जा रहा है...",
+    viewTokenNow: "टोकन देखें",
+
+    // Live Queue & Turn Milestones
+    nextPatientInLine: "अगला नंबर (Next)",
+    noPatientWaiting: "कतार में कोई प्रतीक्षा नहीं कर रहा",
+    estimatedWaitTimeLabel: "अनुमानित प्रतीक्षा समय",
+    approxMins: "~{count} मिनट",
+    doctorIsFree: "डॉक्टर परामर्श के लिए तैयार हैं",
+    milestoneDoctorReady: "डॉक्टर तैयार हैं! कृपया केबिन में प्रवेश करें।",
+    milestoneNextUp: "अगला नंबर आपका है! कृपया डॉक्टर के केबिन के बाहर तैयार रहें।",
+    milestone1Ahead: "केवल 1 मरीज आगे है। कृपया केबिन के बाहर रहें।",
+    milestone5Ahead: "5 मरीज आगे हैं: कृपया तुरंत क्लिनिक प्रतीक्षालय पहुंचें।",
+    milestone10Ahead: "10 मरीज आगे हैं: कृपया क्लिनिक के लिए निकलना शुरू करें।",
+    milestone15Ahead: "15 मरीज आगे हैं: लगभग 45 मिनट शेष। निकलने की तैयारी करें।",
+    milestone20Ahead: "20 मरीज आगे हैं: पर्याप्त समय है। लाइव कतार देखते रहें।",
+    milestone25Ahead: "25+ मरीज आगे हैं: घर पर आराम करें और समय-समय पर टोकन स्थिति देखें।",
 
     // Closed Window Step
     opdClosedTitle: "ओपीडी पंजीकरण वर्तमान में बंद है",
@@ -426,6 +547,29 @@ export const translations = {
     androidStep2Suffix: "चुनें।",
     gotIt: "समझ गया",
 
+    // Bottom Navigation
+    navHome: "होम",
+    navBookNow: "बुक करें",
+    navWhatWeTreat: "इलाज",
+    navLocation: "लोकेशन",
+    navCheckStatus: "स्टेटस",
+
+    // Location Page
+    locationPageTitle: "क्लिनिक लोकेशन",
+    locationPageSubtitle: "डॉ. सर्वेश ओपीडी, गुरुग्राम। पहुंचना आसान और पर्याप्त पार्किंग उपलब्ध।",
+    verifiedClinic: "सत्यापित क्लिनिक",
+    openInGoogleMaps: "गूगल मैप्स में खोलें",
+    copyAddress: "पता कॉपी करें",
+    addressCopied: "पता कॉपी हो गया!",
+    opdTimings: "ओपीडी समय",
+    locationMorningTime: "सुबह: 09:30 AM - 01:30 PM",
+    locationEveningTime: "शाम: 05:30 PM - 08:30 PM",
+    daysOpen: "सोमवार से शनिवार",
+    landmarkDirections: "लैंडमार्क व दिशा-निर्देश",
+    landmarkDesc: "सेक्टर 10A, मुख्य मार्केट के पास, गुरुग्राम। क्लिनिक के बाहर आसान पार्किंग सुविधा।",
+    bookVisitCTA: "आज क्लिनिक आ रहे हैं?",
+    bookVisitCTASub: "कतार से बचने के लिए अपना डिजिटल टोकन पहले से बुक करें।",
+
     // Treated Conditions Modal
     viewTreatedConditionsBtn: "इलाज योग्य समस्याएं",
     treatedConditionsModalTitle: "अब पाये निदान निम्न समस्याओं से...",
@@ -455,6 +599,60 @@ export const translations = {
     yes: "हाँ",
     no: "नहीं",
     pwdBadge: "दिव्यांग (प्राथमिकता)",
+    walkinClosedTitle: "वॉक-इन पंजीकरण बंद है",
+    walkinClosedMsg: "डॉक्टर द्वारा वॉक-इन पंजीकरण फिलहाल बंद किया गया है। कृपया काउंटर या रिसेप्शन पर संपर्क करें।",
+
+    // Doctor Dashboard & Front-Desk
+    doctorPanel: "डॉक्टर एवं रिसेप्शन पैनल",
+    onlineQueue: "ऑनलाइन कतार",
+    walkinQueue: "वॉक-इन कतार",
+    settingsTab: "सेटिंग्स",
+    currentlyConsulting: "वर्तमान में परामर्श ले रहे मरीज",
+    callNextPatient: "अगला मरीज बुलाएं",
+    markDone: "सम्पन्न (Done)",
+    changeSlot: "स्लॉट बदलें",
+    skipPatient: "छोड़ें (Skip)",
+    rescheduleSlot: "नया स्लॉट दें",
+    onlineOpen: "ऑनलाइन: चालू",
+    onlineClose: "ऑनलाइन: बंद",
+    walkinOpen: "वॉक-इन: चालू",
+    walkinClose: "वॉक-इन: बंद",
+    lateStatus: "देरी की स्थिति",
+    onTime: "समय पर (0 मिनट)",
+    searchPatientPlaceholder: "नाम, मोबाइल नंबर या टोकन से खोजें...",
+    waitingCountText: "प्रतीक्षारत",
+    foundCountText: "मिले",
+    completedPatientsTitle: "आज देखे गए सभी मरीज",
+    noCompletedPatients: "आज अभी तक कोई मरीज पूरा नहीं हुआ है।",
+    viewCompletedList: "सूची देखें",
+    consultTimer: "परामर्श टाइमर",
+    overtime: "अतिरिक्त समय",
+    signOut: "लॉगआउट",
+    generalPhysician: "जनरल फिजिशियन",
+
+    // Patient Portal Enhancements
+    nextInQueue: "कतार में अगला",
+    currentlySeeing: "वर्तमान में देखा जा रहा है",
+    doctorFree: "डॉक्टर उपलब्ध हैं (कोई सक्रिय परामर्श नहीं)",
+    estimatedWaitTime: "अनुमानित प्रतीक्षा समय",
+    approxWaitMins: "लगभग {mins} मिनट",
+    turnMilestone25: "आपसे आगे 25 मरीज हैं। कृपया तैयार रहें।",
+    turnMilestone20: "आपसे आगे 20 मरीज हैं। क्लिनिक जाने की तैयारी शुरू कर सकते हैं।",
+    turnMilestone15: "आपसे आगे 15 मरीज हैं। कृपया क्लिनिक के लिए निकलें।",
+    turnMilestone10: "आपसे आगे 10 मरीज हैं। कृपया क्लिनिक प्रतीक्षालय में पहुँचें।",
+    turnMilestone5: "आपसे आगे केवल 5 मरीज हैं! कृपया क्लिनिक में ही उपस्थित रहें।",
+    turnMilestone1: "आपकी बारी अगली है! कृपया डॉक्टर के कक्ष के बाहर प्रतीक्षा करें।",
+
+    // Browser Push Notifications
+    enableNotifications: "नोटिफिकेशन चालू करें",
+    notificationsEnabled: "अलर्ट सक्रिय है",
+    enableTurnAlerts: "बारी एवं देरी अलर्ट प्राप्त करें",
+    notificationPromptMsg: "अपनी बारी आने पर या डॉक्टर की देरी होने पर सीधे मोबाइल/ब्राउज़र पर नोटिफिकेशन पाएं।",
+    notificationsEnabledToast: "नोटिफिकेशन चालू हो गए हैं! आपकी बारी और डॉक्टर देरी के लाइव अलर्ट मिलेंगे।",
+    notificationToggleOn: "अलर्ट चालू",
+    notificationToggleOff: "अलर्ट बंद",
+    notificationBlocked: "अलर्ट बंद (ब्लॉक)",
+    notificationBlockedHelp: "ब्राउज़र में नोटिफिकेशन ब्लॉक हैं। कृपया एड्रेस बार में लॉक/सेटिंग्स आइकन पर क्लिक करके अनुमति दें।",
   }
 };
 
@@ -541,6 +739,7 @@ interface LanguageContextType {
   tStatus: (status: string | null | undefined) => string;
   tTimeSlot: (slot: string | null | undefined, delayMinutes?: number) => string;
   tTime12Hour: (timeStr: string | null | undefined) => string;
+  tWaitTime: (waitMinutes: number) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType>({
@@ -554,6 +753,12 @@ const LanguageContext = createContext<LanguageContextType>({
   tStatus: (s) => s || "",
   tTimeSlot: (s) => s || "",
   tTime12Hour: (t) => t || "",
+  tWaitTime: (m) =>
+    m < 60
+      ? `~${m} mins`
+      : m % 60 === 0
+        ? `~${m / 60} hours`
+        : `~${Math.floor(m / 60)} hr ${m % 60} mins`,
 });
 
 export const LANGUAGE_STORAGE_KEY = "mediqueue_lang";
@@ -730,11 +935,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     return `${hourStr}${minStr} ${period12}`;
   };
 
-  const tTimeSlot = (slot: string | null | undefined, delayMinutes: number = 0): string => {
+  const tTimeSlot = (slot: string | null | undefined, _delayMinutes: number = 0): string => {
     if (!slot) return "";
-    if (delayMinutes > 0) {
-      // Slot shift is handled by shiftSlotLabel
-    }
     if (language === "en") return slot;
 
     // Convert e.g. "09:00 AM - 10:00 AM" or "09:00 AM – 10:00 AM" to Hindi representation
@@ -743,6 +945,30 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       return `${tTime12Hour(parts[0])} – ${tTime12Hour(parts[1])}`;
     }
     return slot;
+  };
+
+  const tWaitTime = (waitMinutes: number): string => {
+    if (waitMinutes <= 0) {
+      return language === "hi" ? "~0 मिनट" : "~0 mins";
+    }
+    if (waitMinutes < 60) {
+      return language === "hi" ? `~${waitMinutes} मिनट` : `~${waitMinutes} mins`;
+    }
+    const hours = Math.floor(waitMinutes / 60);
+    const remMinutes = waitMinutes % 60;
+
+    if (remMinutes === 0) {
+      if (language === "hi") {
+        return hours === 1 ? "~1 घंटा" : `~${hours} घंटे`;
+      }
+      return hours === 1 ? "~1 hour" : `~${hours} hours`;
+    }
+
+    if (language === "hi") {
+      const hrWord = hours === 1 ? "घंटा" : "घंटे";
+      return `~${hours} ${hrWord} ${remMinutes} मिनट`;
+    }
+    return `~${hours} hr ${remMinutes} mins`;
   };
 
   return (
@@ -758,6 +984,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         tStatus,
         tTimeSlot,
         tTime12Hour,
+        tWaitTime,
       }}
     >
       {children}

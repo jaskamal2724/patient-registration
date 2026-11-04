@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { LanguageProvider } from "@/lib/LanguageContext";
+import BottomNavigation from "./components/BottomNavigation";
 
 export const metadata: Metadata = {
   title: "Doc Care — Smart Patient Registration",
@@ -25,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        {/* Capture beforeinstallprompt ASAP before React hydrates */}
+        {/* Capture beforeinstallprompt ASAP before React hydrates & register SW */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -34,6 +35,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 e.preventDefault();
                 window.__deferredPrompt = e;
               });
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').catch(function(e) {
+                    console.debug('SW registration skipped:', e);
+                  });
+                });
+              }
             `,
           }}
         />
@@ -50,6 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ErrorBoundary>
           <LanguageProvider>
             {children}
+            <BottomNavigation />
           </LanguageProvider>
         </ErrorBoundary>
       </body>

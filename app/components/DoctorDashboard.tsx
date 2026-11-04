@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Fragment } from "react";
 import { useRouter } from "next/navigation";
 import { useDoctor } from "@/lib/useDoctor";
 import type { Doctor, Patient } from "@/lib/types";
@@ -23,10 +23,14 @@ import {
   Footprints,
   Save,
   Check,
+  Search,
 } from "lucide-react";
-// import InstallPWA from "./InstallPWA";
 import LogiquelAdCard from "./LogiquelAdCard";
-import { formatDelayText, getTimeSlots } from "../util/timeSlot";
+import ConsultationTimer from "./ConsultationTimer";
+import LanguageSelector from "./LanguageSelector";
+import NotificationToggle from "./NotificationToggle";
+import { useLanguage } from "@/lib/LanguageContext";
+import { formatDelayText, getTimeSlots, sortPatientsBySlot } from "../util/timeSlot";
 
 type Tab = "queue" | "walkin" | "settings";
 
@@ -73,9 +77,11 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
     regWindow,
     setRegWindow,
     toggleRegistration,
+    toggleWalkinRegistration,
     patients,
     walkinPatients,
     callNext,
+    markDone,
     skipPatient,
     updatePatientTimeSlot,
     markWalkinDone,
@@ -86,6 +92,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
     toast,
   } = useDoctor(doctor);
   const router = useRouter();
+  const { t, language } = useLanguage();
   const [tab, setTab] = useState<Tab>("queue");
   const [editName, setEditName] = useState(false);
   const [tempName, setTempName] = useState(doctorName);
@@ -99,6 +106,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
   const [resetStatusToWaiting, setResetStatusToWaiting] = useState<boolean>(true);
   const [isUpdatingSlot, setIsUpdatingSlot] = useState<boolean>(false);
   const [slotFilter, setSlotFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Local form state for Settings tab to ensure smooth editing and 100% DB synchronization
   const [formDate, setFormDate] = useState(regWindow.date || "");
@@ -175,27 +183,67 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
     return !isNaN(age) && age > 0 && age <= 10;
   }).length;
 
-  const filteredWalkinPatients = walkinPatients.filter((p) => {
-    if (walkinFilter === "pwd") return Boolean(p.pwd);
-    if (walkinFilter === "senior") {
-      const age = parseInt(p.age, 10);
-      return !isNaN(age) && age >= 80;
+  const filteredWalkinPatients = useMemo(() => {
+    let list = walkinPatients.filter((p) => {
+      if (walkinFilter === "pwd") return Boolean(p.pwd);
+      if (walkinFilter === "senior") {
+        const age = parseInt(p.age, 10);
+        return !isNaN(age) && age >= 80;
+      }
+      if (walkinFilter === "children") {
+        const age = parseInt(p.age, 10);
+        return !isNaN(age) && age > 0 && age <= 10;
+      }
+      return true;
+    });
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      const numQuery = q.replace(/\D/g, "");
+      list = list.filter((p) => {
+        const nameMatch = p.name?.toLowerCase().includes(q);
+        const phoneMatch = numQuery && p.phone ? p.phone.replace(/\D/g, "").includes(numQuery) : false;
+        const tokenMatch = String(p.token_number) === q || (p.walkin_token_display && p.walkin_token_display.toLowerCase().includes(q));
+        return Boolean(nameMatch || phoneMatch || tokenMatch);
+      });
     }
-    if (walkinFilter === "children") {
-      const age = parseInt(p.age, 10);
-      return !isNaN(age) && age > 0 && age <= 10;
-    }
-    return true;
-  });
+
+    return list;
+  }, [walkinPatients, walkinFilter, searchQuery]);
+
+  const crossMatchWalkinCount = useMemo(() => {
+    if (!searchQuery.trim()) return 0;
+    const q = searchQuery.trim().toLowerCase();
+    const numQuery = q.replace(/\D/g, "");
+    return walkinPatients.filter((p) => {
+      const nameMatch = p.name?.toLowerCase().includes(q);
+      const phoneMatch = numQuery && p.phone ? p.phone.replace(/\D/g, "").includes(numQuery) : false;
+      const tokenMatch = String(p.token_number) === q || (p.walkin_token_display && p.walkin_token_display.toLowerCase().includes(q));
+      return Boolean(nameMatch || phoneMatch || tokenMatch);
+    }).length;
+  }, [walkinPatients, searchQuery]);
+
+  const crossMatchOnlineCount = useMemo(() => {
+    if (!searchQuery.trim()) return 0;
+    const q = searchQuery.trim().toLowerCase();
+    const numQuery = q.replace(/\D/g, "");
+    return patients.filter((p) => {
+      const nameMatch = p.name?.toLowerCase().includes(q);
+      const phoneMatch = numQuery && p.phone ? p.phone.replace(/\D/g, "").includes(numQuery) : false;
+      const tokenMatch = String(p.token_number) === q || String(p.token_number).padStart(2, "0") === q;
+      const slotMatch = p.time_slot?.toLowerCase().includes(q);
+      return Boolean(nameMatch || phoneMatch || tokenMatch || slotMatch);
+    }).length;
+  }, [patients, searchQuery]);
 
   const availableSlots = useMemo(() => {
     const generated = getTimeSlots(
       regWindow.startTime || "10:00",
       regWindow.endTime || "19:00",
-      "14:00",
       "15:00",
+      "16:00",
       60,
-      regWindow.delayMinutes || 0
+      0
     ).map((s: { label: string }) => s.label);
 
     const existingSlots = Array.from(
@@ -203,12 +251,28 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
     );
 
     return Array.from(new Set([...generated, ...existingSlots]));
-  }, [regWindow.startTime, regWindow.endTime, regWindow.delayMinutes, patients]);
+  }, [regWindow.startTime, regWindow.endTime, patients]);
 
   const filteredOnlinePatients = useMemo(() => {
-    if (slotFilter === "all") return patients;
-    return patients.filter((p) => p.time_slot === slotFilter);
-  }, [patients, slotFilter]);
+    let list = slotFilter === "all" ? patients : patients.filter((p) => p.time_slot === slotFilter);
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      const numQuery = q.replace(/\D/g, "");
+      list = list.filter((p) => {
+        const nameMatch = p.name?.toLowerCase().includes(q);
+        const phoneMatch = numQuery && p.phone ? p.phone.replace(/\D/g, "").includes(numQuery) : false;
+        const tokenMatch =
+          String(p.slot_token_number) === q ||
+          String(p.token_number) === q ||
+          String(p.token_number).padStart(2, "0") === q;
+        const slotMatch = p.time_slot?.toLowerCase().includes(q);
+        return Boolean(nameMatch || phoneMatch || tokenMatch || slotMatch);
+      });
+    }
+
+    return sortPatientsBySlot(list);
+  }, [patients, slotFilter, searchQuery]);
 
   const handleOpenReschedule = (p: Patient) => {
     setReschedulePatient(p);
@@ -289,9 +353,9 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
           <nav className="space-y-1.5 flex-1">
             {(
               [
-                ["queue", "Online Queue", Users, waiting.length],
-                ["walkin", "Walk-in Queue", Footprints, walkinWaiting.length],
-                ["settings", "Settings", Settings, null],
+                ["queue", t("onlineQueue"), Users, waiting.length],
+                ["walkin", t("walkinQueue"), Footprints, walkinWaiting.length],
+                ["settings", t("settingsTab"), Settings, null],
               ] as [Tab, string, any, number | null][]
             ).map(([id, label, Icon, count]) => (
               <button
@@ -322,8 +386,15 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
             ))}
           </nav>
 
-          <div className="border-t border-surface-200 pt-4 mt-4">
-            <div className="flex items-center gap-3 mb-4">
+          <div className="border-t border-surface-200 pt-4 mt-4 space-y-3">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[11px] font-bold text-surface-500">
+                {language === "hi" ? "भाषा / Language:" : "Language:"}
+              </span>
+              <LanguageSelector />
+            </div>
+
+            <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center font-display text-sm font-bold text-brand-700">
                 {doctorName
                   .split(" ")
@@ -336,16 +407,16 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                   {doctorName}
                 </p>
                 <p className="text-surface-500 text-xs font-medium">
-                  General Physician
+                  {t("generalPhysician")}
                 </p>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 text-surface-500 hover:text-red-600 hover:bg-red-50 rounded-xl py-2.5 text-xs font-body font-medium transition-all"
+              className="w-full flex items-center justify-center gap-2 text-surface-500 hover:text-red-600 hover:bg-red-50 rounded-xl py-2.5 text-xs font-body font-medium transition-all cursor-pointer"
             >
               <LogOut size={14} />
-              Sign Out
+              {t("signOut")}
             </button>
           </div>
         </aside>
@@ -361,24 +432,24 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                 Doc Care
               </span>
               <span className="text-[10px] text-brand-600 font-body font-semibold block leading-none">
-                Doctor Panel
+                {t("doctorPanel")}
               </span>
             </div>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* <InstallPWA /> */}
+            <LanguageSelector />
             <div
               className={`flex items-center gap-1.5 text-[10px] font-body font-semibold px-2 sm:px-2.5 py-1 rounded-full border ${regWindow.isOpen ? "bg-brand-50 text-brand-700 border-brand-200" : "bg-surface-100 text-surface-500 border-surface-200"}`}
             >
               <div
                 className={`w-1.5 h-1.5 rounded-full ${regWindow.isOpen ? "bg-brand-500 status-live" : "bg-surface-400"}`}
               />
-              <span>{regWindow.isOpen ? "Open" : "Closed"}</span>
+              <span>{regWindow.isOpen ? t("open") : t("closed")}</span>
             </div>
             <button
               onClick={handleLogout}
               className="text-surface-500 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
-              title="Sign Out"
+              title={t("signOut")}
             >
               <LogOut size={16} />
             </button>
@@ -439,6 +510,8 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
 
               {/* Action Buttons & Quick Controls */}
               <div className="flex flex-wrap items-center gap-2">
+                <NotificationToggle />
+
                 {/* Doctor Delay Quick Selector */}
                 <div className={`relative flex items-center gap-1.5 border rounded-xl px-3 py-2 transition-all shadow-xs w-fit ${
                   regWindow.delayMinutes > 0
@@ -446,27 +519,28 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                     : "bg-surface-50 border-surface-200 text-surface-700"
                 }`}>
                   <Clock size={16} className={regWindow.delayMinutes > 0 ? "text-amber-600 animate-pulse shrink-0" : "text-surface-400 shrink-0"} />
-                  <span className="font-body text-xs font-semibold whitespace-nowrap">Late Status:</span>
+                  <span className="font-body text-xs font-semibold whitespace-nowrap">{t("lateStatus")}:</span>
                   <select
                     value={regWindow.delayMinutes}
                     onChange={(e) => setRegWindow({ delayMinutes: parseInt(e.target.value, 10) || 0 })}
                     className="bg-transparent font-body text-xs font-extrabold text-surface-900 focus:outline-none cursor-pointer pr-1"
                   >
-                    <option value={0}>🟢 On Time (0m)</option>
-                    <option value={15}>⏱️ +15m Late</option>
-                    <option value={30}>⏱️ +30m Late</option>
-                    <option value={45}>⏱️ +45m Late</option>
-                    <option value={60}>⏱️ +1h Late</option>
-                    <option value={90}>⏱️ +1.5h Late</option>
-                    <option value={120}>⏱️ +2h Late</option>
+                    <option value={0}>🟢 {t("onTime")}</option>
+                    <option value={15}>⏱️ +15m {language === "hi" ? "देरी" : "Late"}</option>
+                    <option value={30}>⏱️ +30m {language === "hi" ? "देरी" : "Late"}</option>
+                    <option value={45}>⏱️ +45m {language === "hi" ? "देरी" : "Late"}</option>
+                    <option value={60}>⏱️ +1h {language === "hi" ? "देरी" : "Late"}</option>
+                    <option value={90}>⏱️ +1.5h {language === "hi" ? "देरी" : "Late"}</option>
+                    <option value={120}>⏱️ +2h {language === "hi" ? "देरी" : "Late"}</option>
                   </select>
                 </div>
 
-                {/* Registration Toggle Button */}
+                {/* Online Registration Toggle Button */}
                 <button
                   onClick={() => toggleRegistration(!regWindow.isOpen)}
                   disabled={loading}
-                  className={`w-fit inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-body text-xs sm:text-sm font-bold transition-all shadow-md active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer shrink-0 ${
+                  title={regWindow.isOpen ? "Click to close online registration" : "Click to open online registration"}
+                  className={`w-fit inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-body text-xs sm:text-sm font-bold transition-all shadow-md active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer shrink-0 ${
                     regWindow.isOpen
                       ? "bg-red-500 hover:bg-red-600 text-white shadow-red-500/20"
                       : "bg-brand-600 hover:bg-brand-700 text-white shadow-brand-500/20"
@@ -474,20 +548,48 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                 >
                   {loading ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                      <span>Please wait...</span>
+                      <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                      <span>{language === "hi" ? "कृपया प्रतीक्षा करें..." : "Please wait..."}</span>
                     </>
                   ) : (
                     <>
                       {regWindow.isOpen ? (
-                        <Square size={16} />
+                        <Square size={15} />
                       ) : (
-                        <Play size={16} />
+                        <Play size={15} />
                       )}
                       <span>
                         {regWindow.isOpen
-                          ? "Close Registration"
-                          : "Open Registration"}
+                          ? t("onlineClose")
+                          : t("onlineOpen")}
+                      </span>
+                    </>
+                  )}
+                </button>
+
+                {/* Walk-in Registration Toggle Button */}
+                <button
+                  onClick={() => toggleWalkinRegistration(!regWindow.isWalkinOpen)}
+                  disabled={loading}
+                  title={regWindow.isWalkinOpen ? "Click to close walk-in registration" : "Click to open walk-in registration"}
+                  className={`w-fit inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-body text-xs sm:text-sm font-bold transition-all shadow-md active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer shrink-0 ${
+                    regWindow.isWalkinOpen
+                      ? "bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20"
+                      : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20"
+                  }`}
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                      <span>{language === "hi" ? "कृपया प्रतीक्षा करें..." : "Please wait..."}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Footprints size={15} />
+                      <span>
+                        {regWindow.isWalkinOpen
+                          ? t("walkinClose")
+                          : t("walkinOpen")}
                       </span>
                     </>
                   )}
@@ -499,16 +601,16 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
             <div className="flex lg:hidden gap-1 bg-surface-200/60 backdrop-blur-xs rounded-2xl p-1 mb-5 sm:mb-6 border border-surface-200/80 w-full">
               {(
                 [
-                  ["queue", "Online", Users, waiting.length],
-                  ["walkin", "Walk-in", Footprints, walkinWaiting.length],
-                  ["settings", "Settings", Settings, null],
+                  ["queue", t("onlineQueue"), Users, waiting.length],
+                  ["walkin", t("walkinQueue"), Footprints, walkinWaiting.length],
+                  ["settings", t("settingsTab"), Settings, null],
                 ] as [Tab, string, any, number | null][]
-              ).map(([t, label, Icon, count]) => (
+              ).map(([tabId, label, Icon, count]) => (
                 <button
-                  key={t}
-                  onClick={() => setTab(t)}
+                  key={tabId}
+                  onClick={() => setTab(tabId)}
                   className={`flex-1 min-w-0 py-2.5 sm:py-3 px-1.5 sm:px-2 rounded-xl font-body text-xs font-bold capitalize transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer ${
-                    tab === t
+                    tab === tabId
                       ? "bg-white text-surface-900 shadow-md shadow-surface-900/5 border border-surface-200/50"
                       : "text-surface-600 hover:text-surface-900"
                   }`}
@@ -518,7 +620,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                   {count !== null && count > 0 && (
                     <span
                       className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold shrink-0 ${
-                        tab === t
+                        tab === tabId
                           ? "bg-brand-100 text-brand-700"
                           : "bg-surface-200 text-surface-700"
                       }`}
@@ -603,39 +705,96 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                           </div>
                         )}
                       </div>
-                      <div className="flex items-center gap-3 bg-white/10 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl backdrop-blur-md border border-white/20 shrink-0 w-fit">
+                      <div className="flex items-center gap-2.5 bg-white/10 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl backdrop-blur-md border border-white/20 shrink-0 w-fit flex-wrap">
+                        <ConsultationTimer patientId={inProgress.id} />
+                        <button
+                          type="button"
+                          onClick={() => markDone(inProgress.id)}
+                          disabled={loading}
+                          className="bg-emerald-600 hover:bg-emerald-500 active:scale-98 text-white rounded-xl px-3.5 sm:px-4 py-2 sm:py-2.5 font-body font-bold text-xs sm:text-sm transition-all shadow-md text-center cursor-pointer inline-flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap"
+                          title="Mark current patient consultation as done"
+                        >
+                          <CheckCircle2 size={15} />
+                          <span>Mark Done</span>
+                        </button>
                         <button
                           onClick={callNext}
                           disabled={loading}
-                          className="w-fit bg-white hover:bg-brand-50 active:scale-98 text-brand-700 border border-transparent rounded-xl px-4 sm:px-5 py-2 sm:py-2.5 font-body font-bold text-xs sm:text-sm transition-all shadow-md text-center cursor-pointer inline-flex items-center justify-center gap-2 shrink-0 whitespace-nowrap"
+                          className="w-fit bg-white hover:bg-brand-50 active:scale-98 text-brand-700 border border-transparent rounded-xl px-3.5 sm:px-4 py-2 sm:py-2.5 font-body font-bold text-xs sm:text-sm transition-all shadow-md text-center cursor-pointer inline-flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap"
                         >
-                          <span>Call Next Patient</span>
-                          <ChevronRight size={16} />
+                          <span>Call Next</span>
+                          <ChevronRight size={15} />
                         </button>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Call Next Button Bar */}
-                <div className="flex items-center justify-between gap-3 flex-wrap bg-white p-3 sm:p-4 rounded-2xl border border-surface-200 shadow-xs w-full">
-                  <div>
+                {/* Search & Call Next Button Bar */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-surface-200 shadow-xs w-full">
+                  <div className="flex items-center gap-2 shrink-0">
                     <h2 className="font-display text-base sm:text-lg font-bold text-surface-900 flex items-center gap-2">
-                      <span>Online Queue</span>
+                      <span>{t("onlineQueue")}</span>
                       <span className="font-body text-xs font-bold text-brand-700 bg-brand-50 px-2.5 py-0.5 sm:py-1 rounded-full border border-brand-100">
-                        {waiting.length} waiting
+                        {waiting.length} {t("waitingCountText")}
                       </span>
+                      {searchQuery.trim() && (
+                        <span className="font-body text-xs font-bold text-surface-700 bg-surface-100 px-2.5 py-0.5 rounded-full border border-surface-200">
+                          {t("foundCountText")}: {filteredOnlinePatients.length}
+                        </span>
+                      )}
                     </h2>
                   </div>
+
+                  {/* Search Input */}
+                  <div className="flex-1 max-w-md w-full relative">
+                    <div className="relative flex items-center">
+                      <Search size={16} className="absolute left-3.5 text-surface-400 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder={t("searchPatientPlaceholder")}
+                        className="w-full bg-surface-50 border border-surface-200 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 rounded-xl pl-9 pr-9 py-2 text-xs sm:text-sm font-semibold text-surface-900 placeholder:text-surface-400 transition-all outline-none"
+                      />
+                      {searchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setSearchQuery("")}
+                          className="absolute right-3 text-surface-400 hover:text-surface-700 p-0.5 rounded-full hover:bg-surface-200 transition-colors cursor-pointer"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
                   <button
                     onClick={callNext}
                     disabled={(!inProgress && waiting.length === 0) || loading}
-                    className="w-fit inline-flex items-center justify-center gap-2 bg-surface-900 hover:bg-surface-800 disabled:bg-surface-100 disabled:text-surface-400 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-body font-bold px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl transition-all shadow-md active:scale-98 whitespace-nowrap cursor-pointer shrink-0"
+                    className="w-full md:w-fit inline-flex items-center justify-center gap-2 bg-surface-900 hover:bg-surface-800 disabled:bg-surface-100 disabled:text-surface-400 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-body font-bold px-4 sm:px-5 py-2.5 rounded-xl transition-all shadow-md active:scale-98 whitespace-nowrap cursor-pointer shrink-0"
                   >
-                    <span>Call Next Patient</span>
+                    <span>{t("callNextPatient")}</span>
                     <ChevronRight size={16} />
                   </button>
                 </div>
+
+                {/* Cross-match helper notification */}
+                {searchQuery.trim() && crossMatchWalkinCount > 0 && (
+                  <div className="bg-amber-50 border border-amber-200/90 rounded-xl px-3.5 py-2.5 flex items-center justify-between text-xs text-amber-900 font-semibold gap-2">
+                    <div className="flex items-center gap-2">
+                      <Footprints size={15} className="text-amber-600 shrink-0" />
+                      <span>Found <strong>{crossMatchWalkinCount}</strong> walk-in patient(s) matching &ldquo;{searchQuery}&rdquo;</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setTab("walkin")}
+                      className="text-amber-800 hover:text-amber-950 font-extrabold underline shrink-0 cursor-pointer text-xs"
+                    >
+                      View in Walk-in Queue &rarr;
+                    </button>
+                  </div>
+                )}
 
                 {/* Slot Filter Bar */}
                 {availableSlots.length > 0 && patients.length > 0 && (
@@ -703,50 +862,102 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                     </div>
                   ) : filteredOnlinePatients.length === 0 ? (
                     <div className="text-center py-12 px-4">
-                      <div className="w-12 h-12 bg-surface-100 rounded-2xl flex items-center justify-center mx-auto mb-2">
-                        <Clock size={22} className="text-surface-400" />
+                      <div className="w-12 h-12 bg-surface-100 rounded-2xl flex items-center justify-center mx-auto mb-2 text-surface-400">
+                        {searchQuery ? <Search size={22} /> : <Clock size={22} />}
                       </div>
                       <p className="font-display text-sm font-bold text-surface-900 mb-1">
-                        No patients in this slot
+                        {searchQuery ? "No matching patients" : "No patients in this slot"}
                       </p>
                       <p className="font-body text-xs text-surface-500 mb-3">
-                        No patients found for slot &ldquo;{slotFilter}&rdquo;.
+                        {searchQuery
+                          ? `No online patients match "${searchQuery}"${slotFilter !== "all" ? ` in slot "${slotFilter}"` : ""}.`
+                          : `No patients found for slot "${slotFilter}".`}
                       </p>
-                      <button
-                        type="button"
-                        onClick={() => setSlotFilter("all")}
-                        className="text-xs font-bold text-brand-600 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-xl border border-brand-200 transition-colors cursor-pointer"
-                      >
-                        Show All Slots
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        {searchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => setSearchQuery("")}
+                            className="text-xs font-bold text-brand-600 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-xl border border-brand-200 transition-colors cursor-pointer"
+                          >
+                            Clear Search
+                          </button>
+                        )}
+                        {slotFilter !== "all" && (
+                          <button
+                            type="button"
+                            onClick={() => setSlotFilter("all")}
+                            className="text-xs font-bold text-surface-700 bg-surface-100 hover:bg-surface-200 px-3 py-1.5 rounded-xl border border-surface-200 transition-colors cursor-pointer"
+                          >
+                            Show All Slots
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <div className="divide-y divide-surface-100">
-                      {filteredOnlinePatients.map((p) => (
-                        <div
-                          key={p.id}
-                          className={`p-3.5 sm:p-4 transition-all hover:bg-surface-50 w-full ${
-                            p.status === "done" || p.status === "skipped"
-                              ? "bg-surface-50/50 opacity-60"
-                              : ""
-                          }`}
-                        >
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 w-full">
-                            {/* Patient Info */}
-                            <div className="flex items-start gap-3 min-w-0 flex-1">
-                              <div
-                                className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center font-mono-custom font-extrabold text-sm sm:text-base shrink-0 shadow-xs ${
-                                  p.status === "in-progress"
-                                    ? "bg-brand-600 text-white shadow-md shadow-brand-500/20"
-                                    : p.status === "done"
-                                      ? "bg-surface-200 text-surface-500"
-                                      : p.status === "skipped"
-                                        ? "bg-red-100 text-red-500"
-                                        : "bg-brand-50 text-brand-700 border border-brand-200/80"
-                                }`}
-                              >
-                                {p.slot_token_number || p.token_number}
+                      {filteredOnlinePatients.map((p, index) => {
+                        const prevPatient = index > 0 ? filteredOnlinePatients[index - 1] : null;
+                        const isNewSlot =
+                          slotFilter === "all" &&
+                          Boolean(p.time_slot) &&
+                          (!prevPatient || prevPatient.time_slot !== p.time_slot);
+
+                        const slotPatientCount = filteredOnlinePatients.filter(
+                          (item) => item.time_slot === p.time_slot,
+                        ).length;
+
+                        const slotToken = p.slot_token_number || p.token_number;
+
+                        return (
+                          <Fragment key={p.id}>
+                            {isNewSlot && (
+                              <div className="bg-gradient-to-r from-brand-50/90 via-surface-100/70 to-surface-50 px-4 py-2 border-y border-brand-200/50 flex items-center justify-between gap-2 shadow-2xs">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <div className="w-5 h-5 rounded-md bg-brand-100 text-brand-700 flex items-center justify-center shrink-0">
+                                    <Clock size={12} className="text-brand-700" />
+                                  </div>
+                                  <span className="font-mono-custom text-xs font-black text-surface-900 tracking-tight">
+                                    {p.time_slot}
+                                  </span>
+                                </div>
+                                <span className="text-[10px] font-bold text-brand-800 bg-white border border-brand-200/90 px-2 py-0.5 rounded-full shadow-2xs shrink-0">
+                                  {slotPatientCount} {slotPatientCount === 1 ? "Patient" : "Patients"}
+                                </span>
                               </div>
+                            )}
+
+                            <div
+                              className={`p-3.5 sm:p-4 transition-all hover:bg-surface-50 w-full ${
+                                p.status === "done" || p.status === "skipped"
+                                  ? "bg-surface-50/50 opacity-60"
+                                  : ""
+                              }`}
+                            >
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 w-full">
+                                {/* Patient Info */}
+                                <div className="flex items-start gap-3 min-w-0 flex-1">
+                                  <div
+                                    className={`w-11 h-11 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center font-mono-custom font-black shrink-0 shadow-xs leading-none ${
+                                      p.status === "in-progress"
+                                        ? "bg-brand-600 text-white shadow-md shadow-brand-500/20"
+                                        : p.status === "done"
+                                          ? "bg-surface-200 text-surface-500"
+                                          : p.status === "skipped"
+                                            ? "bg-red-100 text-red-500"
+                                            : "bg-brand-50 text-brand-700 border border-brand-200/80"
+                                    }`}
+                                    title={
+                                      p.slot_token_number
+                                        ? `Slot Token #${p.slot_token_number} (Day Token #${p.token_number})`
+                                        : `Token #${p.token_number}`
+                                    }
+                                  >
+                                    <span className="text-sm sm:text-base font-black">{slotToken}</span>
+                                    <span className="text-[8px] font-bold uppercase tracking-wider opacity-70 mt-0.5">
+                                      Slot
+                                    </span>
+                                  </div>
 
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center justify-between sm:justify-start gap-2 flex-wrap mb-0.5">
@@ -812,6 +1023,16 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                                   <>
                                     <button
                                       type="button"
+                                      onClick={() => markDone(p.id)}
+                                      disabled={loading}
+                                      className="flex-1 sm:flex-initial flex items-center justify-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-800 active:scale-95 px-3 py-1.5 rounded-lg transition-all border border-emerald-200 cursor-pointer shadow-2xs whitespace-nowrap"
+                                      title="Mark patient as completed"
+                                    >
+                                      <CheckCircle2 size={12} className="shrink-0 text-emerald-600" />
+                                      <span>Done</span>
+                                    </button>
+                                    <button
+                                      type="button"
                                       onClick={() => handleOpenReschedule(p)}
                                       className="flex-1 sm:flex-initial flex items-center justify-center gap-1 text-xs font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 hover:text-brand-800 active:scale-95 px-3 py-1.5 rounded-lg transition-all border border-brand-200 cursor-pointer shadow-2xs whitespace-nowrap"
                                       title="Update patient's time slot"
@@ -845,8 +1066,10 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                             </div>
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      </Fragment>
+                    );
+                  })}
+                  </div>
                   )}
                 </div>
               </div>
@@ -855,6 +1078,62 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
             {/* Walk-in Queue Tab */}
             {tab === "walkin" && (
               <div className="space-y-4 sm:space-y-6 animate-slide-up w-full min-w-0">
+                {/* Walk-in Registration Status & Control Banner */}
+                <div className="bg-white border border-surface-200/80 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-xs ${
+                      regWindow.isWalkinOpen
+                        ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
+                        : "bg-surface-100 text-surface-500 border border-surface-200"
+                    }`}>
+                      <Footprints size={22} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-display text-sm sm:text-base font-bold text-surface-900 leading-tight">
+                          Walk-in Registration Status
+                        </h3>
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold ${
+                          regWindow.isWalkinOpen
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : "bg-surface-100 text-surface-600 border border-surface-200"
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${regWindow.isWalkinOpen ? "bg-emerald-500 animate-pulse" : "bg-surface-400"}`} />
+                          {regWindow.isWalkinOpen ? "OPEN" : "CLOSED"}
+                        </span>
+                      </div>
+                      <p className="font-body text-xs text-surface-500 mt-0.5">
+                        {regWindow.isWalkinOpen
+                          ? "Walk-in registration is OPEN. Direct clinic visitors can generate tokens."
+                          : "Walk-in registration is CLOSED. No new walk-in tokens can be created."}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => toggleWalkinRegistration(!regWindow.isWalkinOpen)}
+                    disabled={loading}
+                    className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-body text-xs sm:text-sm font-bold transition-all shadow-md active:scale-98 cursor-pointer disabled:opacity-60 whitespace-nowrap ${
+                      regWindow.isWalkinOpen
+                        ? "bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20"
+                        : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20"
+                    }`}
+                  >
+                    {loading ? (
+                      <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    ) : regWindow.isWalkinOpen ? (
+                      <Square size={16} />
+                    ) : (
+                      <Play size={16} />
+                    )}
+                    <span>
+                      {regWindow.isWalkinOpen
+                        ? "Close Walk-in Registration"
+                        : "Open Walk-in Registration"}
+                    </span>
+                  </button>
+                </div>
+
                 {/* Walk-in Priority Filters */}
                 <div className="bg-white border border-surface-200/80 rounded-2xl p-3.5 sm:p-5 shadow-xs w-full">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
@@ -1099,44 +1378,101 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 bg-white/10 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl backdrop-blur-md border border-white/20 shrink-0 w-fit">
+                      <div className="flex items-center gap-2.5 bg-white/10 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl backdrop-blur-md border border-white/20 shrink-0 w-fit flex-wrap">
+                        <ConsultationTimer patientId={walkinInProgress.id} />
+                        <button
+                          type="button"
+                          onClick={() => markWalkinDone(walkinInProgress.id)}
+                          disabled={loading}
+                          className="bg-emerald-600 hover:bg-emerald-500 active:scale-98 text-white rounded-xl px-3.5 sm:px-4 py-2 sm:py-2.5 font-body font-bold text-xs sm:text-sm transition-all shadow-md text-center cursor-pointer inline-flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap"
+                          title="Mark walk-in patient consultation as done"
+                        >
+                          <CheckCircle2 size={15} />
+                          <span>Mark Done</span>
+                        </button>
                         <button
                           onClick={callNextWalkin}
                           disabled={loading}
-                          className="w-fit bg-white hover:bg-amber-50 active:scale-98 text-amber-800 border border-transparent rounded-xl px-4 sm:px-5 py-2 sm:py-2.5 font-body font-bold text-xs sm:text-sm transition-all shadow-md text-center cursor-pointer inline-flex items-center justify-center gap-2 shrink-0 whitespace-nowrap"
+                          className="w-fit bg-white hover:bg-amber-50 active:scale-98 text-amber-800 border border-transparent rounded-xl px-3.5 sm:px-4 py-2 sm:py-2.5 font-body font-bold text-xs sm:text-sm transition-all shadow-md text-center cursor-pointer inline-flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap"
                         >
-                          <span>Call Next Patient</span>
-                          <ChevronRight size={16} />
+                          <span>Call Next</span>
+                          <ChevronRight size={15} />
                         </button>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Call Next Walk-in Bar */}
-                <div className="flex items-center justify-between gap-3 flex-wrap bg-white p-3 sm:p-4 rounded-2xl border border-surface-200 shadow-xs w-full">
-                  <div>
+                {/* Search & Call Next Walk-in Bar */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-surface-200 shadow-xs w-full">
+                  <div className="flex items-center gap-2 shrink-0">
                     <h2 className="font-display text-base sm:text-lg font-bold text-surface-900 flex items-center gap-2 flex-wrap">
-                      <span>Walk-in Patients</span>
+                      <span>{t("walkinQueue")}</span>
                       <span className="font-body text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 sm:py-1 rounded-full border border-amber-200">
-                        {walkinWaiting.length} waiting
+                        {walkinWaiting.length} {t("waitingCountText")}
                       </span>
                       {walkinFilter !== "all" && (
                         <span className="font-body text-xs font-bold text-amber-800 bg-amber-100/90 border border-amber-300 px-2.5 py-0.5 rounded-full">
-                          Filtered: {filteredWalkinPatients.length}
+                          {language === "hi" ? "फ़िल्टर" : "Filtered"}: {filteredWalkinPatients.length}
+                        </span>
+                      )}
+                      {searchQuery.trim() && (
+                        <span className="font-body text-xs font-bold text-surface-700 bg-surface-100 px-2.5 py-0.5 rounded-full border border-surface-200">
+                          {t("foundCountText")}: {filteredWalkinPatients.length}
                         </span>
                       )}
                     </h2>
                   </div>
+
+                  {/* Search Input */}
+                  <div className="flex-1 max-w-md w-full relative">
+                    <div className="relative flex items-center">
+                      <Search size={16} className="absolute left-3.5 text-surface-400 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder={t("searchPatientPlaceholder")}
+                        className="w-full bg-surface-50 border border-surface-200 focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 rounded-xl pl-9 pr-9 py-2 text-xs sm:text-sm font-semibold text-surface-900 placeholder:text-surface-400 transition-all outline-none"
+                      />
+                      {searchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setSearchQuery("")}
+                          className="absolute right-3 text-surface-400 hover:text-surface-700 p-0.5 rounded-full hover:bg-surface-200 transition-colors cursor-pointer"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
                   <button
                     onClick={callNextWalkin}
                     disabled={(!walkinInProgress && walkinWaiting.length === 0) || loading}
-                    className="w-fit inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 disabled:bg-surface-100 disabled:text-surface-400 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-body font-bold px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl transition-all shadow-md active:scale-98 whitespace-nowrap cursor-pointer shrink-0"
+                    className="w-full md:w-fit inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 disabled:bg-surface-100 disabled:text-surface-400 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-body font-bold px-4 sm:px-5 py-2.5 rounded-xl transition-all shadow-md active:scale-98 whitespace-nowrap cursor-pointer shrink-0"
                   >
-                    <span>Call Next Patient</span>
+                    <span>{t("callNextPatient")}</span>
                     <ChevronRight size={16} />
                   </button>
                 </div>
+
+                {/* Cross-match helper notification */}
+                {searchQuery.trim() && crossMatchOnlineCount > 0 && (
+                  <div className="bg-brand-50 border border-brand-200/90 rounded-xl px-3.5 py-2.5 flex items-center justify-between text-xs text-brand-900 font-semibold gap-2">
+                    <div className="flex items-center gap-2">
+                      <Users size={15} className="text-brand-600 shrink-0" />
+                      <span>Found <strong>{crossMatchOnlineCount}</strong> online patient(s) matching &ldquo;{searchQuery}&rdquo;</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setTab("queue")}
+                      className="text-brand-800 hover:text-brand-950 font-extrabold underline shrink-0 cursor-pointer text-xs"
+                    >
+                      View in Online Queue &rarr;
+                    </button>
+                  </div>
+                )}
 
                 {/* Walk-in Patient List */}
                 <div className="bg-white rounded-2xl border border-surface-200 shadow-sm overflow-hidden w-full">
@@ -1155,22 +1491,41 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                   ) : filteredWalkinPatients.length === 0 ? (
                     <div className="text-center py-12 sm:py-16 px-4">
                       <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-3 text-amber-600">
-                        <Filter size={20} />
+                        {searchQuery ? <Search size={22} /> : <Filter size={20} />}
                       </div>
                       <p className="font-display text-base font-bold text-surface-900 mb-1">
-                        No walk-in patients match this filter
+                        {searchQuery ? "No matching walk-in patients" : "No walk-in patients match this filter"}
                       </p>
                       <p className="font-body text-xs text-surface-500 max-w-xs mx-auto mb-4">
-                        {walkinFilter === "pwd" && "No walk-in patients marked as PWD (Person with Disability)."}
-                        {walkinFilter === "senior" && "No walk-in patients aged 80 or above."}
-                        {walkinFilter === "children" && "No walk-in patients aged 10 or younger."}
+                        {searchQuery
+                          ? `No walk-in patients match "${searchQuery}".`
+                          : walkinFilter === "pwd"
+                          ? "No walk-in patients marked as PWD (Person with Disability)."
+                          : walkinFilter === "senior"
+                          ? "No walk-in patients aged 80 or above."
+                          : walkinFilter === "children"
+                          ? "No walk-in patients aged 10 or younger."
+                          : ""}
                       </p>
-                      <button
-                        onClick={() => setWalkinFilter("all")}
-                        className="inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all cursor-pointer shadow-sm"
-                      >
-                        Show All ({walkinPatients.length})
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        {searchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => setSearchQuery("")}
+                            className="inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all cursor-pointer shadow-sm"
+                          >
+                            Clear Search
+                          </button>
+                        )}
+                        {walkinFilter !== "all" && (
+                          <button
+                            onClick={() => setWalkinFilter("all")}
+                            className="inline-flex items-center gap-1.5 bg-surface-100 hover:bg-surface-200 text-surface-700 text-xs font-bold px-4 py-2 rounded-xl transition-all cursor-pointer border border-surface-200"
+                          >
+                            Show All ({walkinPatients.length})
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <div className="divide-y divide-surface-100">
@@ -1429,18 +1784,21 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
 
                     {/* Doctor Delay / Running Late Management Card */}
                     <div className="sm:col-span-2 bg-gradient-to-r from-amber-50/90 via-orange-50/60 to-amber-50/90 border border-amber-200/90 rounded-2xl p-5 shadow-xs">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2.5 bg-amber-100 text-amber-700 rounded-xl shrink-0">
-                          <Clock size={20} />
+                      <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                        <div className="flex items-start gap-3">
+                          <div className="p-2.5 bg-amber-100 text-amber-700 rounded-xl shrink-0">
+                            <Clock size={20} />
+                          </div>
+                          <div>
+                            <h3 className="font-display text-base font-extrabold text-slate-900">
+                              Doctor Delay Management
+                            </h3>
+                            <p className="font-body text-xs text-slate-600 font-medium">
+                              If doctor is running late, set delay duration to display an alert banner to patients. Appointment slots remain fixed at their standard scheduled times.
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-display text-base font-extrabold text-slate-900">
-                            Doctor Delay Management
-                          </h3>
-                          <p className="font-body text-xs text-slate-600 font-medium">
-                            If doctor is late, set delay duration. Time slots on patient portal automatically adjust (+30 mins, +1 hour, etc.).
-                          </p>
-                        </div>
+                        <NotificationToggle />
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2 mt-4">
@@ -1475,7 +1833,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                       {regWindow.delayMinutes > 0 && (
                         <div className="mt-4 bg-amber-100/90 border border-amber-300/80 rounded-xl p-3 text-xs text-amber-900 font-bold flex items-center justify-between">
                           <span>
-                            ⚠️ Active Schedule Shift: All patient booking slots are currently shifted by +{formatDelayText(regWindow.delayMinutes)}.
+                            ⚠️ Active Delay Alert: Patients are alerted that doctor is running +{formatDelayText(regWindow.delayMinutes)} late. Appointment slots remain unchanged.
                           </span>
                           <button
                             type="button"
@@ -1490,33 +1848,62 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => toggleRegistration(!regWindow.isOpen)}
-                  disabled={loading}
-                  className={`w-fit mx-auto rounded-2xl px-8 py-3.5 font-body font-bold text-sm sm:text-base flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed ${
-                    regWindow.isOpen
-                      ? "bg-red-500 hover:bg-red-600 text-white shadow-red-500/20"
-                      : "bg-brand-600 hover:bg-brand-700 text-white shadow-brand-500/20"
-                  }`}
-                >
-                  {loading ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                      <span>Please wait...</span>
-                    </>
-                  ) : (
-                    <>
-                      {regWindow.isOpen ? (
-                        <Square size={20} />
-                      ) : (
-                        <Play size={20} />
-                      )}
-                      {regWindow.isOpen
-                        ? "Close Registration Now"
-                        : "Open Registration Now"}
-                    </>
-                  )}
-                </button>
+                {/* Registration Management Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  {/* Online Registration Card */}
+                  <div className="bg-surface-50 border border-surface-200/90 rounded-2xl p-5 flex flex-col justify-between gap-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-display font-extrabold text-sm sm:text-base text-surface-900">Online Registration</span>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold ${regWindow.isOpen ? "bg-emerald-100 text-emerald-800 border border-emerald-200" : "bg-surface-200 text-surface-700"}`}>
+                          {regWindow.isOpen ? "OPEN" : "CLOSED"}
+                        </span>
+                      </div>
+                      <p className="font-body text-xs text-surface-500 leading-relaxed">
+                        Allow online patients to register and book time slot tokens through the patient web portal.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => toggleRegistration(!regWindow.isOpen)}
+                      disabled={loading}
+                      className={`w-full rounded-xl px-5 py-3 font-body font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-98 disabled:opacity-60 cursor-pointer ${
+                        regWindow.isOpen
+                          ? "bg-red-500 hover:bg-red-600 text-white shadow-red-500/20"
+                          : "bg-brand-600 hover:bg-brand-700 text-white shadow-brand-500/20"
+                      }`}
+                    >
+                      {regWindow.isOpen ? <Square size={16} /> : <Play size={16} />}
+                      <span>{regWindow.isOpen ? "Close Online Registration" : "Open Online Registration"}</span>
+                    </button>
+                  </div>
+
+                  {/* Walk-in Registration Card */}
+                  <div className="bg-surface-50 border border-surface-200/90 rounded-2xl p-5 flex flex-col justify-between gap-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-display font-extrabold text-sm sm:text-base text-surface-900">Walk-in Registration</span>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold ${regWindow.isWalkinOpen ? "bg-emerald-100 text-emerald-800 border border-emerald-200" : "bg-surface-200 text-surface-700"}`}>
+                          {regWindow.isWalkinOpen ? "OPEN" : "CLOSED"}
+                        </span>
+                      </div>
+                      <p className="font-body text-xs text-surface-500 leading-relaxed">
+                        Allow walk-in patients visiting the clinic directly to generate walk-in queue tokens.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => toggleWalkinRegistration(!regWindow.isWalkinOpen)}
+                      disabled={loading}
+                      className={`w-full rounded-xl px-5 py-3 font-body font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-98 disabled:opacity-60 cursor-pointer ${
+                        regWindow.isWalkinOpen
+                          ? "bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20"
+                          : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20"
+                      }`}
+                    >
+                      {regWindow.isWalkinOpen ? <Square size={16} /> : <Play size={16} />}
+                      <span>{regWindow.isWalkinOpen ? "Close Walk-in Registration" : "Open Walk-in Registration"}</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>

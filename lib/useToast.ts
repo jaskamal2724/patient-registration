@@ -5,9 +5,9 @@ import type { Toast, ToastType } from "@/lib/types";
 export function useToast() {
   const [toast, setToast] = useState<Toast>(null);
 
-  const showToast = useCallback((message: string, type: ToastType = "success") => {
+  const showToast = useCallback((message: string, type: ToastType = "success", duration = 3500) => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3500);
+    setTimeout(() => setToast(null), duration);
   }, []);
 
   return { toast, showToast };

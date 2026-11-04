@@ -6,15 +6,12 @@ import * as api from "@/lib/api";
 import {
   Stethoscope,
   Lock,
-  ArrowRight,
   UserCheck,
   Calendar,
   Ticket,
   Radio,
   User,
   Clock,
-  MapPin,
-  Activity,
   Eye,
   EyeOff,
 } from "lucide-react";
@@ -25,8 +22,8 @@ import DocCareLogo from "./DocCareLogo";
 import LoadingScreen from "./LoadingScreen";
 import LanguageSelector from "./LanguageSelector";
 import TreatedConditionsModal from "./TreatedConditionsModal";
+import NotificationToggle from "./NotificationToggle";
 import { useLanguage } from "@/lib/LanguageContext";
-import { CLINIC_MAP_URL, handleClinicMapClick } from "../util/mapLink";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -69,9 +66,7 @@ export default function LandingPage() {
       router.push("/doctor");
     } catch (e) {
       setLoginError(true);
-      setError(
-        e instanceof Error ? e.message : t("invalidCredentials"),
-      );
+      setError(e instanceof Error ? e.message : t("invalidCredentials"));
       setTimeout(() => {
         setLoginError(false);
         setError(null);
@@ -119,13 +114,19 @@ export default function LandingPage() {
       </header>
 
       {/* Main Content Area */}
-      <main className="relative z-10 max-w-md sm:max-w-xl w-full mx-auto px-4 sm:px-5 pb-8 flex-1">
+      <main className="relative z-10 max-w-md sm:max-w-xl w-full mx-auto px-4 sm:px-5 pb-28 sm:pb-32 flex-1">
         {/* Top OPD Booking Card (Image 2 Top Card) */}
         <div className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-7 border border-slate-100 shadow-xl shadow-blue-900/5 relative overflow-hidden mb-6 text-left">
-          {/* Top Pill Tag */}
-          <div className="inline-flex items-center gap-1 bg-[#EBF3FF] border border-[#D0E2FF] text-[#1D68F3] rounded-full px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wide mb-3 shadow-2xs">
-            <Calendar size={12} className="text-[#1D68F3] shrink-0" />
-            <span>{t("doctorName")}</span>
+          {/* Header Pill Row: Doctor Pill + Notification Toggle */}
+          <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+            {/* Top Pill Tag */}
+            <div className="inline-flex items-center gap-1 bg-[#EBF3FF] border border-[#D0E2FF] text-[#1D68F3] rounded-full px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wide shadow-2xs">
+              <Calendar size={12} className="text-[#1D68F3] shrink-0" />
+              <span>{t("doctorName")}</span>
+            </div>
+
+            {/* Notification Enable / Disable Toggle */}
+            <NotificationToggle />
           </div>
 
           {/* Top Row: Title/Subtitle on Left + OPD Illustration on Right */}
@@ -149,7 +150,10 @@ export default function LandingPage() {
                 {/* Header Blue Medical Cross Badge */}
                 <div className="flex flex-col items-center">
                   <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#1D68F3] text-white flex items-center justify-center shadow-xs mx-auto mb-1">
-                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                    <svg
+                      className="w-3.5 h-3.5 fill-current"
+                      viewBox="0 0 24 24"
+                    >
                       <path d="M19 10.5h-5.5V5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v5.5H5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5h5.5V19c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5H19c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z" />
                     </svg>
                   </div>
@@ -160,8 +164,12 @@ export default function LandingPage() {
 
                 {/* Token A024 Badge */}
                 <div className="bg-white rounded-lg border border-slate-200/90 p-1 sm:p-1.5 shadow-xs text-left w-20 sm:w-22 -ml-1">
-                  <p className="text-[9px] text-slate-400 font-semibold font-body leading-none">{t("tokenBadge")}</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-[#1D68F3] font-mono-custom tracking-wider leading-none mt-0.5">A024</p>
+                  <p className="text-[9px] text-slate-400 font-semibold font-body leading-none">
+                    {t("tokenBadge")}
+                  </p>
+                  <p className="text-xs sm:text-sm font-extrabold text-[#1D68F3] font-mono-custom tracking-wider leading-none mt-0.5">
+                    A024
+                  </p>
                 </div>
               </div>
 
@@ -178,40 +186,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Action Buttons: Book Slot + What We Treat (2-Col Grid) + Location Pill */}
-          <div className="flex flex-col items-start gap-2.5 mb-4 w-full">
-            <div className="grid grid-cols-2 gap-2 sm:gap-2.5 w-full">
-              <button
-                onClick={() => router.push("/patient")}
-                className="bg-[#1D68F3] hover:bg-[#1554C6] text-white font-bold text-[11px] sm:text-xs md:text-sm py-2.5 sm:py-3 px-2 sm:px-3 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-1 sm:gap-1.5 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer min-w-0 text-center"
-              >
-                <Calendar size={14} className="shrink-0" />
-                <span className="truncate">{t("bookSlotBtn")}</span>
-                <ArrowRight size={13} className="shrink-0 hidden xs:inline-block sm:inline-block" />
-              </button>
-
-              <button
-                onClick={() => setShowConditionsModal(true)}
-                className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/90 font-bold text-[11px] sm:text-xs md:text-sm py-2.5 sm:py-3 px-2 sm:px-3 rounded-2xl shadow-2xs flex items-center justify-center gap-1 sm:gap-1.5 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer min-w-0 text-center"
-              >
-                <Activity size={14} className="text-emerald-600 shrink-0" />
-                <span className="truncate">{t("viewTreatedConditionsBtn")}</span>
-              </button>
-            </div>
-
-            <a
-              href={CLINIC_MAP_URL}
-              onClick={handleClinicMapClick}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 bg-orange-50 hover:bg-orange-100 active:scale-95 border border-orange-200/90 rounded-xl px-3 py-1.5 sm:py-2 shadow-2xs transition-all hover:scale-[1.02] cursor-pointer whitespace-nowrap"
-              title="Clinic Location on Google Maps"
-            >
-              <MapPin size={13} className="text-orange-600 shrink-0" />
-              <span>{t("clickToKnowGoogleMapLocation")}</span>
-            </a>
-          </div>
-
           {/* Bottom 3-Feature Bar */}
           <div className="bg-[#F4F8FF] border border-blue-100/70 rounded-2xl p-2.5 sm:p-3.5 grid grid-cols-3 divide-x divide-blue-100/90 text-center items-center mt-2">
             <div className="px-1 sm:px-2 flex flex-col xs:flex-row items-center justify-center gap-1 sm:gap-2 min-w-0">
@@ -223,31 +197,39 @@ export default function LandingPage() {
               </span>
             </div>
 
-            <div className="px-1 sm:px-2 flex flex-col xs:flex-row items-center justify-center gap-1 sm:gap-2 min-w-0">
+            <button
+              type="button"
+              onClick={() => router.push("/patient")}
+              className="px-1 sm:px-2 flex flex-col xs:flex-row items-center justify-center gap-1 sm:gap-2 min-w-0 hover:opacity-80 transition-opacity cursor-pointer"
+              title={t("liveQueue")}
+            >
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white border border-blue-100/80 text-[#1D68F3] flex items-center justify-center shrink-0 shadow-2xs">
                 <Radio size={14} className="sm:w-4 sm:h-4" />
               </div>
               <span className="text-[10px] sm:text-xs font-bold text-slate-700 leading-tight text-center xs:text-left break-words">
                 {t("liveQueue")}
               </span>
-            </div>
+            </button>
 
-            <div className="px-1 sm:px-2 flex flex-col xs:flex-row items-center justify-center gap-1 sm:gap-2 min-w-0">
+            <button
+              type="button"
+              onClick={() => router.push("/patient-registration")}
+              className="px-1 sm:px-2 flex flex-col xs:flex-row items-center justify-center gap-1 sm:gap-2 min-w-0 hover:opacity-80 transition-opacity cursor-pointer"
+              title={t("easyRegister")}
+            >
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white border border-blue-100/80 text-[#1D68F3] flex items-center justify-center shrink-0 shadow-2xs">
                 <User size={14} className="sm:w-4 sm:h-4" />
               </div>
               <span className="text-[10px] sm:text-xs font-bold text-slate-700 leading-tight text-center xs:text-left break-words">
                 {t("easyRegister")}
               </span>
-            </div>
+            </button>
           </div>
         </div>
 
         {/* LOGIQUEL Banner (Image 2 Middle Card) */}
         <LogiquelAdCard variant="landing" />
       </main>
-
-      
 
       {/* Doctor Login Modal */}
       {showPinModal && (
