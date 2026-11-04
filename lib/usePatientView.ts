@@ -1,8 +1,10 @@
 "use client";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import * as api from "@/lib/api";
 import { createBrowserClient } from "@/lib/supabase";
 import { useToast } from "@/lib/useToast";
+import { formatDelayText, sortPatientsBySlot } from "@/app/util/timeSlot";
+import { notifyDoctorDelay } from "@/lib/browserNotification";
 import type { Doctor, Patient, RegistrationWindow, WalkinPatient } from "@/lib/types";
 
 const supabase = createBrowserClient();
@@ -17,6 +19,15 @@ export function usePatientView() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [initialLoadError, setInitialLoadError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const prevDelayRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (doctor?.delay_minutes !== undefined && doctor?.delay_minutes !== null) {
+      if (prevDelayRef.current === null) {
+        prevDelayRef.current = doctor.delay_minutes;
+      }
+    }
+  }, [doctor?.delay_minutes]);
 
   const currentToken =
     patients.find(
@@ -86,7 +97,7 @@ export function usePatientView() {
           api.fetchWalkinPatients().catch(() => []),
         ]);
         if (!cancelled) {
-          setPatients(ps);
+          setPatients(sortPatientsBySlot(ps));
           setWalkinPatients(wps);
           setInitialLoadError(false);
           setInitialLoading(false);
@@ -127,7 +138,7 @@ export function usePatientView() {
                   : patient
               )
             : [...prev, updatedPatient];
-          return next.sort((a, b) => a.token_number - b.token_number);
+          return sortPatientsBySlot(next);
         });
         void loadPatients();
       }
@@ -139,9 +150,7 @@ export function usePatientView() {
           if (prev.some((patient) => patient.id === newPatient.id)) {
             return prev;
           }
-          return [...prev, newPatient].sort(
-            (a, b) => a.token_number - b.token_number
-          );
+          return sortPatientsBySlot([...prev, newPatient]);
         });
         void loadPatients();
       }
@@ -220,6 +229,25 @@ export function usePatientView() {
 
       if (payload.new && typeof payload.new === "object") {
         const updatedDoc = payload.new as Doctor;
+        const newDelay = updatedDoc.delay_minutes ?? 0;
+        const oldDelay = prevDelayRef.current;
+
+        if (oldDelay !== null && newDelay !== oldDelay) {
+          prevDelayRef.current = newDelay;
+          if (newDelay > 0) {
+            showToast(
+              `⚠️ Doctor Running Late Alert: +${formatDelayText(newDelay)} delay announced. Slot timings remain unchanged.`,
+              "warning",
+              6000
+            );
+            void notifyDoctorDelay(newDelay);
+          } else {
+            showToast("ℹ️ Doctor delay cleared. Schedule is back on time.", "info", 4000);
+          }
+        } else if (prevDelayRef.current === null) {
+          prevDelayRef.current = newDelay;
+        }
+
         setDoctor(updatedDoc);
         if ("registration" in updatedDoc) {
           setDoctorRegistrationOpen(Boolean(updatedDoc.registration));

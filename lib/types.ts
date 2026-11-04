@@ -59,6 +59,7 @@ export type Doctor = {
   name: string;
   email: string;
   registration?: boolean | null;
+  walkin_registration?: boolean | null;
   session_date?: string | null;
   start_time?: string | null;
   end_time?: string | null;
@@ -69,7 +70,7 @@ export type Doctor = {
   created_at: string;
 };
 
-export type ToastType = "success" | "error" | "info";
+export type ToastType = "success" | "error" | "info" | "warning";
 
 export type Toast = {
   message: string;
@@ -78,6 +79,7 @@ export type Toast = {
 
 export type RegistrationWindow = {
   isOpen: boolean;
+  isWalkinOpen?: boolean;
   startTime: string | null;
   endTime: string | null;
   date: string | null;

@@ -45,11 +45,15 @@ export async function fetchDoctorProfile(): Promise<Doctor | null> {
   return json.doctor ?? null;
 }
 
-export async function fetchActiveDoctor(): Promise<{ doctor: Doctor | null; open: boolean }> {
+export async function fetchActiveDoctor(): Promise<{ doctor: Doctor | null; open: boolean; walkinOpen: boolean }> {
   const res = await fetch("/api/doctors", { cache: "no-store" });
   const json = await jsonOrThrow(res);
   const doc = (json.doctor as Doctor | null) ?? null;
-  return { doctor: doc, open: doc ? Boolean(doc.registration) : false };
+  return {
+    doctor: doc,
+    open: doc ? Boolean(doc.registration) : false,
+    walkinOpen: doc ? Boolean(doc.walkin_registration) : false,
+  };
 }
 
 export async function updateDoctorRegistration(id: string, registration: boolean): Promise<Doctor> {
@@ -57,6 +61,16 @@ export async function updateDoctorRegistration(id: string, registration: boolean
     method: "PATCH",
     headers: await authHeaders(),
     body: JSON.stringify({ registration }),
+  });
+  const json = await jsonOrThrow(res);
+  return json.doctor as Doctor;
+}
+
+export async function updateDoctorWalkinRegistration(id: string, walkin_registration: boolean): Promise<Doctor> {
+  const res = await fetch(`/api/doctors/${id}`, {
+    method: "PATCH",
+    headers: await authHeaders(),
+    body: JSON.stringify({ walkin_registration }),
   });
   const json = await jsonOrThrow(res);
   return json.doctor as Doctor;

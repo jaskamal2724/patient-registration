@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import * as api from "@/lib/api";
 import { createBrowserClient } from "@/lib/supabase";
 import { useToast } from "@/lib/useToast";
+import { sortPatientsBySlot, formatDelayText } from "@/app/util/timeSlot";
+import { notifyDoctorDelay } from "@/lib/browserNotification";
 import type {
   Doctor,
   Patient,
@@ -35,6 +37,7 @@ export function useDoctor(initialDoctor: Doctor) {
 
   const regWindow: RegistrationWindow = {
     isOpen: Boolean(doctor.registration),
+    isWalkinOpen: Boolean(doctor.walkin_registration),
     startTime: doctor.start_time || "10:00",
     endTime: doctor.end_time || "19:00",
     date: doctor.session_date || new Date().toISOString().split("T")[0],
@@ -79,7 +82,7 @@ export function useDoctor(initialDoctor: Doctor) {
           api.fetchWalkinPatients().catch(() => []),
         ]);
         if (!cancelled) {
-          setPatients(ps);
+          setPatients(sortPatientsBySlot(ps));
           setWalkinPatients(wps);
         }
       } catch {
@@ -160,11 +163,23 @@ export function useDoctor(initialDoctor: Doctor) {
           docPatch.auto_close_10am = w.autoClose10AM;
         if (w.delayMinutes !== undefined)
           docPatch.delay_minutes = w.delayMinutes;
+        if (w.isWalkinOpen !== undefined)
+          docPatch.walkin_registration = w.isWalkinOpen;
 
         const updatedDoc = await api.updateDoctorProfile(doctor.id, docPatch);
         setDoctor(updatedDoc);
 
-        showToast("Settings saved", "success");
+        if (w.delayMinutes !== undefined && w.delayMinutes > 0) {
+          void notifyDoctorDelay(w.delayMinutes);
+          showToast(
+            `Doctor delay set to +${formatDelayText(w.delayMinutes)}. Notification alert broadcasted!`,
+            "warning",
+          );
+        } else if (w.delayMinutes === 0) {
+          showToast("Doctor delay cleared. Schedule is back on time.", "info");
+        } else {
+          showToast("Settings saved", "success");
+        }
       } catch {
         showToast("Failed to update settings", "error");
       } finally {
@@ -193,8 +208,33 @@ export function useDoctor(initialDoctor: Doctor) {
     [doctor.id, showToast],
   );
 
+  const toggleWalkinRegistration = useCallback(
+    async (open: boolean) => {
+      setLoading(true);
+      try {
+        const updatedDoc = await api.updateDoctorWalkinRegistration(
+          doctor.id,
+          open,
+        );
+        setDoctor(updatedDoc);
+        showToast(
+          open
+            ? "Walk-in registration is now OPEN"
+            : "Walk-in registration is now CLOSED",
+          open ? "success" : "info",
+        );
+      } catch {
+        showToast("Failed to toggle walk-in registration", "error");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [doctor.id, showToast],
+  );
+
   const callNext = useCallback(async () => {
-    const nextWaiting = patients.find((p) => p.status === "waiting");
+    const sortedPatients = sortPatientsBySlot(patients);
+    const nextWaiting = sortedPatients.find((p) => p.status === "waiting");
     const currentInProgress = patients.find(
       (p) =>
         p.status === "in-progress" || (p.status as string) === "in_progress",
@@ -417,7 +457,9 @@ export function useDoctor(initialDoctor: Doctor) {
           resetStatus
         );
         setPatients((prev) =>
-          prev.map((p) => (p.id === id ? { ...p, ...updated } : p))
+          sortPatientsBySlot(
+            prev.map((p) => (p.id === id ? { ...p, ...updated } : p))
+          )
         );
         const tokenDisplay =
           updated.slot_token_number || updated.token_number;
@@ -452,6 +494,7 @@ export function useDoctor(initialDoctor: Doctor) {
     regWindow,
     setRegWindow,
     toggleRegistration,
+    toggleWalkinRegistration,
     patients,
     walkinPatients,
     currentToken,

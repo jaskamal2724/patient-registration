@@ -28,23 +28,42 @@ import * as api from "@/lib/api";
 import { createBrowserClient } from "@/lib/supabase";
 import type { Doctor, WalkinPatient } from "@/lib/types";
 import { useLanguage } from "@/lib/LanguageContext";
+import { useToast } from "@/lib/useToast";
+import Toast from "./Toast";
+import DoctorDelayBanner from "./DoctorDelayBanner";
+import NotificationPermissionCard from "./NotificationPermissionCard";
+import NotificationToggle from "./NotificationToggle";
+import { notifyDoctorDelay } from "@/lib/browserNotification";
+import { formatDelayText } from "../util/timeSlot";
 import DocCareLogo from "./DocCareLogo";
 // import InstallPWA from "./InstallPWA";
 import LanguageSelector from "./LanguageSelector";
 import LogiquelAdCard from "./LogiquelAdCard";
 import LoadingScreen from "./LoadingScreen";
+import RegistrationSuccessAnimation from "./RegistrationSuccessAnimation";
 
 const supabase = createBrowserClient();
 
 export default function WalkinPatientPortal() {
   const router = useRouter();
   const { t, language } = useLanguage();
+  const { toast, showToast } = useToast();
+  const prevDelayRef = useRef<number | null>(null);
 
   const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [walkinPatients, setWalkinPatients] = useState<WalkinPatient[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [step, setStep] = useState<"home" | "form" | "success">("home");
+  const [showCelebration, setShowCelebration] = useState(false);
+
+  useEffect(() => {
+    if (doctor?.delay_minutes !== undefined && doctor?.delay_minutes !== null) {
+      if (prevDelayRef.current === null) {
+        prevDelayRef.current = doctor.delay_minutes;
+      }
+    }
+  }, [doctor?.delay_minutes]);
 
   // Form State
   const [name, setName] = useState("");
@@ -102,6 +121,40 @@ export default function WalkinPatientPortal() {
                   if (!cancelled) setWalkinPatients(updated);
                 }
               )
+              .on(
+                "postgres_changes",
+                {
+                  event: "*",
+                  schema: "public",
+                  table: "doctors",
+                  filter: `id=eq.${doc.id}`,
+                },
+                (payload) => {
+                  if (payload.new && typeof payload.new === "object") {
+                    const updated = payload.new as Doctor;
+                    const newDelay = updated.delay_minutes ?? 0;
+                    const oldDelay = prevDelayRef.current;
+
+                    if (oldDelay !== null && newDelay !== oldDelay) {
+                      prevDelayRef.current = newDelay;
+                      if (newDelay > 0) {
+                        showToast(
+                          `⚠️ Doctor Running Late Alert: +${formatDelayText(newDelay)} delay announced. Consultation timings are delayed.`,
+                          "warning",
+                          6000
+                        );
+                        void notifyDoctorDelay(newDelay);
+                      } else {
+                        showToast("ℹ️ Doctor delay cleared. Schedule is back on time.", "info", 4000);
+                      }
+                    } else if (prevDelayRef.current === null) {
+                      prevDelayRef.current = newDelay;
+                    }
+
+                    setDoctor((prev) => ({ ...prev, ...updated }));
+                  }
+                }
+              )
               .subscribe();
           }
         } else {
@@ -126,6 +179,11 @@ export default function WalkinPatientPortal() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+
+    if (!doctor?.walkin_registration) {
+      setFormError(t("walkinClosedMsg"));
+      return;
+    }
 
     if (!name.trim()) {
       setFormError(language === "hi" ? "कृपया मरीज का नाम दर्ज करें।" : "Please enter patient name.");
@@ -157,6 +215,7 @@ export default function WalkinPatientPortal() {
 
       setRegisteredPatient(newPatient);
       setWalkinPatients((prev) => [...prev, newPatient]);
+      setShowCelebration(true);
       setStep("success");
       // Reset form
       setName("");
@@ -223,6 +282,7 @@ export default function WalkinPatientPortal() {
 
   const inProgressWalkin = walkinPatients.find((p) => p.status === "in-progress");
   const waitingWalkinCount = walkinPatients.filter((p) => p.status === "waiting").length;
+  const isWalkinOpen = Boolean(doctor?.walkin_registration);
 
   return (
     <div className="min-h-screen relative overflow-x-hidden max-w-full bg-[#FAFAFA] flex flex-col justify-between">
@@ -251,15 +311,31 @@ export default function WalkinPatientPortal() {
       </header>
 
       {/* Main Container */}
-      <main className="relative z-10 max-w-md sm:max-w-xl w-full mx-auto px-4 sm:px-5 pb-8 flex-1">
+      <main className="relative z-10 max-w-md sm:max-w-xl w-full mx-auto px-4 sm:px-5 pb-28 sm:pb-32 flex-1">
+        {/* Doctor Delay Alert Banner across all walkin steps */}
+        {!initialLoading && (doctor?.delay_minutes ?? 0) > 0 && (
+          <div className="mb-4">
+            <DoctorDelayBanner
+              delayMinutes={doctor?.delay_minutes ?? 0}
+              variant={step === "home" ? "card" : "banner"}
+            />
+          </div>
+        )}
+
         {step === "home" && (
           <div className="animate-fade-in space-y-5 text-left">
             {/* Top Walk-in Hero Card */}
             <div className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-7 border border-slate-100 shadow-xl shadow-blue-900/5 relative overflow-hidden">
-              {/* Doctor Tag */}
-              <div className="inline-flex items-center gap-1 bg-[#EBF3FF] border border-[#D0E2FF] text-[#1D68F3] rounded-full px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wide mb-3 shadow-2xs">
-                <Calendar size={12} className="text-[#1D68F3] shrink-0" />
-                <span>{t("doctorName")}</span>
+              {/* Header Pill Row: Doctor Tag + Notification Toggle */}
+              <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+                {/* Doctor Tag */}
+                <div className="inline-flex items-center gap-1 bg-[#EBF3FF] border border-[#D0E2FF] text-[#1D68F3] rounded-full px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wide shadow-2xs">
+                  <Calendar size={12} className="text-[#1D68F3] shrink-0" />
+                  <span>{t("doctorName")}</span>
+                </div>
+
+                {/* Notification Toggle */}
+                <NotificationToggle />
               </div>
 
               <div className="flex items-center justify-between gap-3 mb-4">
@@ -269,14 +345,28 @@ export default function WalkinPatientPortal() {
                     {t("walkinTitle")}
                   </h2>
 
-                  <button
-                    onClick={() => setStep("form")}
-                    className="bg-[#1D68F3] hover:bg-[#1554C6] text-white font-display font-extrabold text-sm sm:text-base px-5 py-3 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-                  >
-                    <HeartPulse size={18} className="shrink-0" />
-                    <span>{t("getWalkinToken")}</span>
-                    <ArrowRight size={16} className="shrink-0" />
-                  </button>
+                  {isWalkinOpen ? (
+                    <button
+                      onClick={() => setStep("form")}
+                      className="bg-[#1D68F3] hover:bg-[#1554C6] text-white font-display font-extrabold text-sm sm:text-base px-5 py-3 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                    >
+                      <HeartPulse size={18} className="shrink-0" />
+                      <span>{t("getWalkinToken")}</span>
+                      <ArrowRight size={16} className="shrink-0" />
+                    </button>
+                  ) : (
+                    <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-4 flex flex-col gap-1.5 shadow-2xs">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle size={16} className="text-amber-600 shrink-0" />
+                        <span className="font-display text-sm font-extrabold text-amber-950">
+                          {t("walkinClosedTitle")}
+                        </span>
+                      </div>
+                      <p className="font-body text-xs font-semibold text-amber-800 leading-relaxed">
+                        {t("walkinClosedMsg")}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Right Icon Illustration */}
@@ -520,6 +610,18 @@ export default function WalkinPatientPortal() {
               </div>
             </div>
 
+            {/* Doctor Delay Ticket Alert */}
+            {(doctor?.delay_minutes ?? 0) > 0 && (
+              <DoctorDelayBanner
+                delayMinutes={doctor?.delay_minutes ?? 0}
+                variant="ticket"
+                className="mb-4 text-left"
+              />
+            )}
+
+            {/* Browser Push Notifications Opt-In Card */}
+            <NotificationPermissionCard className="mb-4 text-left" />
+
             {/* Waiting Guidance Note */}
             <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-left mb-5 flex items-start gap-3">
               <CheckCircle2 size={20} className="text-emerald-600 shrink-0 mt-0.5" />
@@ -546,7 +648,15 @@ export default function WalkinPatientPortal() {
         )}
       </main>
 
-      
+      {/* Celebration Animation (Party Bursters + Green Tick) */}
+      <RegistrationSuccessAnimation
+        isOpen={showCelebration}
+        onComplete={() => setShowCelebration(false)}
+        tokenNumber={registeredPatient?.walkin_token_display || registeredPatient?.token_number}
+      />
+
+      {/* Toast Notification */}
+      <Toast toast={toast} />
     </div>
   );
 }
