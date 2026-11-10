@@ -226,8 +226,27 @@ export const translations = {
     navHome: "Home",
     navBookNow: "Book Now",
     navWhatWeTreat: "What We Treat",
+    navShop: "Shop",
     navLocation: "Location",
-    navCheckStatus: "Check Status",
+    navCheckStatus: "Live Status",
+
+    // Home Next Step Tile (Wireframe)
+    bookedMySlotTitle: "I have booked my slot, now what?",
+    beforeLeavingHome: "Before leaving home, see how many people are before you, or forgot your token number:",
+    addressSectionLabel: "Address:",
+    clinicFullAddress: "House No. 610, Sector-10A, Near Main Market, Gurugram, Haryana 122001",
+    helpQueryLabel: "For Any Help / Query Call on this Number:",
+    callTejaswiBhaiya: "Call: +91 9810807381",
+
+    // Lunch break
+    lunchBreak: "Lunch Break",
+
+    // Shop Page
+    shopTitle: "Doc Care Wellness Shop",
+    shopSubtitle: "Authentic medicines, healthcare essentials & doctor-curated wellness products.",
+    comingSoon: "Coming Soon",
+    comingSoonDesc: "We are curating high-quality healthcare products, supplements, and wellness essentials for you. Stay tuned!",
+    backToHomeBtn: "Back to Home",
 
     // Location Page
     locationPageTitle: "Clinic Location",
@@ -551,8 +570,27 @@ export const translations = {
     navHome: "होम",
     navBookNow: "बुक करें",
     navWhatWeTreat: "इलाज",
-    navLocation: "लोकेशन",
-    navCheckStatus: "स्टेटस",
+    navShop: "शॉप",
+    navLocation: "स्थान",
+    navCheckStatus: "लाइव स्टेटस",
+
+    // Home Next Step Tile (Wireframe)
+    bookedMySlotTitle: "मैंने अपना स्लॉट बुक कर लिया, अब क्या?",
+    beforeLeavingHome: "घर से निकलने से पहले देखें कि आपसे आगे कितने मरीज हैं, या अपना टोकन नंबर भूल गए हैं:",
+    addressSectionLabel: "पता:",
+    clinicFullAddress: "मकान नं. 610, सेक्टर-10A, मुख्य मार्केट के पास, गुरुग्राम, हरियाणा 122001",
+    helpQueryLabel: "किसी भी सहायता या प्रश्न के लिए इस नंबर पर कॉल करें:",
+    callTejaswiBhaiya: "संपर्क करें: +91 9810807381",
+
+    // Lunch break
+    lunchBreak: "लंच ब्रेक",
+
+    // Shop Page
+    shopTitle: "डॉक केयर वेलनेस शॉप",
+    shopSubtitle: "शुद्ध दवाएं, स्वास्थ्य संबंधी उत्पाद एवं डॉक्टर द्वारा प्रमाणित वेलनेस उत्पाद।",
+    comingSoon: "जल्द आ रहा है",
+    comingSoonDesc: "हम आपके लिए उच्च गुणवत्ता वाले स्वास्थ्य उत्पाद एवं आवश्यक दवाएं ला रहे हैं। कृपया प्रतीक्षा करें!",
+    backToHomeBtn: "होम पर वापस जाएं",
 
     // Location Page
     locationPageTitle: "क्लिनिक लोकेशन",

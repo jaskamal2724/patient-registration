@@ -28,6 +28,7 @@ import {
 import LogiquelAdCard from "./LogiquelAdCard";
 import ConsultationTimer from "./ConsultationTimer";
 import LanguageSelector from "./LanguageSelector";
+import InstallPWA from "./InstallPWA";
 import { useLanguage } from "@/lib/LanguageContext";
 import { formatDelayText, getTimeSlots, sortPatientsBySlot } from "../util/timeSlot";
 
@@ -325,7 +326,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
               <p className="text-brand-600 text-xs font-body font-medium mb-1.5">
                 Doctor Panel
               </p>
-              {/* <InstallPWA /> */}
+              <InstallPWA />
             </div>
           </div>
 

@@ -27,6 +27,21 @@ function formatTime(minutes: number): string {
   return `${displayHour}${minStr} ${ampm}`;
 }
 
+export interface TimeSlotItem {
+  label: string;
+  isLunchBreak?: boolean;
+}
+
+export function isLunchSlot(slot: string | null | undefined): boolean {
+  if (!slot) return false;
+  const s = slot.trim().toLowerCase().replace(/\s+/g, " ");
+  return (
+    /0?3\s*:\s*00\s*pm\s*[-–]\s*0?4\s*:\s*00\s*pm/i.test(s) ||
+    /0?3\s*pm\s*[-–]\s*0?4\s*pm/i.test(s) ||
+    s.includes("lunch")
+  );
+}
+
 export const getTimeSlots = (
   startTime: string = "10:00",
   endTime: string = "19:00",
@@ -34,8 +49,8 @@ export const getTimeSlots = (
   breakEnd: string = "16:00",
   duration = 60,
   _delayMinutes = 0,
-) => {
-  const slots = [];
+): TimeSlotItem[] => {
+  const slots: TimeSlotItem[] = [];
 
   let start = toMinutes(startTime || "10:00");
   let end = toMinutes(endTime || "19:00");
@@ -51,8 +66,12 @@ export const getTimeSlots = (
   let current = start;
 
   while (current + duration <= end) {
-    // If current starts within break or slot overlaps into break, advance to break end
+    // If current starts within break or slot overlaps into break, emit lunch slot and advance
     if (current >= breakS && current < breakE) {
+      slots.push({
+        label: `${formatTime(breakS)} - ${formatTime(breakE)}`,
+        isLunchBreak: true,
+      });
       current = breakE;
       continue;
     }
@@ -61,12 +80,17 @@ export const getTimeSlots = (
     const overlapBreak = current < breakE && slotEnd > breakS;
 
     if (overlapBreak) {
+      slots.push({
+        label: `${formatTime(breakS)} - ${formatTime(breakE)}`,
+        isLunchBreak: true,
+      });
       current = breakE;
       continue;
     }
 
     slots.push({
       label: `${formatTime(current)} - ${formatTime(slotEnd)}`,
+      isLunchBreak: false,
     });
 
     current += duration;
@@ -75,14 +99,15 @@ export const getTimeSlots = (
   // Fallback if no slots generated
   if (slots.length === 0) {
     return [
-      { label: `${formatTime(10 * 60)} - ${formatTime(11 * 60)}` },
-      { label: `${formatTime(11 * 60)} - ${formatTime(12 * 60)}` },
-      { label: `${formatTime(12 * 60)} - ${formatTime(13 * 60)}` },
-      { label: `${formatTime(13 * 60)} - ${formatTime(14 * 60)}` },
-      { label: `${formatTime(14 * 60 + 30)} - ${formatTime(15 * 60 + 30)}` }, // 02:30 PM - 03:30 PM
-      { label: `${formatTime(15 * 60 + 30)} - ${formatTime(16 * 60 + 30)}` }, // 03:30 PM - 04:30 PM
-      { label: `${formatTime(16 * 60 + 30)} - ${formatTime(17 * 60 + 30)}` }, // 04:30 PM - 05:30 PM
-      { label: `${formatTime(17 * 60 + 30)} - ${formatTime(18 * 60 + 30)}` }, // 05:30 PM - 06:30 PM
+      { label: `${formatTime(10 * 60)} - ${formatTime(11 * 60)}`, isLunchBreak: false },
+      { label: `${formatTime(11 * 60)} - ${formatTime(12 * 60)}`, isLunchBreak: false },
+      { label: `${formatTime(12 * 60)} - ${formatTime(13 * 60)}`, isLunchBreak: false },
+      { label: `${formatTime(13 * 60)} - ${formatTime(14 * 60)}`, isLunchBreak: false },
+      { label: `${formatTime(14 * 60)} - ${formatTime(15 * 60)}`, isLunchBreak: false },
+      { label: `${formatTime(15 * 60)} - ${formatTime(16 * 60)}`, isLunchBreak: true }, // Lunch 3:00 PM - 4:00 PM
+      { label: `${formatTime(16 * 60)} - ${formatTime(17 * 60)}`, isLunchBreak: false },
+      { label: `${formatTime(17 * 60)} - ${formatTime(18 * 60)}`, isLunchBreak: false },
+      { label: `${formatTime(18 * 60)} - ${formatTime(19 * 60)}`, isLunchBreak: false },
     ];
   }
 
@@ -202,3 +227,65 @@ export function sortPatientsBySlot<
     return 0;
   });
 }
+
+export function parseDateOnly(dateStr: string | null | undefined): Date | null {
+  if (!dateStr) return null;
+  const clean = dateStr.trim().split("T")[0];
+  if (/^\d{1,2}[-/]\d{1,2}[-/]\d{4}$/.test(clean)) {
+    const parts = clean.split(/[-/]/);
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const year = parseInt(parts[2], 10);
+    const d = new Date(year, month, day);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  if (/^\d{4}[-/]\d{1,2}[-/]\d{1,2}$/.test(clean)) {
+    const parts = clean.split(/[-/]/);
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    const d = new Date(year, month, day);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return null;
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+export function getTodayDateOnly(): Date {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+export function isDateToday(dateStr: string | null | undefined): boolean {
+  if (!dateStr) return true;
+  const target = parseDateOnly(dateStr);
+  if (!target) return true;
+  const today = getTodayDateOnly();
+  return target.getTime() === today.getTime();
+}
+
+export function isDateInFuture(dateStr: string | null | undefined): boolean {
+  if (!dateStr) return false;
+  const target = parseDateOnly(dateStr);
+  if (!target) return false;
+  const today = getTodayDateOnly();
+  return target.getTime() > today.getTime();
+}
+
+export function formatVisitDate(
+  dateStr: string | null | undefined,
+  lang: "en" | "hi" = "en",
+): string {
+  if (!dateStr) return "";
+  const d = parseDateOnly(dateStr);
+  if (!d) return dateStr;
+
+  return d.toLocaleDateString(lang === "hi" ? "hi-IN" : "en-IN", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+

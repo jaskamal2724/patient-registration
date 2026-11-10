@@ -96,6 +96,103 @@
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.02); filter: drop-shadow(0 4px 14px rgba(59,130,246,0.35)); }
 }
+@keyframes navCtaPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
+  }
+}
+@keyframes navAuraPulse {
+  0%, 100% {
+    transform: scale(0.95);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.8;
+  }
+}
+
+.animate-nav-pulse {
+  animation: navCtaPulse 2s ease-in-out infinite;
+}
+.animate-nav-aura {
+  animation: navAuraPulse 2s ease-in-out infinite;
+}
+
+/* Coming Soon Showcase Animations */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes diagonalLightBeam {
+  0% {
+    transform: translate3d(-140%, -100%, 0) rotate(-35deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.85;
+  }
+  60% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(240%, 100%, 0) rotate(-35deg);
+    opacity: 0;
+  }
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(-1deg);
+  }
+}
+
+@keyframes pulseGlowRing {
+  0%, 100% {
+    transform: scale(0.95);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 0.85;
+  }
+}
+
+@keyframes liquidWaveFlow {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s linear infinite;
+}
+
+.animate-diagonal-beam {
+  animation: diagonalLightBeam 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-float-gentle {
+  animation: floatGentle 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlowRing 2.5s ease-in-out infinite;
+}
+
+.animate-liquid-wave {
+  animation: liquidWaveFlow 12s linear infinite;
+}
+
+.animate-liquid-wave-fast {
+  animation: liquidWaveFlow 7s linear infinite reverse;
+}
 @keyframes toastIn {
   from { transform: translateX(100%) scale(0.9); opacity: 0; }
   to { transform: translateX(0) scale(1); opacity: 1; }
