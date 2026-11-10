@@ -1,13 +1,5 @@
-"use client";
-
-import { Suspense } from "react";
-import PatientPortal from "../components/PatientPortal";
+import { redirect } from "next/navigation";
 
 export default function CheckStatusPage() {
-  return (
-    <Suspense fallback={null}>
-      <PatientPortal />
-    </Suspense>
-  );
+  redirect("/");
 }
-

@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, CalendarCheck, Stethoscope, MapPin, Radio } from "lucide-react";
+import { Home, CalendarCheck, Stethoscope, ShoppingBag } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 
 interface NavItem {
   key: string;
-  labelKey: "navHome" | "navBookNow" | "navWhatWeTreat" | "navLocation" | "navCheckStatus";
+  labelKey: "navHome" | "navBookNow" | "navWhatWeTreat" | "navShop";
   href: string;
   icon: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
   isActive: (pathname: string) => boolean;
-  hasLivePulse?: boolean;
+  hasPulse?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -20,7 +20,8 @@ const NAV_ITEMS: NavItem[] = [
     labelKey: "navHome",
     href: "/",
     icon: Home,
-    isActive: (pathname: string) => pathname === "/",
+    isActive: (pathname: string) =>
+      pathname === "/" || pathname === "/patient" || pathname === "/check-status",
   },
   {
     key: "book",
@@ -31,6 +32,7 @@ const NAV_ITEMS: NavItem[] = [
       pathname === "/patient-registration" ||
       pathname === "/patient/register" ||
       pathname === "/register",
+    hasPulse: true,
   },
   {
     key: "treat",
@@ -40,19 +42,11 @@ const NAV_ITEMS: NavItem[] = [
     isActive: (pathname: string) => pathname === "/what-we-treat",
   },
   {
-    key: "location",
-    labelKey: "navLocation",
-    href: "/location",
-    icon: MapPin,
-    isActive: (pathname: string) => pathname === "/location",
-  },
-  {
-    key: "status",
-    labelKey: "navCheckStatus",
-    href: "/patient",
-    icon: Radio,
-    isActive: (pathname: string) => pathname === "/patient" || pathname === "/check-status",
-    hasLivePulse: true,
+    key: "shop",
+    labelKey: "navShop",
+    href: "/shop",
+    icon: ShoppingBag,
+    isActive: (pathname: string) => pathname === "/shop",
   },
 ];
 
@@ -85,7 +79,9 @@ export default function BottomNavigation() {
               className={`relative flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all duration-200 active:scale-95 group select-none ${
                 active
                   ? "text-[#1D68F3] font-bold"
-                  : "text-slate-500 hover:text-slate-800 hover:bg-slate-50/80 font-medium"
+                  : item.hasPulse
+                    ? "text-[#1D68F3] hover:text-blue-700 font-bold"
+                    : "text-slate-500 hover:text-slate-800 hover:bg-slate-50/80 font-medium"
               }`}
             >
               {/* Active pill background effect */}
@@ -93,23 +89,34 @@ export default function BottomNavigation() {
                 <span className="absolute inset-x-1.5 inset-y-1 bg-blue-50/90 rounded-2xl -z-10 animate-fade-in" />
               )}
 
-              {/* Icon Container with Pulse Badge */}
-              <div className="relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8">
+              {/* Icon Container with Pulse Animations */}
+              <div
+                className={`relative flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 ${
+                  item.hasPulse ? "animate-nav-pulse" : ""
+                }`}
+              >
+                {/* Soft radiating aura behind pulsing CTA */}
+                {item.hasPulse && (
+                  <span className="absolute inset-0 rounded-full bg-blue-400/25 animate-nav-aura -z-10 pointer-events-none" />
+                )}
+
                 <Icon
                   size={20}
-                  strokeWidth={active ? 2.4 : 1.9}
+                  strokeWidth={active || item.hasPulse ? 2.4 : 1.9}
                   className={`transition-transform duration-200 ${
                     active
                       ? "scale-105 text-[#1D68F3]"
-                      : "text-slate-500 group-hover:text-slate-700"
+                      : item.hasPulse
+                        ? "text-[#1D68F3] group-hover:text-blue-700"
+                        : "text-slate-500 group-hover:text-slate-700"
                   }`}
                 />
 
-                {/* Pulse dot for Live Status / Live Queue item */}
-                {item.hasLivePulse && (
-                  <span className="absolute top-0.5 right-0.5 flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                {/* Pulsing indicator beacon dot on CTA */}
+                {item.hasPulse && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#1D68F3] border-2 border-white shadow-xs" />
                   </span>
                 )}
               </div>
@@ -117,7 +124,11 @@ export default function BottomNavigation() {
               {/* Label */}
               <span
                 className={`text-[10px] sm:text-[11px] leading-tight text-center tracking-tight truncate max-w-full px-0.5 mt-0.5 ${
-                  active ? "font-bold text-[#1D68F3]" : "font-semibold text-slate-500"
+                  active
+                    ? "font-bold text-[#1D68F3]"
+                    : item.hasPulse
+                      ? "font-bold text-[#1D68F3]"
+                      : "font-semibold text-slate-500"
                 }`}
               >
                 {label}

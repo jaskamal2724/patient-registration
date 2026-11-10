@@ -33,7 +33,7 @@ import Toast from "./Toast";
 import DoctorDelayBanner from "./DoctorDelayBanner";
 import { formatDelayText } from "../util/timeSlot";
 import DocCareLogo from "./DocCareLogo";
-// import InstallPWA from "./InstallPWA";
+import InstallPWA from "./InstallPWA";
 import LanguageSelector from "./LanguageSelector";
 import LogiquelAdCard from "./LogiquelAdCard";
 import LoadingScreen from "./LoadingScreen";
@@ -286,9 +286,9 @@ export default function WalkinPatientPortal() {
       <header className="relative z-10 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
         <div className="flex flex-col gap-1.5">
           <DocCareLogo variant="header" subtitle={t("walkinPortal")} />
-          {/* <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             <InstallPWA />
-          </div> */}
+          </div>
         </div>
 
         <div className="flex flex-col items-end gap-1.5 shrink-0">
@@ -386,19 +386,19 @@ export default function WalkinPatientPortal() {
         {step === "form" && (
           <div className="animate-slide-up text-left">
             <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-100 p-5 sm:p-7 shadow-xl shadow-blue-900/5 mb-6">
-              <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-100">
-                <div>
+              <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-100 gap-2">
+                <div className="min-w-0 flex-1">
                   <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
                     {t("walkinBadge")}
                   </span>
-                  <h2 className="font-display text-xl sm:text-2xl font-black text-slate-900 mt-1">
+                  <h2 className="font-display text-lg xs:text-xl sm:text-2xl font-black text-slate-900 mt-1 whitespace-nowrap">
                     {t("patientRegistration")}
                   </h2>
                 </div>
                 <button
                   type="button"
                   onClick={() => setStep("home")}
-                  className="text-xs font-bold text-slate-500 hover:text-slate-900 cursor-pointer"
+                  className="text-xs font-bold text-slate-500 hover:text-slate-900 cursor-pointer shrink-0"
                 >
                   {t("cancel")}
                 </button>

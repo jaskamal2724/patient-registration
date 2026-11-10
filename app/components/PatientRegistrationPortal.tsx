@@ -19,6 +19,8 @@ import LogiquelAdCard from "./LogiquelAdCard";
 import {
   getTimeSlots,
   normalizeSlotLabel,
+  isLunchSlot,
+  TimeSlotItem,
 } from "../util/timeSlot";
 import {
   PatientHeader,
@@ -71,7 +73,7 @@ export default function PatientRegistrationPortal() {
             60,
             0,
           );
-          setTIME_SLOTS(slots.map((s: TimeSlot) => s.label));
+          setTIME_SLOTS(slots.map((s: TimeSlotItem) => s.label));
         }
       } catch {
         const slots = getTimeSlots(
@@ -82,16 +84,17 @@ export default function PatientRegistrationPortal() {
           60,
           0,
         );
-        setTIME_SLOTS(slots.map((s: TimeSlot) => s.label));
+        setTIME_SLOTS(slots.map((s: TimeSlotItem) => s.label));
       }
     };
     fetchSlots();
   }, [regWindow.startTime, regWindow.endTime]);
 
   const capacity = regWindow.patientsPerHour || 10;
+  const bookableSlots = TIME_SLOTS.filter((s) => !isLunchSlot(s));
   const allSlotsFull =
-    TIME_SLOTS.length > 0 &&
-    TIME_SLOTS.every(
+    bookableSlots.length > 0 &&
+    bookableSlots.every(
       (slot) =>
         patients.filter(
           (p) => normalizeSlotLabel(p.time_slot) === normalizeSlotLabel(slot),
@@ -191,7 +194,7 @@ export default function PatientRegistrationPortal() {
               <div className="grid grid-cols-2 gap-2.5">
                 <button
                   type="button"
-                  onClick={() => router.push("/patient")}
+                  onClick={() => router.push("/")}
                   className="bg-[#1D68F3] hover:bg-[#1554C6] text-white font-bold text-xs sm:text-sm py-3 px-3 rounded-2xl shadow-md shadow-blue-500/25 flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
                 >
                   <Radio size={15} className="shrink-0" />
@@ -224,7 +227,7 @@ export default function PatientRegistrationPortal() {
             <div className="flex justify-center">
               <button
                 type="button"
-                onClick={() => router.push("/patient")}
+                onClick={() => router.push("/")}
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl transition-all"
               >
                 <Radio size={14} />
@@ -259,7 +262,7 @@ export default function PatientRegistrationPortal() {
               </div>
               <button
                 type="button"
-                onClick={() => router.push("/patient")}
+                onClick={() => router.push("/")}
                 className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-2 px-3.5 rounded-xl shrink-0 transition-all cursor-pointer shadow-2xs active:scale-95 flex items-center gap-1"
               >
                 <Radio size={13} className="text-emerald-400" />
@@ -291,7 +294,7 @@ export default function PatientRegistrationPortal() {
                 setStep("form");
               }}
               onBackToHome={() => router.push("/")}
-              onViewQueue={() => router.push("/patient")}
+              onViewQueue={() => router.push("/")}
             />
           </div>
         ) : null}

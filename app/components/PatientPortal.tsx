@@ -38,7 +38,7 @@ import {
   Loader2,
   Radio,
 } from "lucide-react";
-// import InstallPWA from "./InstallPWA";
+import InstallPWA from "./InstallPWA";
 import DocCareLogo from "./DocCareLogo";
 import LanguageSelector from "./LanguageSelector";
 import RegistrationSuccessAnimation from "./RegistrationSuccessAnimation";
@@ -47,6 +47,8 @@ import {
   getTimeSlots,
   formatDelayText,
   normalizeSlotLabel,
+  isLunchSlot,
+  TimeSlotItem,
 } from "../util/timeSlot";
 import { CLINIC_MAP_URL, handleClinicMapClick } from "../util/mapLink";
 import {
@@ -148,7 +150,7 @@ function formatVisitDate(
   });
 }
 
-function SmartArrivalGuidance({
+export function SmartArrivalGuidance({
   waitingBefore,
   doctorHasStarted,
 }: {
@@ -233,9 +235,9 @@ export function PatientHeader({
     <header className="relative z-10 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
       <div className="flex flex-col gap-1.5">
         <DocCareLogo variant="header" subtitle={subtitle || t("patientPortal")} />
-        {/* <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           <InstallPWA />
-        </div> */}
+        </div>
       </div>
 
       <div className="flex flex-col items-end gap-1.5 shrink-0">
@@ -251,7 +253,7 @@ export function PatientHeader({
   );
 }
 
-function PriorityQueueNotice({ className = "mt-3" }: { className?: string }) {
+export function PriorityQueueNotice({ className = "mt-3" }: { className?: string }) {
   const { t } = useLanguage();
   return (
     <div
@@ -583,14 +585,16 @@ export function RegistrationForm({
     "16:00",
     60,
     0,
-  ).map((s: TimeSlot) => s.label);
+  ).map((s: TimeSlotItem) => s.label);
+
+  const defaultSlot = initialSlots.find((s: string) => !isLunchSlot(s)) || "";
 
   const [form, setForm] = useState({
     name: "",
     age: "",
     gender: "Male" as "Male" | "Female" | "Other",
     phone: "",
-    time_slot: initialSlots[0] || "",
+    time_slot: defaultSlot,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -607,7 +611,9 @@ export function RegistrationForm({
     if (!cleanPhone || cleanPhone.length !== 10) {
       e.phone = "Enter a valid 10-digit mobile number";
     }
-    if (!form.time_slot) e.time_slot = "Please select an OPD time slot";
+    if (!form.time_slot || isLunchSlot(form.time_slot)) {
+      e.time_slot = "Please select an available OPD time slot";
+    }
     return e;
   };
 
@@ -670,20 +676,20 @@ export function RegistrationForm({
   return (
     <div className="animate-slide-up text-left w-full max-w-md sm:max-w-xl mx-auto">
       {/* Screen Header Block (IMAGE 1 TOP HEADER) */}
-      <div className="flex items-center justify-between mb-5 px-1">
-        <div className="flex items-start gap-3">
-          <div className="w-13 h-13 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0 text-blue-600 mt-0.5">
-            <UserPlus size={24} />
+      <div className="flex items-start justify-between mb-5 px-1 gap-2">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0 text-blue-600">
+            <UserPlus size={20} className="sm:w-6 sm:h-6 shrink-0" />
           </div>
-          <div>
-            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight mb-0.5">
+          <div className="min-w-0 flex-1">
+            <h2 className="font-display text-lg xs:text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-tight mb-0.5 whitespace-nowrap">
               {t("patientRegistration")}
             </h2>
-            <p className="font-body text-xs sm:text-sm text-slate-500 font-semibold mb-1">
+            <p className="font-body text-xs sm:text-sm text-slate-500 font-semibold mb-0.5 truncate">
               {tDynamic(regWindow.message)}
             </p>
-            <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
-              <Clock size={14} className="text-slate-400" />
+            <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-400 font-medium whitespace-nowrap">
+              <Clock size={13} className="text-slate-400 shrink-0" />
               <span>
                 {tTime12Hour(regWindow.startTime)} –{" "}
                 {tTime12Hour(regWindow.endTime)}
@@ -693,17 +699,17 @@ export function RegistrationForm({
         </div>
 
         {/* Right Illustration Card & Optional Cancel */}
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex flex-col items-end gap-2 shrink-0">
           {onCancel && (
             <button
               type="button"
               onClick={onCancel}
-              className="text-xs font-bold text-slate-500 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-full px-3 py-1 shadow-2xs transition-all cursor-pointer"
+              className="text-xs font-bold text-slate-500 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-full px-3 py-1 shadow-2xs transition-all cursor-pointer shrink-0"
             >
               {t("cancel")}
             </button>
           )}
-          <RegisterIllustrationSVG className="w-24 h-24 hidden xs:flex shrink-0" />
+          <RegisterIllustrationSVG className="w-20 h-20 sm:w-24 sm:h-24 hidden xs:flex shrink-0" />
         </div>
       </div>
 
@@ -856,12 +862,39 @@ export function RegistrationForm({
 
           <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
             {TIME_SLOTS.map((slot) => {
+              const isLunch = isLunchSlot(slot);
               const bookedCount = patients.filter(
                 (p) =>
                   normalizeSlotLabel(p.time_slot) === normalizeSlotLabel(slot),
               ).length;
-              const isFull = bookedCount >= capacity;
+              const isFull = !isLunch && bookedCount >= capacity;
               const isSelected = form.time_slot === slot;
+
+              if (isLunch) {
+                return (
+                  <div
+                    key={slot}
+                    className="w-full p-3.5 rounded-2xl border border-amber-200/90 bg-amber-50/70 text-amber-900 flex items-center justify-between cursor-not-allowed select-none shadow-2xs"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 rounded-full bg-amber-200/90 text-amber-800 flex items-center justify-center shrink-0 text-xs">
+                        🍱
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Clock size={15} className="text-amber-600 shrink-0" />
+                        <span className="font-body text-xs sm:text-sm font-bold text-amber-950">
+                          {tTimeSlot(slot)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <span className="text-[11px] font-body font-extrabold px-3 py-1 rounded-full bg-amber-200/80 text-amber-900 border border-amber-300/80 shadow-2xs">
+                      {t("lunchBreak")}
+                    </span>
+                  </div>
+                );
+              }
 
               return (
                 <button
