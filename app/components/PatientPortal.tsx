@@ -257,12 +257,12 @@ export function PriorityQueueNotice({ className = "mt-3" }: { className?: string
   const { t } = useLanguage();
   return (
     <div
-      className={`bg-red-50/90 border border-red-200/90 rounded-2xl p-3 sm:p-3.5 text-left flex items-start gap-2.5 sm:gap-3 shadow-2xs ${className}`}
+      className={`bg-red-50/90 border border-red-200/90 rounded-xl p-2 sm:p-2.5 text-left flex items-start gap-2 shadow-2xs ${className}`}
     >
-      <div className="w-7 h-7 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
-        <AlertCircle size={15} className="text-red-600 shrink-0" />
+      <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-red-100 text-red-600 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+        <AlertCircle size={12} className="text-red-600 shrink-0" />
       </div>
-      <p className="font-body text-xs sm:text-[13px] font-semibold text-red-900 leading-relaxed self-center">
+      <p className="font-body text-[10.5px] sm:text-[11px] font-semibold text-red-900 leading-snug self-center">
         {t("priorityQueueNotice")}
       </p>
     </div>
