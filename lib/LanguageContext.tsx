@@ -232,9 +232,18 @@ export const translations = {
 
     // Home Next Step Tile (Wireframe)
     bookedMySlotTitle: "I have booked my slot, now what?",
-    beforeLeavingHome: "Before leaving home, see how many people are before you, or forgot your token number:",
+    bookedMySlotLine1: "I have booked my",
+    bookedMySlotLine2: "slot, now what?",
+    beforeLeavingHome: "Before leaving home,",
+    beforeLeavingHomeTitle: "Before leaving home,",
+    beforeLeavingHomeSubtitle: "Check how many patients are ahead of you.",
+    enterBookingMobilePlaceholder: "Enter booking mobile number",
     addressSectionLabel: "Address:",
     clinicFullAddress: "House No. 610, Sector-10A, Near Main Market, Gurugram, Haryana 122001",
+    openMapLabel: "Open Map",
+    needHelpTitle: "Need Help? We're Here!",
+    needHelpSubtitle: "Call us for any assistance.",
+    callHelpBtn: "Call: +91 9810807381",
     helpQueryLabel: "For Any Help / Query Call on this Number:",
     callTejaswiBhaiya: "Call: +91 9810807381",
 
@@ -576,9 +585,18 @@ export const translations = {
 
     // Home Next Step Tile (Wireframe)
     bookedMySlotTitle: "मैंने अपना स्लॉट बुक कर लिया, अब क्या?",
-    beforeLeavingHome: "घर से निकलने से पहले देखें कि आपसे आगे कितने मरीज हैं, या अपना टोकन नंबर भूल गए हैं:",
+    bookedMySlotLine1: "मैंने अपना स्लॉट",
+    bookedMySlotLine2: "बुक कर लिया, अब क्या?",
+    beforeLeavingHome: "घर से निकलने से पहले,",
+    beforeLeavingHomeTitle: "घर से निकलने से पहले,",
+    beforeLeavingHomeSubtitle: "देखें कि आपसे आगे कितने मरीज हैं।",
+    enterBookingMobilePlaceholder: "बुकिंग मोबाइल नंबर दर्ज करें",
     addressSectionLabel: "पता:",
     clinicFullAddress: "मकान नं. 610, सेक्टर-10A, मुख्य मार्केट के पास, गुरुग्राम, हरियाणा 122001",
+    openMapLabel: "मैप खोलें",
+    needHelpTitle: "मदद चाहिए? हम यहाँ हैं!",
+    needHelpSubtitle: "किसी भी सहायता के लिए हमें कॉल करें।",
+    callHelpBtn: "कॉल करें: +91 9810807381",
     helpQueryLabel: "किसी भी सहायता या प्रश्न के लिए इस नंबर पर कॉल करें:",
     callTejaswiBhaiya: "संपर्क करें: +91 9810807381",
 
