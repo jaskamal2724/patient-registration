@@ -15,14 +15,11 @@ import {
   Phone,
   Search,
   X,
-  MapPin,
-  ExternalLink,
   Shield,
   Loader2,
   AlertCircle,
   CheckCircle2,
   ChevronRight,
-  CalendarCheck,
 } from "lucide-react";
 import LogiquelAdCard from "./LogiquelAdCard";
 import DocCareLogo from "./DocCareLogo";
@@ -39,13 +36,18 @@ import {
 } from "../util/timeSlot";
 import { DoctorAvatarSVG } from "./PatientPortalIllustrations";
 import {
+  BookedSlotCalendarSVG,
+  YellowSmileSwooshSVG,
+  GlowingBulbSVG,
+  OpenMapFoldedSVG,
+  SupportHeadsetSVG,
+  LocationTeardropPinSVG,
+} from "./PatientPortalIllustrations";
+import {
   SmartArrivalGuidance,
   PriorityQueueNotice,
   SuccessScreen,
 } from "./PatientPortal";
-
-const STEP_BADGE_CLASS =
-  "w-6 h-6 rounded-lg bg-[#EDF2FA] border border-slate-200/70 text-slate-700 font-body font-extrabold text-xs flex items-center justify-center shrink-0 mt-0.5";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -503,240 +505,266 @@ export default function LandingPage() {
           </div>
         )}
 
-        {/* TILE 2: Wireframe "# I have Booked my slot Now what?" */}
-        <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-slate-200/80 shadow-xl shadow-blue-900/5 mb-6 text-left relative overflow-hidden">
-          {/* Card Title Header (Styled with warm peach header color matching design) */}
-          <div className="bg-[#FDEBD5] border-b border-[#F3D6B5]/80 px-5 py-4 sm:px-6 sm:py-4 flex items-center gap-3">
-            <span className="w-10 h-10 rounded-xl bg-[#FFF6EB] flex items-center justify-center shrink-0 border border-[#F3D6B5] shadow-xs">
-              <span className="w-7 h-7 rounded-lg bg-[#EAE8FF] text-[#4F46E5] flex items-center justify-center">
-                <CalendarCheck size={17} strokeWidth={2.2} />
-              </span>
-            </span>
-            <h2 className="font-display text-base sm:text-lg font-black text-slate-900 tracking-tight leading-snug">
-              {t("bookedMySlotTitle")}
-            </h2>
+        {/* TILE 2: "I have booked my slot, now what?" */}
+        <div className="bg-white rounded-[32px] sm:rounded-[36px] border border-blue-100/70 shadow-[0_20px_50px_-15px_rgba(29,104,243,0.08)] mb-6 text-left relative overflow-hidden p-4 sm:p-6 pb-5 sm:pb-6">
+          {/* Subtle atmospheric light-blue top wave background */}
+          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#F0F6FF] via-[#F8FAFC]/40 to-transparent pointer-events-none select-none" />
+
+          {/* Top-Right Decorative Yellow Marks */}
+          <div className="absolute top-7 right-5 sm:top-8 sm:right-7 flex items-center gap-1 pointer-events-none select-none">
+            <span className="w-1.5 h-6 rounded-full bg-[#F5B716] rotate-[32deg] block shadow-2xs" />
+            <span className="w-1.5 h-4.5 rounded-full bg-[#F5B716] rotate-[32deg] translate-y-1 block shadow-2xs" />
           </div>
 
-          <div className="divide-y divide-slate-200/80">
-            {/* ITEM 1: Check how many people before you / Forgot token number */}
-            <div className="p-5 sm:px-6 sm:py-5">
-              <div className="flex items-start gap-2.5 mb-2.5">
-                <span className={STEP_BADGE_CLASS}>
-                  1
-                </span>
-                <p className="font-body text-xs sm:text-[13px] font-bold text-slate-800 leading-snug pt-0.5">
-                  {t("beforeLeavingHome")}
+          {/* Card Header (Calendar Icon + Vertical Divider + Title + Smile Swoosh) */}
+          <div className="relative flex items-center gap-2.5 sm:gap-3.5 pt-1 pb-1">
+            <BookedSlotCalendarSVG className="w-14 h-14 sm:w-16 sm:h-16 shrink-0" />
+            <div className="w-px h-14 bg-slate-200/90 shrink-0 mx-1 sm:mx-1.5" />
+            <div className="min-w-0 pr-8 sm:pr-10">
+              <h2 className="font-display text-[17px] sm:text-[22px] font-black text-[#0B1B48] tracking-tight leading-[1.18]">
+                <span className="block whitespace-nowrap">{t("bookedMySlotLine1") || "I have booked my"}</span>
+                <span className="block whitespace-nowrap">{t("bookedMySlotLine2") || "slot, now what?"}</span>
+              </h2>
+              <div className="mt-1">
+                <YellowSmileSwooshSVG className="w-32 sm:w-40 h-3 text-[#F5B716]" />
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 1: Yellow/Golden Card ("Before leaving home...") */}
+          <div className="relative mt-4 sm:mt-5 bg-gradient-to-b from-[#FEF7DE] via-[#FEF0BA] to-[#FCE69C] border border-[#F6DB80] rounded-[24px] sm:rounded-[28px] p-3.5 sm:p-5 shadow-[0_8px_22px_-8px_rgba(245,183,22,0.22)]">
+            {/* Top Row: Bulb Icon + Divider + Text */}
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <GlowingBulbSVG className="w-10 h-10 sm:w-11 sm:h-11 shrink-0" />
+              <div className="w-px h-10 bg-[#E5C369]/60 shrink-0 mx-0.5 sm:mx-1" />
+              <div className="min-w-0">
+                <h3 className="font-display text-[15px] sm:text-[17px] font-black text-[#0F1D40] leading-snug">
+                  {t("beforeLeavingHomeTitle") || "Before leaving home,"}
+                </h3>
+                <p className="font-body text-[12px] sm:text-[13.5px] font-medium text-[#1E293B] mt-0.5 leading-snug">
+                  {t("beforeLeavingHomeSubtitle") || "Check how many patients are ahead of you."}
                 </p>
               </div>
-
-              {/* Mobile Number Search Pill */}
-              <div className="bg-slate-50/90 rounded-full p-1.5 border border-slate-200/90 shadow-2xs flex items-center gap-2 relative">
-                <Phone size={17} className="text-[#1D68F3] ml-3.5 shrink-0" />
-                <input
-                  type="tel"
-                  maxLength={10}
-                  className="w-full bg-transparent font-body text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:outline-none pr-7 py-1.5"
-                  placeholder={t("enterMobilePlaceholder")}
-                  value={searchPhone}
-                  onChange={(e) => setSearchPhone(e.target.value.replace(/\D/g, ""))}
-                />
-                {searchPhone ? (
-                  <button
-                    type="button"
-                    onClick={() => setSearchPhone("")}
-                    className="text-slate-400 hover:text-slate-600 p-1 mr-1"
-                    aria-label="Clear mobile number"
-                  >
-                    <X size={15} />
-                  </button>
-                ) : null}
-                <button
-                  type="button"
-                  className="w-8 h-8 rounded-full bg-[#1D68F3] hover:bg-blue-700 text-white flex items-center justify-center shrink-0 shadow-xs transition-transform active:scale-95 cursor-pointer"
-                  aria-label="Search"
-                >
-                  <Search size={15} />
-                </button>
-              </div>
-
-              {/* Search Results Display */}
-              {cleanPhone.length >= 3 && (
-                <div className="mt-3.5 space-y-2.5 animate-fade-in">
-                  {searchResults.length > 0 ? (
-                    searchResults.map((patient) => {
-                      const queueAhead = patients.filter((p) => p.status === "waiting");
-                      const patientIdx = queueAhead.findIndex((p) => p.id === patient.id);
-                      const waitingAhead = patientIdx >= 0 ? patientIdx : 0;
-                      const estWaitMins = Math.max(0, Math.round(waitingAhead * 3.5));
-
-                      let statusBadge;
-                      let statusMessage;
-
-                      if (patient.status === "in-progress") {
-                        statusBadge = (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            {t("inConsultation")}
-                          </span>
-                        );
-                        statusMessage = t("inConsultationMsg");
-                      } else if (patient.status === "waiting") {
-                        statusBadge = (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
-                            <Clock size={11} />
-                            {t("waiting")}
-                          </span>
-                        );
-                        statusMessage =
-                          waitingAhead === 0
-                            ? t("nextInLineMsg")
-                            : waitingAhead === 1
-                              ? t("aheadInQueueOneMsg")
-                              : t("aheadInQueueManyMsg", { count: waitingAhead });
-                      } else if (patient.status === "done") {
-                        statusBadge = (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
-                            <CheckCircle2 size={11} />
-                            {t("completed")}
-                          </span>
-                        );
-                        statusMessage = t("completedMsg");
-                      } else {
-                        statusBadge = (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-100 text-red-800 border border-red-200">
-                            <AlertCircle size={11} />
-                            {t("skipped")}
-                          </span>
-                        );
-                        statusMessage = t("skippedMsg");
-                      }
-
-                      return (
-                        <div
-                          key={patient.id}
-                          onClick={() => setSelectedPatient(patient)}
-                          className="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-2xs flex flex-col gap-2 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center font-mono-custom text-lg font-black text-blue-700">
-                                {patient.slot_token_number || patient.token_number}
-                              </div>
-                              <div>
-                                <p className="font-body text-xs sm:text-sm font-extrabold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">
-                                  {patient.name}
-                                </p>
-                                <p className="font-mono-custom text-[11px] text-slate-500">
-                                  {patient.phone}{" "}
-                                  {patient.time_slot && (
-                                    <span className="ml-1 font-semibold text-blue-600">
-                                      ({tTimeSlot(patient.time_slot)})
-                                    </span>
-                                  )}
-                                </p>
-                              </div>
-                            </div>
-                            <div>{statusBadge}</div>
-                          </div>
-
-                          <div className="text-[11px] sm:text-xs font-body font-semibold text-slate-600 bg-slate-50 rounded-xl px-3 py-1.5 border border-slate-100 flex items-center justify-between gap-2">
-                            <span>
-                              {statusMessage}{" "}
-                              {doctorHasStarted && patient.status === "waiting" && (
-                                <span className="font-mono-custom font-extrabold text-blue-700 ml-1">
-                                  ({tWaitTime(estWaitMins)})
-                                </span>
-                              )}
-                            </span>
-                            <span className="text-[11px] font-bold text-blue-600 group-hover:underline shrink-0">
-                              {t("viewTicket")} &rarr;
-                            </span>
-                          </div>
-
-                          {patient.status === "waiting" && (
-                            <div className="mt-1">
-                              <SmartArrivalGuidance
-                                waitingBefore={waitingAhead}
-                                doctorHasStarted={doctorHasStarted}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })
-                  ) : cleanPhone.length >= 10 ? (
-                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 text-center">
-                      <p className="font-body text-xs font-bold text-slate-700">
-                        {t("noPatientFound")}{" "}
-                        <span className="font-mono-custom font-black text-slate-900">
-                          {searchPhone}
-                        </span>
-                      </p>
-                      <p className="font-body text-[11px] text-slate-400 mt-0.5 font-medium mb-3">
-                        {t("checkNumberOrBook")}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => router.push("/patient-registration")}
-                        className="inline-flex items-center gap-1.5 bg-[#1D68F3] hover:bg-[#1554C6] text-white font-bold text-xs px-3.5 py-1.5 rounded-xl shadow-xs transition-all active:scale-95"
-                      >
-                        <span>{t("bookSlotBtn")}</span>
-                        <ChevronRight size={13} />
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
-              )}
             </div>
 
-            {/* ITEM 2: Clinic Address with Google Map Button */}
-            <div className="p-5 sm:px-6 sm:py-5">
-              <div className="flex items-start gap-2.5 mb-2.5">
-                <span className={STEP_BADGE_CLASS}>
-                  2
-                </span>
-                <div className="min-w-0 pt-0.5">
-                  <span className="font-body text-xs sm:text-[13px] font-bold text-slate-900 mr-1.5">
-                    {t("addressSectionLabel")}
-                  </span>
-                  <span className="font-body text-xs sm:text-[13px] font-medium text-slate-600 leading-relaxed">
-                    {t("clinicFullAddress")}
-                  </span>
-                </div>
-              </div>
+            {/* Bottom Row: Search Pill */}
+            <div className="mt-3.5 sm:mt-4 bg-white rounded-full p-1.5 pl-3.5 sm:pl-4.5 pr-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-[#F3E2A2]/70 flex items-center gap-2 sm:gap-2.5">
+              <Phone size={19} className="text-[#0B4FD8] fill-[#0B4FD8] shrink-0" />
+              <div className="w-px h-6 bg-slate-200 shrink-0" />
+              <input
+                type="tel"
+                maxLength={10}
+                className="w-full bg-transparent font-body text-xs sm:text-sm font-semibold text-slate-800 placeholder:text-slate-400 placeholder:font-normal focus:outline-none py-1.5"
+                placeholder={t("enterBookingMobilePlaceholder") || "Enter booking mobile number"}
+                value={searchPhone}
+                onChange={(e) => setSearchPhone(e.target.value.replace(/\D/g, ""))}
+              />
+              {searchPhone ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchPhone("")}
+                  className="text-slate-400 hover:text-slate-600 p-1 mr-0.5 cursor-pointer"
+                  aria-label="Clear mobile number"
+                >
+                  <X size={15} />
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#0B4FD8] hover:bg-[#0840B5] text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-700/25 active:scale-95 transition-all cursor-pointer"
+                aria-label="Search"
+              >
+                <Search size={20} strokeWidth={2.6} className="text-white" />
+              </button>
+            </div>
 
+            {/* Search Results Display */}
+            {cleanPhone.length >= 3 && (
+              <div className="mt-3.5 space-y-2.5 animate-fade-in">
+                {searchResults.length > 0 ? (
+                  searchResults.map((patient) => {
+                    const queueAhead = patients.filter((p) => p.status === "waiting");
+                    const patientIdx = queueAhead.findIndex((p) => p.id === patient.id);
+                    const waitingAhead = patientIdx >= 0 ? patientIdx : 0;
+                    const estWaitMins = Math.max(0, Math.round(waitingAhead * 3.5));
+
+                    let statusBadge;
+                    let statusMessage;
+
+                    if (patient.status === "in-progress") {
+                      statusBadge = (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          {t("inConsultation")}
+                        </span>
+                      );
+                      statusMessage = t("inConsultationMsg");
+                    } else if (patient.status === "waiting") {
+                      statusBadge = (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                          <Clock size={11} />
+                          {t("waiting")}
+                        </span>
+                      );
+                      statusMessage =
+                        waitingAhead === 0
+                          ? t("nextInLineMsg")
+                          : waitingAhead === 1
+                            ? t("aheadInQueueOneMsg")
+                            : t("aheadInQueueManyMsg", { count: waitingAhead });
+                    } else if (patient.status === "done") {
+                      statusBadge = (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                          <CheckCircle2 size={11} />
+                          {t("completed")}
+                        </span>
+                      );
+                      statusMessage = t("completedMsg");
+                    } else {
+                      statusBadge = (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-100 text-red-800 border border-red-200">
+                          <AlertCircle size={11} />
+                          {t("skipped")}
+                        </span>
+                      );
+                      statusMessage = t("skippedMsg");
+                    }
+
+                    return (
+                      <div
+                        key={patient.id}
+                        onClick={() => setSelectedPatient(patient)}
+                        className="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-2xs flex flex-col gap-2 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center font-mono-custom text-lg font-black text-blue-700">
+                              {patient.slot_token_number || patient.token_number}
+                            </div>
+                            <div>
+                              <p className="font-body text-xs sm:text-sm font-extrabold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">
+                                {patient.name}
+                              </p>
+                              <p className="font-mono-custom text-[11px] text-slate-500">
+                                {patient.phone}{" "}
+                                {patient.time_slot && (
+                                  <span className="ml-1 font-semibold text-blue-600">
+                                    ({tTimeSlot(patient.time_slot)})
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                          <div>{statusBadge}</div>
+                        </div>
+
+                        <div className="text-[11px] sm:text-xs font-body font-semibold text-slate-600 bg-slate-50 rounded-xl px-3 py-1.5 border border-slate-100 flex items-center justify-between gap-2">
+                          <span>
+                            {statusMessage}{" "}
+                            {doctorHasStarted && patient.status === "waiting" && (
+                              <span className="font-mono-custom font-extrabold text-blue-700 ml-1">
+                                ({tWaitTime(estWaitMins)})
+                              </span>
+                            )}
+                          </span>
+                          <span className="text-[11px] font-bold text-blue-600 group-hover:underline shrink-0">
+                            {t("viewTicket")} &rarr;
+                          </span>
+                        </div>
+
+                        {patient.status === "waiting" && (
+                          <div className="mt-1">
+                            <SmartArrivalGuidance
+                              waitingBefore={waitingAhead}
+                              doctorHasStarted={doctorHasStarted}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : cleanPhone.length >= 10 ? (
+                  <div className="bg-white rounded-2xl p-4 border border-amber-200/80 text-center shadow-xs">
+                    <p className="font-body text-xs font-bold text-slate-700">
+                      {t("noPatientFound")}{" "}
+                      <span className="font-mono-custom font-black text-slate-900">
+                        {searchPhone}
+                      </span>
+                    </p>
+                    <p className="font-body text-[11px] text-slate-500 mt-0.5 font-medium mb-3">
+                      {t("checkNumberOrBook")}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/patient-registration")}
+                      className="inline-flex items-center gap-1.5 bg-[#0B4FD8] hover:bg-[#0840B5] text-white font-bold text-xs px-3.5 py-1.5 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+                    >
+                      <span>{t("bookSlotBtn")}</span>
+                      <ChevronRight size={13} />
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 2: Address Card (Soft ice-blue gradient) */}
+          <div className="relative mt-3 sm:mt-3.5 bg-gradient-to-b from-[#F2F7FF] to-[#EAF2FE] border border-[#D4E4FC] rounded-[22px] sm:rounded-[24px] p-3.5 sm:p-5 shadow-[0_4px_14px_rgba(29,104,243,0.04)]">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <LocationTeardropPinSVG className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
+              <div className="w-px h-10 bg-blue-200/80 shrink-0 mx-0.5 sm:mx-1" />
+              <div className="min-w-0 flex-1">
+                <span className="block font-display text-[14px] sm:text-[15px] font-black text-[#0F1D40] leading-tight">
+                  {t("addressSectionLabel")}
+                </span>
+                <p className="font-body text-[12px] sm:text-[13px] font-medium text-slate-600 leading-snug mt-0.5">
+                  {t("clinicFullAddress")}
+                </p>
+              </div>
+            </div>
+
+            {/* Open Map Button - placed after the text */}
+            <div className="mt-3 sm:mt-3.5">
               <a
                 href={CLINIC_MAP_URL}
                 onClick={handleClinicMapClick}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 bg-[#FFF4E5] hover:bg-[#FFE8CC] text-[#D96B00] border border-orange-200/90 font-bold text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-2xs transition-all active:scale-[0.99] cursor-pointer"
+                className="w-full inline-flex items-center justify-center gap-2 bg-white hover:bg-blue-50/70 border-2 border-[#1E60E8] text-[#1E60E8] rounded-full py-2.5 px-4 shadow-xs transition-all active:scale-[0.99] font-bold text-xs sm:text-sm cursor-pointer"
                 title="Open Google Maps Location"
               >
-                <MapPin size={16} className="text-[#D96B00] shrink-0" />
-                <span>{t("clickToKnowGoogleMapLocation")}</span>
-                <ExternalLink size={13} className="shrink-0 opacity-70" />
+                <OpenMapFoldedSVG className="w-5 h-5 shrink-0" />
+                <span>{language === "hi" ? "मैप खोलें" : "Open Map"}</span>
               </a>
             </div>
+          </div>
 
-            {/* ITEM 3: Help / Query Phone Call */}
-            <div className="p-5 sm:px-6 sm:py-5">
-              <div className="flex items-start gap-2.5 mb-2.5">
-                <span className={STEP_BADGE_CLASS}>
-                  3
+          {/* SECTION 3: Need Help Card (Soft ice-blue gradient) */}
+          <div className="relative mt-3 sm:mt-3.5 bg-gradient-to-b from-[#F2F7FF] to-[#EAF2FE] border border-[#D4E4FC] rounded-[22px] sm:rounded-[24px] p-3.5 sm:p-5 shadow-[0_4px_14px_rgba(29,104,243,0.04)]">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <SupportHeadsetSVG className="w-8 h-8 sm:w-9 sm:h-9 shrink-0" />
+              <div className="w-px h-10 bg-blue-200/80 shrink-0 mx-0.5 sm:mx-1" />
+              <div className="min-w-0 flex-1">
+                <span className="block font-display text-[14px] sm:text-[15px] font-black text-[#0F1D40] leading-tight">
+                  {t("needHelpTitle") || "Need Help? We're Here!"}
                 </span>
-                <p className="font-body text-xs sm:text-[13px] font-bold text-slate-900 leading-snug pt-0.5">
-                  {t("helpQueryLabel")}
+                <p className="font-body text-[12px] sm:text-[13px] font-medium text-slate-600 leading-snug mt-0.5">
+                  {t("needHelpSubtitle") || "Call us for any assistance."}
                 </p>
               </div>
+            </div>
 
+            {/* Call Button - placed after the text */}
+            <div className="mt-3 sm:mt-3.5">
               <a
                 href="tel:9810807381"
-                className="w-full inline-flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-[#1D68F3] border border-blue-200/90 font-bold text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-2xs transition-all active:scale-[0.99] cursor-pointer"
-                title="Call Tejaswi"
+                className="w-full inline-flex items-center justify-center gap-2 bg-white hover:bg-blue-50/70 border-2 border-[#1E60E8] text-[#0B4FD8] rounded-full py-2.5 px-4 shadow-xs transition-all active:scale-[0.99] font-bold text-xs sm:text-sm cursor-pointer"
+                title="Call Clinic"
               >
-                <Phone size={15} className="shrink-0 text-[#1D68F3]" />
-                <span>{t("callTejaswiBhaiya")}</span>
+                <Phone size={16} className="text-[#0B4FD8] fill-[#0B4FD8] shrink-0" />
+                <span className="whitespace-nowrap">
+                  {t("callHelpBtn") || "Call: +91 9810807381"}
+                </span>
               </a>
             </div>
           </div>
