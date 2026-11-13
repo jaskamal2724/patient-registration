@@ -1,23 +1,18 @@
 "use client";
 
 import { Suspense } from "react";
-import { useRouter } from "next/navigation";
 import { ShoppingBag, Sparkles } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { PatientHeader } from "@/app/components/PatientPortal";
 import LogiquelAdCard from "@/app/components/LogiquelAdCard";
 
 function ShopContent() {
-  const router = useRouter();
   const { t } = useLanguage();
 
   return (
     <div className="min-h-screen relative overflow-x-hidden max-w-full bg-[#FAFAFA] flex flex-col justify-between">
       {/* Top Header */}
-      <PatientHeader
-        subtitle={t("navShop")}
-        onExit={() => router.push("/")}
-      />
+      <PatientHeader subtitle={t("navShop")} />
 
       {/* Main Content */}
       <main className="relative z-10 max-w-md sm:max-w-xl w-full mx-auto px-4 sm:px-5 pb-28 sm:pb-32 flex-1">

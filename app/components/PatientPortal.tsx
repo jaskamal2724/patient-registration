@@ -227,7 +227,7 @@ export function PatientHeader({
   onExit,
   subtitle,
 }: {
-  onExit: () => void;
+  onExit?: () => void;
   subtitle?: string;
 }) {
   const { t } = useLanguage();
@@ -242,12 +242,14 @@ export function PatientHeader({
 
       <div className="flex flex-col items-end gap-1.5 shrink-0">
         <LanguageSelector />
-        <button
-          onClick={onExit}
-          className="inline-flex items-center justify-center text-xs font-bold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 active:scale-95 border border-slate-200/90 rounded-full px-3 py-1 mr-1 sm:mr-1.5 shadow-2xs transition-all cursor-pointer"
-        >
-          {t("exit")}
-        </button>
+        {onExit && (
+          <button
+            onClick={onExit}
+            className="inline-flex items-center justify-center text-xs font-bold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 active:scale-95 border border-slate-200/90 rounded-full px-3 py-1 mr-1 sm:mr-1.5 shadow-2xs transition-all cursor-pointer"
+          >
+            {t("exit")}
+          </button>
+        )}
       </div>
     </header>
   );
