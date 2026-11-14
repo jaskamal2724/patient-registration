@@ -118,16 +118,7 @@ export default function PatientRegistrationPortal() {
       className="min-h-screen relative overflow-x-hidden max-w-full bg-[#FAFAFA] flex flex-col justify-between"
     >
       {/* Top Header */}
-      <PatientHeader
-        subtitle={t("patientRegistration")}
-        onExit={() => {
-          if (step === "full") {
-            setStep("form");
-          } else {
-            router.push("/");
-          }
-        }}
-      />
+      <PatientHeader subtitle={t("patientRegistration")} />
 
       {/* Main Container */}
       <main className="relative z-10 max-w-md sm:max-w-xl w-full mx-auto px-4 sm:px-5 pb-28 sm:pb-32 flex-1">
@@ -247,7 +238,6 @@ export default function PatientRegistrationPortal() {
               regWindow={regWindow}
               addPatient={addPatient}
               patients={patients}
-              onCancel={() => router.push("/")}
             />
 
             {/* Check Live Queue Prompt Card */}

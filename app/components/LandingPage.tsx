@@ -20,6 +20,7 @@ import {
   AlertCircle,
   CheckCircle2,
   ChevronRight,
+  Coffee,
 } from "lucide-react";
 import LogiquelAdCard from "./LogiquelAdCard";
 import DocCareLogo from "./DocCareLogo";
@@ -53,7 +54,7 @@ export default function LandingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageRef = useRef<HTMLDivElement>(null);
-  const { t, language, tTimeSlot, tTime12Hour, tWaitTime } = useLanguage();
+  const { t, language, tTimeSlot, tTime12Hour, tWaitTime, tPatientName } = useLanguage();
 
   const [showPortalLoading, setShowPortalLoading] = useState(true);
   const [showPinModal, setShowPinModal] = useState(false);
@@ -92,6 +93,13 @@ export default function LandingPage() {
     })();
     if (searchParams.get("login") === "true") {
       setShowPinModal(true);
+      if (searchParams.get("expired") === "true") {
+        setError(
+          language === "hi"
+            ? "सत्र समाप्त हो गया है। कृपया पुनः लॉगिन करें।"
+            : "Your session has expired. Please sign in again."
+        );
+      }
     }
   }, [searchParams]);
 
@@ -142,6 +150,13 @@ export default function LandingPage() {
   const isFutureDate = isDateInFuture(regWindow.date);
   const formattedVisitDate = formatVisitDate(regWindow.date, language);
   const doctorHasStarted = Boolean(inProgress || inProgressWalkin);
+  const lastConsultedPatient = patients
+    .filter((p) => p.status === "done" || (p.status as string) === "completed")
+    .sort(
+      (a, b) =>
+        (b.slot_token_number || b.token_number) -
+        (a.slot_token_number || a.token_number),
+    )[0];
 
   // Search Results
   const cleanPhone = searchPhone.replace(/\D/g, "");
@@ -161,7 +176,7 @@ export default function LandingPage() {
         ref={pageRef}
         className="min-h-screen relative overflow-x-hidden max-w-full bg-[#FAFAFA] flex flex-col justify-between"
       >
-        <header className="relative z-10 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
+        <header className="relative z-30 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
           <div className="flex flex-col gap-1.5">
             <DocCareLogo variant="full" subtitle={t("appSubtitle")} />
             <div className="flex items-center gap-2 flex-wrap">
@@ -194,7 +209,7 @@ export default function LandingPage() {
       className="min-h-screen relative overflow-x-hidden max-w-full bg-[#FAFAFA] flex flex-col justify-between"
     >
       {/* Top Header */}
-      <header className="relative z-10 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
+      <header className="relative z-30 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
         <div className="flex flex-col gap-1.5">
           <DocCareLogo variant="full" subtitle={t("appSubtitle")} />
           <div className="flex items-center gap-2 flex-wrap">
@@ -202,8 +217,7 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap justify-end">
-          <LanguageSelector />
+        <div className="flex flex-col items-end gap-1.5 shrink-0 relative z-30">
           <button
             onClick={() => {
               if (isLoggedIn) {
@@ -221,6 +235,7 @@ export default function LandingPage() {
             )}
             <span>{t("doctorLogin")}</span>
           </button>
+          <LanguageSelector />
         </div>
       </header>
 
@@ -289,6 +304,83 @@ export default function LandingPage() {
                   {t("retry")}
                 </button>
               </div>
+            </div>
+          </div>
+        ) : regWindow.shortBreak ? (
+          /* Short Break Card: When Doctor Pauses Queue / Takes a Short Break */
+          <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-amber-100 p-5 sm:p-6 shadow-xl shadow-amber-900/5 mb-4 text-left relative overflow-hidden">
+            {/* Top Amber Accent Line */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500" />
+
+            <div className="flex items-center justify-between gap-2 mb-3.5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-600 shadow-xs shrink-0">
+                  <Coffee className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="font-display text-base sm:text-lg font-extrabold text-slate-900 leading-tight">
+                    {t("shortBreakTitle")}
+                  </h3>
+                  <span className="text-[11px] font-semibold text-amber-700">
+                    {t("queuePausedBadge")}
+                  </span>
+                </div>
+              </div>
+
+              <div className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200/90 text-amber-800 px-2.5 py-1 rounded-full text-[11px] font-extrabold shrink-0">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                <span>{t("onBreakBadge")}</span>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 rounded-2xl p-4 sm:p-5 text-white shadow-md shadow-orange-500/20 relative overflow-hidden">
+              <div className="flex items-center gap-3 mb-2.5">
+                <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
+                  <Coffee className="w-5 h-5 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="font-display text-sm sm:text-base font-extrabold text-white leading-tight">
+                    {t("doctorOnShortBreak")}
+                  </h4>
+                  <p className="font-body text-xs text-amber-100 font-medium mt-0.5 leading-relaxed">
+                    {t("shortBreakMsg")}
+                  </p>
+                </div>
+              </div>
+
+              {/* Status summary showing last token or next token */}
+              <div className="mt-3 pt-3 border-t border-white/20 flex items-center justify-between gap-2 text-xs flex-wrap">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold text-amber-100 uppercase tracking-wider">
+                    {inProgress
+                      ? t("currentPatientLabel")
+                      : lastConsultedPatient
+                      ? t("lastConsultedLabel")
+                      : t("nextPatientInLine")}:
+                  </span>
+                  <span className="font-mono-custom text-xs font-black bg-white/25 border border-white/30 rounded-md px-2 py-0.5 text-white">
+                    #{inProgress?.slot_token_number ||
+                      inProgress?.token_number ||
+                      lastConsultedPatient?.slot_token_number ||
+                      lastConsultedPatient?.token_number ||
+                      nextPatient?.slot_token_number ||
+                      nextPatient?.token_number ||
+                      "—"}
+                  </span>
+                </div>
+
+                <span className="text-[11px] font-bold text-white bg-white/20 backdrop-blur-xs rounded-lg px-2 py-0.5">
+                  {t("willResumeShortly")}
+                </span>
+              </div>
+            </div>
+
+            {/* Reassurance Notice */}
+            <div className="mt-3.5 bg-amber-50/80 border border-amber-200/80 rounded-xl p-3 flex items-start gap-2.5 text-xs text-amber-900 font-medium">
+              <Clock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <p className="leading-relaxed">
+                {t("shortBreakReassurance")}
+              </p>
             </div>
           </div>
         ) : inProgress ? (
@@ -643,7 +735,7 @@ export default function LandingPage() {
                             </div>
                             <div>
                               <p className="font-body text-xs sm:text-sm font-extrabold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">
-                                {patient.name}
+                                {tPatientName(patient.name)}
                               </p>
                               <p className="font-mono-custom text-[11px] text-slate-500">
                                 {patient.phone}{" "}

@@ -5,6 +5,7 @@ import * as api from "@/lib/api";
 import { createBrowserClient } from "@/lib/supabase";
 import { useToast } from "@/lib/useToast";
 import { sortPatientsBySlot, formatDelayText } from "@/app/util/timeSlot";
+import { notifyDoctorUpdated } from "./broadcastSync";
 import type {
   Doctor,
   Patient,
@@ -43,6 +44,7 @@ export function useDoctor(initialDoctor: Doctor) {
     message: doctor.opd_message || "",
     patientsPerHour: doctor.patients_per_hour ?? 10,
     delayMinutes: doctor.delay_minutes ?? 0,
+    shortBreak: Boolean(doctor.short_break),
   };
 
   // Keep doctor state synchronized whenever initialDoctor updates
@@ -137,14 +139,16 @@ export function useDoctor(initialDoctor: Doctor) {
       setLoading(true);
       try {
         await api.updateDoctorName(doctor.id, name);
-        setDoctor((prev) => ({ ...prev, name }));
+        const updated = { ...doctor, name };
+        setDoctor(updated);
+        notifyDoctorUpdated(updated);
       } catch {
         showToast("Failed to update name", "error");
       } finally {
         setLoading(false);
       }
     },
-    [doctor.id, showToast],
+    [doctor, showToast],
   );
 
   const setRegWindow = useCallback(
@@ -164,9 +168,12 @@ export function useDoctor(initialDoctor: Doctor) {
           docPatch.delay_minutes = w.delayMinutes;
         if (w.isWalkinOpen !== undefined)
           docPatch.walkin_registration = w.isWalkinOpen;
+        if (w.shortBreak !== undefined)
+          docPatch.short_break = w.shortBreak;
 
         const updatedDoc = await api.updateDoctorProfile(doctor.id, docPatch);
         setDoctor(updatedDoc);
+        notifyDoctorUpdated(updatedDoc);
 
         if (w.delayMinutes !== undefined && w.delayMinutes > 0) {
           showToast(
@@ -193,6 +200,7 @@ export function useDoctor(initialDoctor: Doctor) {
       try {
         const updatedDoc = await api.updateDoctorRegistration(doctor.id, open);
         setDoctor(updatedDoc);
+        notifyDoctorUpdated(updatedDoc);
         showToast(
           open ? "Registration is now OPEN" : "Registration is now CLOSED",
           open ? "success" : "info",
@@ -215,6 +223,7 @@ export function useDoctor(initialDoctor: Doctor) {
           open,
         );
         setDoctor(updatedDoc);
+        notifyDoctorUpdated(updatedDoc);
         showToast(
           open
             ? "Walk-in registration is now OPEN"
@@ -223,6 +232,30 @@ export function useDoctor(initialDoctor: Doctor) {
         );
       } catch {
         showToast("Failed to toggle walk-in registration", "error");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [doctor.id, showToast],
+  );
+
+  const toggleShortBreak = useCallback(
+    async (breakActive: boolean) => {
+      setLoading(true);
+      try {
+        const updatedDoc = await api.updateDoctorProfile(doctor.id, {
+          short_break: breakActive,
+        });
+        setDoctor(updatedDoc);
+        notifyDoctorUpdated(updatedDoc);
+        showToast(
+          breakActive
+            ? "Short break started. Queue is paused for patients."
+            : "Break ended. Queue has resumed.",
+          breakActive ? "warning" : "success",
+        );
+      } catch {
+        showToast("Failed to update break status", "error");
       } finally {
         setLoading(false);
       }
@@ -289,12 +322,21 @@ export function useDoctor(initialDoctor: Doctor) {
       const tokenDisplay =
         nextWaiting.slot_token_number || nextWaiting.token_number;
       showToast(`Now calling Token ${tokenDisplay}`, "success");
+
+      if (doctor.short_break) {
+        api.updateDoctorProfile(doctor.id, { short_break: false })
+          .then((updated) => {
+            setDoctor(updated);
+            notifyDoctorUpdated(updated);
+          })
+          .catch(() => {});
+      }
     } catch {
       showToast("Failed to call next patient", "error");
     } finally {
       setLoading(false);
     }
-  }, [patients, showToast]);
+  }, [patients, doctor.id, doctor.short_break, showToast]);
 
   const markDone = useCallback(
     async (id: string) => {
@@ -438,12 +480,21 @@ export function useDoctor(initialDoctor: Doctor) {
         `Now calling Walk-in Token ${tokenDisplay}`,
         "success",
       );
+
+      if (doctor.short_break) {
+        api.updateDoctorProfile(doctor.id, { short_break: false })
+          .then((updated) => {
+            setDoctor(updated);
+            notifyDoctorUpdated(updated);
+          })
+          .catch(() => {});
+      }
     } catch {
       showToast("Failed to call walk-in patient", "error");
     } finally {
       setLoading(false);
     }
-  }, [walkinPatients, showToast]);
+  }, [walkinPatients, doctor.id, doctor.short_break, showToast]);
 
   const updatePatientTimeSlot = useCallback(
     async (id: string, newTimeSlot: string, resetStatus?: boolean) => {
@@ -493,6 +544,8 @@ export function useDoctor(initialDoctor: Doctor) {
     setRegWindow,
     toggleRegistration,
     toggleWalkinRegistration,
+    toggleShortBreak,
+    isShortBreak: Boolean(doctor.short_break),
     patients,
     walkinPatients,
     currentToken,

@@ -227,12 +227,12 @@ export function PatientHeader({
   onExit,
   subtitle,
 }: {
-  onExit: () => void;
+  onExit?: () => void;
   subtitle?: string;
 }) {
   const { t } = useLanguage();
   return (
-    <header className="relative z-10 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
+    <header className="relative z-30 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
       <div className="flex flex-col gap-1.5">
         <DocCareLogo variant="header" subtitle={subtitle || t("patientPortal")} />
         <div className="flex items-center gap-2 flex-wrap">
@@ -240,14 +240,16 @@ export function PatientHeader({
         </div>
       </div>
 
-      <div className="flex flex-col items-end gap-1.5 shrink-0">
+      <div className="flex flex-col items-end gap-1.5 shrink-0 relative z-30">
         <LanguageSelector />
-        <button
-          onClick={onExit}
-          className="inline-flex items-center justify-center text-xs font-bold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 active:scale-95 border border-slate-200/90 rounded-full px-3 py-1 mr-1 sm:mr-1.5 shadow-2xs transition-all cursor-pointer"
-        >
-          {t("exit")}
-        </button>
+        {onExit && (
+          <button
+            onClick={onExit}
+            className="inline-flex items-center justify-center text-xs font-bold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 active:scale-95 border border-slate-200/90 rounded-full px-3 py-1 mr-1 sm:mr-1.5 shadow-2xs transition-all cursor-pointer"
+          >
+            {t("exit")}
+          </button>
+        )}
       </div>
     </header>
   );
@@ -283,7 +285,7 @@ function CheckTokenSearchCard({
   delayMinutes?: number;
   doctorHasStarted: boolean;
 }) {
-  const { t, tTimeSlot, tWaitTime } = useLanguage();
+  const { t, tTimeSlot, tWaitTime, tPatientName } = useLanguage();
   const [searchPhone, setSearchPhone] = useState("");
   const cleanQuery = searchPhone.replace(/\D/g, "");
 
@@ -424,7 +426,7 @@ function CheckTokenSearchCard({
                       </div>
                       <div>
                         <p className="font-body text-sm font-extrabold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">
-                          {patient.name}
+                          {tPatientName(patient.name)}
                         </p>
                         <p className="font-mono-custom text-xs text-slate-500">
                           {patient.phone}{" "}

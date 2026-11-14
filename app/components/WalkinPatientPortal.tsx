@@ -23,6 +23,7 @@ import {
   HeartPulse,
   QrCode,
   Camera,
+  Coffee,
 } from "lucide-react";
 import * as api from "@/lib/api";
 import { createBrowserClient } from "@/lib/supabase";
@@ -43,7 +44,7 @@ const supabase = createBrowserClient();
 
 export default function WalkinPatientPortal() {
   const router = useRouter();
-  const { t, language } = useLanguage();
+  const { t, language, tGender, tPatientName } = useLanguage();
   const { toast, showToast } = useToast();
   const prevDelayRef = useRef<number | null>(null);
 
@@ -86,6 +87,7 @@ export default function WalkinPatientPortal() {
   useEffect(() => {
     let cancelled = false;
     let channel: ReturnType<typeof supabase.channel> | null = null;
+    let bc: BroadcastChannel | null = null;
     const timer = setTimeout(() => {
       if (!cancelled) setInitialLoading(false);
     }, 1000);
@@ -95,6 +97,18 @@ export default function WalkinPatientPortal() {
         const { doctor: doc } = await api.fetchActiveDoctor();
         if (cancelled) return;
         setDoctor(doc);
+
+        // Instant cross-tab sync
+        try {
+          if ("BroadcastChannel" in window && !bc) {
+            bc = new BroadcastChannel("doccare-live-sync");
+            bc.onmessage = (event) => {
+              if (event.data?.doctor && !cancelled) {
+                setDoctor((prev) => ({ ...prev, ...event.data.doctor }));
+              }
+            };
+          }
+        } catch {}
 
         if (doc?.id) {
           const list = await api.fetchWalkinPatients();
@@ -166,6 +180,9 @@ export default function WalkinPatientPortal() {
     return () => {
       cancelled = true;
       clearTimeout(timer);
+      try {
+        bc?.close();
+      } catch {}
       if (channel) {
         void supabase.removeChannel(channel);
       }
@@ -266,7 +283,7 @@ export default function WalkinPatientPortal() {
     const tokenDisplay = registeredPatient.walkin_token_display || `W-${registeredPatient.token_number}`;
     const text =
       language === "hi"
-        ? `🏥 *डॉ. सर्वेश ओपीडी - वॉक-इन टोकन*\n👤 मरीज: *${registeredPatient.name}*\n🎫 वॉक-इन टोकन: *${tokenDisplay}*\n📱 फोन: ${registeredPatient.phone}\n📍 क्लिनिक पर स्वागत है!`
+        ? `🏥 *डॉ. सर्वेश ओपीडी - वॉक-इन टोकन*\n👤 मरीज: *${tPatientName(registeredPatient.name)}*\n🎫 वॉक-इन टोकन: *${tokenDisplay}*\n📱 फोन: ${registeredPatient.phone}\n📍 क्लिनिक पर स्वागत है!`
         : `🏥 *Doctor Sarvesh OPD - Walk-in Token*\n👤 Patient: *${registeredPatient.name}*\n🎫 Walk-in Token: *${tokenDisplay}*\n📱 Phone: ${registeredPatient.phone}\n📍 Welcome to the clinic!`;
 
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
@@ -283,7 +300,7 @@ export default function WalkinPatientPortal() {
   return (
     <div className="min-h-screen relative overflow-x-hidden max-w-full bg-[#FAFAFA] flex flex-col justify-between">
       {/* Header */}
-      <header className="relative z-10 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
+      <header className="relative z-30 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
         <div className="flex flex-col gap-1.5">
           <DocCareLogo variant="header" subtitle={t("walkinPortal")} />
           <div className="flex items-center gap-2 flex-wrap">
@@ -291,7 +308,7 @@ export default function WalkinPatientPortal() {
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-1.5 shrink-0">
+        <div className="flex flex-col items-end gap-1.5 shrink-0 relative z-30">
           <LanguageSelector />
           <button
             onClick={() => {
@@ -315,6 +332,28 @@ export default function WalkinPatientPortal() {
               delayMinutes={doctor?.delay_minutes ?? 0}
               variant={step === "home" ? "card" : "banner"}
             />
+          </div>
+        )}
+
+        {/* Doctor Short Break Alert Banner */}
+        {!initialLoading && Boolean(doctor?.short_break) && (
+          <div className="mb-4 bg-amber-50 border border-amber-200/90 rounded-2xl p-4 text-amber-900 shadow-xs flex items-center justify-between gap-3 text-left">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+                <Coffee size={16} className="text-amber-700" />
+              </div>
+              <div>
+                <p className="font-display text-xs sm:text-sm font-bold text-amber-950">
+                  {t("doctorOnShortBreak")}
+                </p>
+                <p className="font-body text-[11px] sm:text-xs text-amber-800 font-medium">
+                  {t("shortBreakMsg")}
+                </p>
+              </div>
+            </div>
+            <span className="bg-amber-200/70 text-amber-900 text-[10px] font-extrabold px-2.5 py-1 rounded-full shrink-0">
+              {t("queuePausedBadge")}
+            </span>
           </div>
         )}
 
@@ -565,12 +604,12 @@ export default function WalkinPatientPortal() {
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 text-left space-y-2 border border-white/15 text-xs sm:text-sm font-medium">
                 <div className="flex justify-between">
                   <span className="text-blue-100">{t("patientName")}:</span>
-                  <span className="font-bold text-white">{registeredPatient.name}</span>
+                  <span className="font-bold text-white">{tPatientName(registeredPatient.name)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-blue-100">{t("ageGender")}:</span>
                   <span className="font-bold text-white">
-                    {registeredPatient.age}y · {registeredPatient.gender}
+                    {registeredPatient.age}y · {tGender(registeredPatient.gender)}
                   </span>
                 </div>
                 <div className="flex justify-between">
