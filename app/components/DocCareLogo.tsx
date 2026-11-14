@@ -1,5 +1,6 @@
 import { useLanguage } from "@/lib/LanguageContext";
 import { useRouter } from "next/navigation";
+import { LogiquelIcon } from "./LogiquelLogo";
 
 export function DocCareIcon({ className = "w-11 h-11" }: { className?: string }) {
   return (
@@ -46,8 +47,7 @@ export default function DocCareLogo({
   subtitle?: string;
   className?: string;
 }) {
-  const { t, language } = useLanguage();
-  const displaySubtitle = subtitle !== undefined ? subtitle : t("appSubtitle");
+  const { language } = useLanguage();
   const router = useRouter();
 
   if (variant === "icon") {
@@ -73,9 +73,12 @@ export default function DocCareLogo({
             </>
           )}
         </h1>
-        <p className="font-body text-[11px] sm:text-xs text-slate-500 font-medium tracking-wide leading-none whitespace-nowrap">
-          {displaySubtitle}
-        </p>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <span className="font-body text-[10.5px] sm:text-[11px] text-slate-500 font-semibold tracking-tight leading-none whitespace-nowrap">
+            Built by Logiquel
+          </span>
+          <LogiquelIcon className="w-3.5 h-3.5 shrink-0" />
+        </div>
       </div>
     </div>
   );

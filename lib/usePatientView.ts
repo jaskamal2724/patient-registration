@@ -19,6 +19,7 @@ export function usePatientView() {
   const [initialLoadError, setInitialLoadError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const prevDelayRef = useRef<number | null>(null);
+  const prevBreakRef = useRef<boolean | null>(null);
 
   useEffect(() => {
     if (doctor?.delay_minutes !== undefined && doctor?.delay_minutes !== null) {
@@ -26,7 +27,12 @@ export function usePatientView() {
         prevDelayRef.current = doctor.delay_minutes;
       }
     }
-  }, [doctor?.delay_minutes]);
+    if (doctor?.short_break !== undefined && doctor?.short_break !== null) {
+      if (prevBreakRef.current === null) {
+        prevBreakRef.current = Boolean(doctor.short_break);
+      }
+    }
+  }, [doctor?.delay_minutes, doctor?.short_break]);
 
   const currentToken =
     patients.find(
@@ -46,9 +52,48 @@ export function usePatientView() {
       (doctor ? `${doctor.name}'s OPD Session` : "OPD Registration"),
     patientsPerHour: doctor?.patients_per_hour ?? 10,
     delayMinutes: doctor?.delay_minutes ?? 0,
+    shortBreak: Boolean(doctor?.short_break),
   };
 
-  // Load the active doctor before showing any registration or queue status.
+  const applyDoctorUpdate = useCallback((doc: Doctor) => {
+    const newDelay = doc.delay_minutes ?? 0;
+    const oldDelay = prevDelayRef.current;
+    if (oldDelay !== null && newDelay !== oldDelay) {
+      prevDelayRef.current = newDelay;
+      if (newDelay > 0) {
+        showToast(
+          `⚠️ Doctor Running Late Alert: +${formatDelayText(newDelay)} delay announced. Slot timings remain unchanged.`,
+          "warning",
+          6000
+        );
+      } else {
+        showToast("ℹ️ Doctor delay cleared. Schedule is back on time.", "info", 4000);
+      }
+    } else if (prevDelayRef.current === null) {
+      prevDelayRef.current = newDelay;
+    }
+
+    const newBreak = Boolean(doc.short_break);
+    const oldBreak = prevBreakRef.current;
+    if (oldBreak !== null && newBreak !== oldBreak) {
+      prevBreakRef.current = newBreak;
+      if (newBreak) {
+        showToast("☕ Doctor is on a short break. Consultations are temporarily paused.", "warning", 5000);
+      } else {
+        showToast("✅ Doctor has resumed consultations. Queue is active.", "success", 4000);
+      }
+    } else if (prevBreakRef.current === null) {
+      prevBreakRef.current = newBreak;
+    }
+
+    setDoctor((prev) => (prev ? { ...prev, ...doc } : doc));
+    if ("registration" in doc && doc.registration !== undefined && doc.registration !== null) {
+      setDoctorRegistrationOpen(Boolean(doc.registration));
+    }
+  }, [showToast]);
+
+  // Load the active doctor before showing any registration or queue status,
+  // and keep doctor synchronized via fast polling, visibility listeners, and cross-tab broadcasts.
   useEffect(() => {
     let cancelled = false;
 
@@ -73,10 +118,81 @@ export function usePatientView() {
 
     load();
 
+    // 1. Fast background polling fallback (every 3 seconds)
+    const pollInterval = setInterval(async () => {
+      try {
+        const { doctor: doc } = await api.fetchActiveDoctor();
+        if (!cancelled && doc) {
+          applyDoctorUpdate(doc);
+        }
+      } catch {
+        // silent
+      }
+    }, 3000);
+
+    // 2. Refetch immediately when tab gains focus or becomes visible
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        api.fetchActiveDoctor().then(({ doctor: doc }) => {
+          if (!cancelled && doc) applyDoctorUpdate(doc);
+        }).catch(() => {});
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("focus", handleVisibility);
+
+    // 3. Instant cross-tab BroadcastChannel listener (0ms within the same browser)
+    let bc: BroadcastChannel | null = null;
+    try {
+      if ("BroadcastChannel" in window) {
+        bc = new BroadcastChannel("doccare-live-sync");
+        bc.onmessage = (event) => {
+          if (event.data?.doctor && !cancelled) {
+            applyDoctorUpdate(event.data.doctor);
+          }
+        };
+      }
+    } catch {
+      // ignore
+    }
+
+    // 4. LocalStorage cross-tab fallback (0ms)
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "doccare_doctor_sync" && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (parsed.doctor && !cancelled) {
+            applyDoctorUpdate(parsed.doctor);
+          }
+        } catch {
+          // ignore
+        }
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
+    // 5. Global Supabase Realtime Broadcast channel across all devices
+    const globalSyncChannel = supabase
+      .channel("doccare-global-sync")
+      .on("broadcast", { event: "doctor_updated" }, (payload) => {
+        if (payload.payload && !cancelled) {
+          applyDoctorUpdate(payload.payload as Doctor);
+        }
+      })
+      .subscribe();
+
     return () => {
       cancelled = true;
+      clearInterval(pollInterval);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", handleVisibility);
+      window.removeEventListener("storage", handleStorage);
+      try {
+        bc?.close();
+      } catch {}
+      void supabase.removeChannel(globalSyncChannel);
     };
-  }, [reloadKey]);
+  }, [reloadKey, applyDoctorUpdate]);
 
   // Use doctor.id (stable primitive string) as the effect dependency instead of
   // the full doctor object. This prevents the channel from being torn down and
@@ -227,44 +343,16 @@ export function usePatientView() {
       console.log("Realtime doctors event:", payload);
 
       if (payload.new && typeof payload.new === "object") {
-        const updatedDoc = payload.new as Doctor;
-        const newDelay = updatedDoc.delay_minutes ?? 0;
-        const oldDelay = prevDelayRef.current;
-
-        if (oldDelay !== null && newDelay !== oldDelay) {
-          prevDelayRef.current = newDelay;
-          if (newDelay > 0) {
-            showToast(
-              `⚠️ Doctor Running Late Alert: +${formatDelayText(newDelay)} delay announced. Slot timings remain unchanged.`,
-              "warning",
-              6000
-            );
-          } else {
-            showToast("ℹ️ Doctor delay cleared. Schedule is back on time.", "info", 4000);
-          }
-        } else if (prevDelayRef.current === null) {
-          prevDelayRef.current = newDelay;
-        }
-
-        setDoctor(updatedDoc);
-        if ("registration" in updatedDoc) {
-          setDoctorRegistrationOpen(Boolean(updatedDoc.registration));
-        }
+        applyDoctorUpdate(payload.new as Doctor);
       }
 
       try {
-        const { doctor: doc, open } =
-          await api.fetchActiveDoctor();
-
+        const { doctor: doc } = await api.fetchActiveDoctor();
         if (!cancelled && doc) {
-          setDoctor(doc);
-          setDoctorRegistrationOpen(open);
+          applyDoctorUpdate(doc);
         }
       } catch (error) {
-        console.error(
-          "Unable to refresh the active doctor",
-          error
-        );
+        console.error("Unable to refresh the active doctor", error);
       }
     }
   )
@@ -276,7 +364,7 @@ export function usePatientView() {
       cancelled = true;
       void supabase.removeChannel(channel);
     };
-  }, [doctorId, reloadKey]); // stable primitives, NOT the full doctor object
+  }, [doctorId, reloadKey, applyDoctorUpdate]); // stable primitives, NOT the full doctor object
 
   const retryInitialLoad = useCallback(() => {
     setInitialLoading(true);

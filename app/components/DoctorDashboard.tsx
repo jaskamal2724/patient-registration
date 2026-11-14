@@ -24,6 +24,8 @@ import {
   Save,
   Check,
   Search,
+  Coffee,
+  Pause,
 } from "lucide-react";
 import LogiquelAdCard from "./LogiquelAdCard";
 import ConsultationTimer from "./ConsultationTimer";
@@ -78,6 +80,8 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
     setRegWindow,
     toggleRegistration,
     toggleWalkinRegistration,
+    toggleShortBreak,
+    isShortBreak,
     patients,
     walkinPatients,
     callNext,
@@ -92,7 +96,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
     toast,
   } = useDoctor(doctor);
   const router = useRouter();
-  const { t, language } = useLanguage();
+  const { t, language, tGender, tStatus, tPatientName } = useLanguage();
   const [tab, setTab] = useState<Tab>("queue");
   const [editName, setEditName] = useState(false);
   const [tempName, setTempName] = useState(doctorName);
@@ -201,7 +205,9 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
       const q = searchQuery.trim().toLowerCase();
       const numQuery = q.replace(/\D/g, "");
       list = list.filter((p) => {
-        const nameMatch = p.name?.toLowerCase().includes(q);
+        const nameMatch =
+          p.name?.toLowerCase().includes(q) ||
+          tPatientName(p.name).toLowerCase().includes(q);
         const phoneMatch = numQuery && p.phone ? p.phone.replace(/\D/g, "").includes(numQuery) : false;
         const tokenMatch = String(p.token_number) === q || (p.walkin_token_display && p.walkin_token_display.toLowerCase().includes(q));
         return Boolean(nameMatch || phoneMatch || tokenMatch);
@@ -209,32 +215,36 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
     }
 
     return list;
-  }, [walkinPatients, walkinFilter, searchQuery]);
+  }, [walkinPatients, walkinFilter, searchQuery, tPatientName]);
 
   const crossMatchWalkinCount = useMemo(() => {
     if (!searchQuery.trim()) return 0;
     const q = searchQuery.trim().toLowerCase();
     const numQuery = q.replace(/\D/g, "");
     return walkinPatients.filter((p) => {
-      const nameMatch = p.name?.toLowerCase().includes(q);
+      const nameMatch =
+        p.name?.toLowerCase().includes(q) ||
+        tPatientName(p.name).toLowerCase().includes(q);
       const phoneMatch = numQuery && p.phone ? p.phone.replace(/\D/g, "").includes(numQuery) : false;
       const tokenMatch = String(p.token_number) === q || (p.walkin_token_display && p.walkin_token_display.toLowerCase().includes(q));
       return Boolean(nameMatch || phoneMatch || tokenMatch);
     }).length;
-  }, [walkinPatients, searchQuery]);
+  }, [walkinPatients, searchQuery, tPatientName]);
 
   const crossMatchOnlineCount = useMemo(() => {
     if (!searchQuery.trim()) return 0;
     const q = searchQuery.trim().toLowerCase();
     const numQuery = q.replace(/\D/g, "");
     return patients.filter((p) => {
-      const nameMatch = p.name?.toLowerCase().includes(q);
+      const nameMatch =
+        p.name?.toLowerCase().includes(q) ||
+        tPatientName(p.name).toLowerCase().includes(q);
       const phoneMatch = numQuery && p.phone ? p.phone.replace(/\D/g, "").includes(numQuery) : false;
       const tokenMatch = String(p.token_number) === q || String(p.token_number).padStart(2, "0") === q;
       const slotMatch = p.time_slot?.toLowerCase().includes(q);
       return Boolean(nameMatch || phoneMatch || tokenMatch || slotMatch);
     }).length;
-  }, [patients, searchQuery]);
+  }, [patients, searchQuery, tPatientName]);
 
   const availableSlots = useMemo(() => {
     const generated = getTimeSlots(
@@ -260,7 +270,9 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
       const q = searchQuery.trim().toLowerCase();
       const numQuery = q.replace(/\D/g, "");
       list = list.filter((p) => {
-        const nameMatch = p.name?.toLowerCase().includes(q);
+        const nameMatch =
+          p.name?.toLowerCase().includes(q) ||
+          tPatientName(p.name).toLowerCase().includes(q);
         const phoneMatch = numQuery && p.phone ? p.phone.replace(/\D/g, "").includes(numQuery) : false;
         const tokenMatch =
           String(p.slot_token_number) === q ||
@@ -272,7 +284,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
     }
 
     return sortPatientsBySlot(list);
-  }, [patients, slotFilter, searchQuery]);
+  }, [patients, slotFilter, searchQuery, tPatientName]);
 
   const handleOpenReschedule = (p: Patient) => {
     setReschedulePatient(p);
@@ -386,8 +398,8 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
             ))}
           </nav>
 
-          <div className="border-t border-surface-200 pt-4 mt-4 space-y-3">
-            <div className="flex items-center justify-between px-1">
+          <div className="border-t border-surface-200 pt-4 mt-4 space-y-3 relative z-30">
+            <div className="flex items-center justify-between px-1 relative z-30">
               <span className="text-[11px] font-bold text-surface-500">
                 {language === "hi" ? "भाषा / Language:" : "Language:"}
               </span>
@@ -422,7 +434,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
         </aside>
 
         {/* Mobile Header */}
-        <header className="lg:hidden fixed top-0 left-0 right-0 z-20 bg-white border-b border-surface-200 px-3.5 sm:px-4 py-2.5 flex items-center justify-between shadow-xs">
+        <header className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-white border-b border-surface-200 px-3.5 sm:px-4 py-2.5 flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-2 min-w-0">
             <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center shrink-0 shadow-sm shadow-brand-500/20">
               <Stethoscope size={16} className="text-white" />
@@ -592,6 +604,30 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                     </>
                   )}
                 </button>
+
+                {/* Short Break / Pause Queue Button */}
+                <button
+                  type="button"
+                  onClick={() => toggleShortBreak(!regWindow.shortBreak)}
+                  disabled={loading}
+                  title={
+                    regWindow.shortBreak
+                      ? "Click to resume consultations and live queue"
+                      : "Click to pause queue for a short break"
+                  }
+                  className={`w-fit inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-body text-xs sm:text-sm font-bold transition-all shadow-md active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer shrink-0 ${
+                    regWindow.shortBreak
+                      ? "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/25 border border-amber-400 animate-pulse"
+                      : "bg-surface-50 hover:bg-amber-50 text-surface-700 hover:text-amber-900 border border-surface-200 hover:border-amber-300"
+                  }`}
+                >
+                  <Coffee size={15} className={regWindow.shortBreak ? "text-white" : "text-amber-600"} />
+                  <span>
+                    {regWindow.shortBreak
+                      ? (language === "hi" ? "ब्रेक पर (शुरू करें)" : "On Break (Click to Resume)")
+                      : (language === "hi" ? "छोटा ब्रेक लें" : "Short Break")}
+                  </span>
+                </button>
               </div>
             </div>
 
@@ -665,6 +701,40 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                     bgLight="bg-accent-50"
                   />
                 </div>
+
+                {/* Short Break Banner on Doctor Dashboard */}
+                {regWindow.shortBreak && (
+                  <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl shadow-amber-500/20 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 border border-amber-400">
+                    <div className="flex items-center gap-3">
+                      <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
+                        <Coffee className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-display text-base sm:text-lg font-black text-white">
+                            {t("shortBreakActiveBanner")}
+                          </span>
+                          <span className="bg-white/25 text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full">
+                            PAUSED
+                          </span>
+                        </div>
+                        <p className="font-body text-xs text-amber-100 font-semibold mt-0.5">
+                          {t("shortBreakMsg")}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleShortBreak(false)}
+                      disabled={loading}
+                      className="bg-white text-amber-950 hover:bg-amber-50 active:scale-95 font-body font-black text-xs sm:text-sm px-4 sm:px-5 py-2.5 rounded-xl shadow-md transition-all cursor-pointer whitespace-nowrap shrink-0 flex items-center justify-center gap-1.5"
+                    >
+                      <Play size={14} className="fill-amber-950" />
+                      <span>{t("resumeConsultationsBtn")}</span>
+                    </button>
+                  </div>
+                )}
+
                 {/* Currently Seeing Banner */}
                 {inProgress && (
                   <div className="bg-linear-to-br from-brand-600 to-accent-600 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 text-white shadow-xl shadow-brand-500/20 relative overflow-hidden w-full">
@@ -674,7 +744,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                         <div className="inline-flex items-center gap-1.5 bg-white/15 px-2.5 sm:px-3 py-1 rounded-full backdrop-blur-xs mb-2">
                           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                           <p className="font-body text-white text-[10px] sm:text-[11px] uppercase tracking-widest font-extrabold">
-                            Currently Seeing
+                            {t("currentlySeeing")}
                           </p>
                         </div>
                         <p className="font-display text-3xl sm:text-5xl font-extrabold mb-1 tracking-tight">
@@ -683,8 +753,8 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                             inProgress.token_number}
                         </p>
                         <p className="font-body text-white font-bold text-sm sm:text-lg truncate">
-                          {inProgress.name} · {inProgress.age}y ·{" "}
-                          {inProgress.gender}
+                          {tPatientName(inProgress.name)} · {inProgress.age}y ·{" "}
+                          {tGender(inProgress.gender)}
                         </p>
                         {inProgress.time_slot && (
                           <div className="flex items-center gap-2 mt-1">
@@ -961,14 +1031,12 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                                 <div className="flex items-center justify-between sm:justify-start gap-2 flex-wrap mb-0.5">
                                   <div className="flex items-center gap-2 flex-wrap min-w-0">
                                     <p className="font-body font-bold text-surface-900 text-sm sm:text-base truncate">
-                                      {p.name}
+                                      {tPatientName(p.name)}
                                     </p>
                                     <span
                                       className={`text-[10px] px-2 py-0.5 rounded-full border font-body font-bold uppercase tracking-wider shrink-0 ${statusBadge(p.status)}`}
                                     >
-                                      {p.status === "in-progress"
-                                        ? "In Progress"
-                                        : p.status}
+                                      {tStatus(p.status)}
                                     </span>
                                   </div>
 
@@ -982,7 +1050,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                                 </div>
 
                                 <p className="font-body text-xs text-surface-600 font-semibold mb-1.5 flex items-center gap-1.5 flex-wrap">
-                                  <span>{p.age}y · {p.gender}</span>
+                                  <span>{p.age}y · {tGender(p.gender)}</span>
                                   <span className="text-surface-300">·</span>
                                   <a
                                     href={`tel:${p.phone}`}
@@ -1335,6 +1403,39 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                   />
                 </div>
 
+                {/* Short Break Banner on Walk-in Tab */}
+                {regWindow.shortBreak && (
+                  <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl shadow-amber-500/20 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 border border-amber-400">
+                    <div className="flex items-center gap-3">
+                      <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
+                        <Coffee className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-display text-base sm:text-lg font-black text-white">
+                            {t("shortBreakActiveBanner")}
+                          </span>
+                          <span className="bg-white/25 text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full">
+                            PAUSED
+                          </span>
+                        </div>
+                        <p className="font-body text-xs text-amber-100 font-semibold mt-0.5">
+                          {t("shortBreakMsg")}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleShortBreak(false)}
+                      disabled={loading}
+                      className="bg-white text-amber-950 hover:bg-amber-50 active:scale-95 font-body font-black text-xs sm:text-sm px-4 sm:px-5 py-2.5 rounded-xl shadow-md transition-all cursor-pointer whitespace-nowrap shrink-0 flex items-center justify-center gap-1.5"
+                    >
+                      <Play size={14} className="fill-amber-950" />
+                      <span>{t("resumeConsultationsBtn")}</span>
+                    </button>
+                  </div>
+                )}
+
                 {/* Currently Seeing Walkin Banner */}
                 {walkinInProgress && (
                   <div className="bg-linear-to-br from-amber-600 to-amber-700 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 text-white shadow-xl shadow-amber-500/20 relative overflow-hidden w-full">
@@ -1351,7 +1452,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                           Token {walkinInProgress.walkin_token_display || `W-${walkinInProgress.token_number}`}
                         </p>
                         <p className="font-body text-white font-bold text-sm sm:text-lg truncate">
-                          {walkinInProgress.name} · {walkinInProgress.age}y · {walkinInProgress.gender}
+                          {tPatientName(walkinInProgress.name)} · {walkinInProgress.age}y · {tGender(walkinInProgress.gender)}
                         </p>
                         <div className="flex items-center gap-2 flex-wrap mt-1">
                           {walkinInProgress.pwd && (
@@ -1560,7 +1661,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                                   <div className="flex items-center justify-between sm:justify-start gap-2 flex-wrap mb-0.5">
                                     <div className="flex items-center gap-2 flex-wrap min-w-0">
                                       <p className="font-body font-bold text-surface-900 text-sm sm:text-base truncate">
-                                        {p.name}
+                                        {tPatientName(p.name)}
                                       </p>
                                       {p.pwd && (
                                         <span className="text-[10px] px-2 py-0.5 rounded-full border border-amber-300 bg-amber-100 text-amber-800 font-body font-bold shrink-0">
@@ -1580,7 +1681,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                                       <span
                                         className={`text-[10px] px-2 py-0.5 rounded-full border font-body font-bold uppercase tracking-wider shrink-0 ${statusBadge(p.status)}`}
                                       >
-                                        {p.status === "in-progress" ? "In Progress" : p.status}
+                                        {tStatus(p.status)}
                                       </span>
                                     </div>
 
@@ -1594,7 +1695,7 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                                   </div>
 
                                   <p className="font-body text-xs text-surface-600 font-semibold mb-1">
-                                    {p.age}y · {p.gender} ·{" "}
+                                    {p.age}y · {tGender(p.gender)} ·{" "}
                                     <a
                                       href={`tel:${p.phone}`}
                                       className="text-amber-700 underline underline-offset-2 hover:text-amber-900"
@@ -1950,10 +2051,10 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                         </div>
                         <div className="min-w-0">
                           <p className="font-body font-bold text-surface-900 text-sm sm:text-base truncate">
-                            {p.name}
+                            {tPatientName(p.name)}
                           </p>
                           <p className="font-body text-xs text-surface-500 font-medium">
-                            {p.age}y · {p.gender} · {p.phone}
+                            {p.age}y · {tGender(p.gender)} · {p.phone}
                           </p>
                         </div>
                       </div>
@@ -2014,10 +2115,10 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                         </div>
                         <div className="min-w-0">
                           <p className="font-body font-bold text-surface-900 text-sm sm:text-base truncate">
-                            {p.name}
+                            {tPatientName(p.name)}
                           </p>
                           <p className="font-body text-xs text-surface-500 font-medium">
-                            {p.age}y · {p.gender} · {p.phone}
+                            {p.age}y · {tGender(p.gender)} · {p.phone}
                           </p>
                           {p.city_village && (
                             <p className="font-body text-[11px] text-surface-400">
@@ -2079,10 +2180,10 @@ export default function DoctorDashboard({ doctor }: { doctor: Doctor }) {
                   </div>
                   <div className="min-w-0">
                     <p className="font-body font-bold text-surface-900 text-sm sm:text-base truncate">
-                      {reschedulePatient.name}
+                      {tPatientName(reschedulePatient.name)}
                     </p>
                     <p className="font-body text-xs text-surface-600 font-medium">
-                      {reschedulePatient.age}y · {reschedulePatient.gender} · {reschedulePatient.phone}
+                      {reschedulePatient.age}y · {tGender(reschedulePatient.gender)} · {reschedulePatient.phone}
                     </p>
                   </div>
                 </div>

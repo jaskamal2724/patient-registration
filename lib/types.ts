@@ -67,6 +67,7 @@ export type Doctor = {
   patients_per_hour?: number | null;
   auto_close_10am?: boolean | null;
   delay_minutes?: number | null;
+  short_break?: boolean | null;
   created_at: string;
 };
 
@@ -87,6 +88,7 @@ export type RegistrationWindow = {
   patientsPerHour: number;
   autoClose10AM?: boolean;
   delayMinutes: number;
+  shortBreak?: boolean;
 };
 
 

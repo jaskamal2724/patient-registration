@@ -232,7 +232,7 @@ export function PatientHeader({
 }) {
   const { t } = useLanguage();
   return (
-    <header className="relative z-10 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
+    <header className="relative z-30 flex items-start justify-between px-4 sm:px-6 py-4 max-w-md sm:max-w-xl w-full mx-auto gap-2">
       <div className="flex flex-col gap-1.5">
         <DocCareLogo variant="header" subtitle={subtitle || t("patientPortal")} />
         <div className="flex items-center gap-2 flex-wrap">
@@ -240,7 +240,7 @@ export function PatientHeader({
         </div>
       </div>
 
-      <div className="flex flex-col items-end gap-1.5 shrink-0">
+      <div className="flex flex-col items-end gap-1.5 shrink-0 relative z-30">
         <LanguageSelector />
         {onExit && (
           <button
@@ -285,7 +285,7 @@ function CheckTokenSearchCard({
   delayMinutes?: number;
   doctorHasStarted: boolean;
 }) {
-  const { t, tTimeSlot, tWaitTime } = useLanguage();
+  const { t, tTimeSlot, tWaitTime, tPatientName } = useLanguage();
   const [searchPhone, setSearchPhone] = useState("");
   const cleanQuery = searchPhone.replace(/\D/g, "");
 
@@ -426,7 +426,7 @@ function CheckTokenSearchCard({
                       </div>
                       <div>
                         <p className="font-body text-sm font-extrabold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">
-                          {patient.name}
+                          {tPatientName(patient.name)}
                         </p>
                         <p className="font-mono-custom text-xs text-slate-500">
                           {patient.phone}{" "}
